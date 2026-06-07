@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 import gmat_script
 from gmat_script import cli
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_version_is_a_nonempty_string() -> None:
@@ -37,5 +42,7 @@ def test_cli_help_exits_zero() -> None:
     assert exc.value.code == 0
 
 
-def test_cli_parse_subcommand_is_stubbed() -> None:
-    assert cli.main(["parse", "mission.script"]) == 2
+def test_cli_parse_subcommand_is_wired(tmp_path: Path) -> None:
+    script = tmp_path / "mission.script"
+    script.write_text("Create Spacecraft Sat;\n", encoding="utf-8")
+    assert cli.main(["parse", str(script)]) == 0
