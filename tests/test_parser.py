@@ -34,6 +34,10 @@ def test_clean_script_has_no_errors() -> None:
         "Create Spacecraft Sat   \n\n   ",  # trailing whitespace, no final newline
         "Create Spacecraft Sat\r\nSat.SMA = 7000\r\n",  # CRLF preserved (no normalisation)
         "Sat.Epoch = 19 Aug 2015\n% café au lait ☕\n",  # non-ASCII in comment/value
+        "\ufeffCreate Spacecraft Sat\n",  # UTF-8 BOM (explicit escape) at the start
+        "Create Spacecraft Sat\n\t\tSat.SMA = 7000\n",  # tab indentation
+        "a = 1\rb = 2\r",  # lone-CR (classic-Mac) line endings
+        "a = 1\nb = 2\r\nc = 3\rd = 4\n",  # mixed LF / CRLF / CR in one file
         _CLEAN,
         _MALFORMED,  # re-emission must hold on malformed input too
     ],
@@ -74,6 +78,51 @@ def test_error_positions_are_one_indexed() -> None:
 def test_errors_are_computed_once_and_cached() -> None:
     tree = parse(_CLEAN)
     assert tree.errors is tree.errors  # same object — not recomputed on each access
+
+
+def test_hidden_missing_terminator_is_surfaced() -> None:
+    # Two statements separated only by a lone CR leave tree-sitter to recover with a MISSING
+    # statement terminator — a MISSING instance of a *hidden* token. tree-sitter flags it on
+    # root_node.has_error but does not expose it through the node-child API, so without an
+    # authoritative backstop the tree would read as clean and the CLI would exit 0 on input
+    # tree-sitter rejects (a D7/D8 false negative). It must be surfaced.
+    tree = parse("x = 1\ry = 2")
+    assert tree.root_node.has_error is True
+    assert tree.has_errors is True
+    assert tree.errors
+    assert tree.errors[0].type == "MISSING"
+    assert tree.errors[0].message
+
+
+def test_hidden_missing_terminator_is_localised_to_the_enclosing_block() -> None:
+    # When the missing hidden terminator is nested, the backstop descends to the narrowest
+    # accessible subtree still flagged, so the diagnostic points at the enclosing block (here the
+    # If on line 2) rather than the whole file.
+    tree = parse("BeginMissionSequence\nIf x > 1\na = 1\rb = 2\nEndIf\n")
+    assert tree.has_errors is True
+    assert tree.errors[0].type == "MISSING"
+    assert tree.errors[0].start.line == 2
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        _CLEAN,  # clean — no errors
+        "Create Spacecraft Sat\n",  # clean config-only
+        "",  # clean empty
+        _MALFORMED,  # ERROR node (visible)
+        "BeginMissionSequence\nPropagate Prop(Sat\n",  # MISSING ')' (visible)
+        "Sat.X = {1, 2, 3\n",  # unmatched brace — ERROR
+        "x = 1\ry = 2",  # MISSING hidden terminator (lone CR)
+        "@@@ garbage\n",  # ERROR
+    ],
+)
+def test_error_state_is_authoritative_and_consistent(source: str) -> None:
+    # parse() never raises (D7), and the boolean, the list, and tree-sitter's own flag never
+    # disagree — so the CLI exit code (derived from has_errors) is always correct.
+    tree = parse(source)
+    assert tree.root_node.type == "source_file"
+    assert tree.has_errors == tree.root_node.has_error == bool(tree.errors)
 
 
 def test_root_node_is_exposed_for_downstream_layers() -> None:

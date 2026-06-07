@@ -198,6 +198,27 @@ def test_stdin_malformed_diagnostic_uses_stdin_name(
     assert captured.err.startswith("<stdin>:")
 
 
+# --- hidden MISSING terminator (D7/D8 regression) ---------------------------------------------
+
+
+def test_hidden_missing_terminator_file_exits_nonzero(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # A file whose statements are separated only by lone CRs parses to a tree tree-sitter flags as
+    # erroneous (a MISSING hidden terminator). The CLI must treat that as a syntax error — exit 1,
+    # ok:false, a diagnostic — not silently exit 0.
+    path = _write(tmp_path, "cr.script", "x = 1\ry = 2\r")
+
+    code = cli.main(["parse", "--json", path])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    report = json.loads(captured.out)
+    assert report["ok"] is False
+    assert report["errors"]
+    assert report["errors"][0]["type"] == "MISSING"
+
+
 # --- IO errors --------------------------------------------------------------------------------
 
 
