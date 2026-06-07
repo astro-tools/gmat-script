@@ -100,7 +100,9 @@ include = [
 build = "cp310-*"
 skip = "*-musllinux*"
 build-frontend = "build"
-test-requires = ["tree-sitter>=0.25,<0.26"]
+# No test-requires: installing the wheel already pulls tree-sitter via its own dependency, and a
+# version range here (e.g. "tree-sitter<0.26") is passed through the Windows cmd shell, where the
+# "<" reads as input redirection and fails the test step. The wheel's own pin is the constraint.
 test-command = "python -c \"import gmat_script; from gmat_script._grammar import language; from tree_sitter import Language; Language(language())\""
 
 # 64-bit only on Linux and Windows: tree-sitter ships no 32-bit (i686 / win32) wheels, so the test
