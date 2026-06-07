@@ -1,0 +1,168 @@
+================================================================================
+number: integer, real, and scientific forms
+================================================================================
+
+a = 7000
+b = 1.25e-1
+c = 1e+70
+d = 0.001
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (number))
+  (assignment_command
+    left: (identifier)
+    right: (number))
+  (assignment_command
+    left: (identifier)
+    right: (number))
+  (assignment_command
+    left: (identifier)
+    right: (number)))
+
+================================================================================
+number: zero-padded exponent (corpus quirk)
+================================================================================
+
+a = 1e+070
+b = 9.999999999999999e-012
+c = 2.287982201885771e-015
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (number))
+  (assignment_command
+    left: (identifier)
+    right: (number))
+  (assignment_command
+    left: (identifier)
+    right: (number)))
+
+================================================================================
+string: single-quoted, and a percent sign inside is data not a comment
+================================================================================
+
+epoch = '01 Jan 2025 12:00:00.000'
+fmt = '%.15f %.15f %.15f'
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (string))
+  (assignment_command
+    left: (identifier)
+    right: (string)))
+
+================================================================================
+unary: leading sign
+================================================================================
+
+a = -Element1
+b = -3.5e-012
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (unary_expression
+      operand: (identifier)))
+  (assignment_command
+    left: (identifier)
+    right: (unary_expression
+      operand: (number))))
+
+================================================================================
+binary: arithmetic precedence (multiplication binds tighter than addition)
+================================================================================
+
+a = b + c * 2
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (binary_expression
+      left: (identifier)
+      right: (binary_expression
+        left: (identifier)
+        right: (number)))))
+
+================================================================================
+binary: exponentiation is right-associative
+================================================================================
+
+p = 2 ^ 3 ^ 2
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (binary_expression
+      left: (number)
+      right: (binary_expression
+        left: (number)
+        right: (number)))))
+
+================================================================================
+parenthesized: grouping overrides precedence
+================================================================================
+
+q = ( X1 - 2 )^2 + sqrt(X1)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (binary_expression
+      left: (binary_expression
+        left: (parenthesized_expression
+          (binary_expression
+            left: (identifier)
+            right: (number)))
+        right: (number))
+      right: (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (identifier))))))
+
+================================================================================
+call: function invocation and dotted external calls (same node as array indexing)
+================================================================================
+
+a = cross(v1, v2)
+b = Python.IODFunctions.ThreePositionIOD(R1, R2, R3)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier)
+        (identifier))))
+  (assignment_command
+    left: (identifier)
+    right: (call_expression
+      function: (member_expression
+        object: (member_expression
+          object: (identifier)
+          property: (identifier))
+        property: (identifier))
+      arguments: (argument_list
+        (identifier)
+        (identifier)
+        (identifier)))))

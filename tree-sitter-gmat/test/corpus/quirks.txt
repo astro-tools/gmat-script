@@ -1,0 +1,47 @@
+================================================================================
+quirk: field name beginning with a digit
+================================================================================
+
+Earth.3DModelFile = 'OFI_Earth.earth';
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (member_expression
+      object: (identifier)
+      property: (identifier))
+    right: (string)))
+
+================================================================================
+quirk: empty list element
+================================================================================
+
+OFI_inertialView.View = {inertial_View, , Earth_View1, geoSat_View1}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (member_expression
+      object: (identifier)
+      property: (identifier))
+    right: (list
+      (identifier)
+      (identifier)
+      (identifier))))
+
+================================================================================
+quirk: stray trailing semicolons
+================================================================================
+
+EarthPointMass_RK56.InitialStepSize = 30;;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (member_expression
+      object: (identifier)
+      property: (identifier))
+    right: (number)))
