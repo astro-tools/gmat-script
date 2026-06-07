@@ -1,0 +1,104 @@
+%
+%  Ex_OFI_SPICEOrbitAndAttitudePropagation
+%
+%  Animation of this script shows a Mars orbiter that uses a
+%  SPICE kernel to control its attitude.  The attitude control
+%  is best viewed using the ExpressView view setting.
+%
+%  Released; R2020a
+%
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft MarsExpress;
+
+MarsExpress.DateFormat = UTCGregorian;
+
+MarsExpress.Epoch                        = '01 Jun 2010 16:00:00.000';
+MarsExpress.NAIFId                       = -41;
+MarsExpress.NAIFIdReferenceFrame         = -41001;
+MarsExpress.OrbitSpiceKernelName         = {'../data/vehicle/ephem/spk/MarsExpress_Short.bsp'};
+MarsExpress.AttitudeSpiceKernelName      = {'../data/vehicle/ephem/spk/MarsExpress_ATNM_PTR00012_100531_002.BC'};
+MarsExpress.SCClockSpiceKernelName       = {'../data/vehicle/ephem/spk/MarsExpress_MEX_100921_STEP.TSC'};
+MarsExpress.FrameSpiceKernelName         = {'../data/vehicle/ephem/spk/MarsExpress_MEX_V10.TF'};
+MarsExpress.Attitude                     = 'SpiceAttitude';
+MarsExpress.ModelFile                    = '../data/vehicle/models/aura.3ds';
+MarsExpress.AttitudeDisplayStateType     = 'Quaternion';
+MarsExpress.AttitudeRateDisplayStateType = 'AngularVelocity';
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator spkProp;
+
+spkProp.Type        = SPK;
+spkProp.StepSize    = 5;
+spkProp.CentralBody = Mars;
+spkProp.EpochFormat = 'UTCGregorian';
+spkProp.StartEpoch  = '01 Jun 2010 16:00:00.000';
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem MarsMJ2000Eq;
+
+MarsMJ2000Eq.Origin = Mars;
+MarsMJ2000Eq.Axes   = MJ2000Eq;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface OpenFrames1;
+
+OpenFrames1.SolverIterations           = Current;
+OpenFrames1.UpperLeft                  = [ 0.01 0.01 ];
+OpenFrames1.Size                       = [ 0.98 0.98 ];
+OpenFrames1.RelativeZOrder             = 0;
+OpenFrames1.Maximized                  = false;
+ 
+OpenFrames1.Add                        = {MarsExpress, Mars, Sun};
+OpenFrames1.CoordinateSystem           = MarsMJ2000Eq;
+OpenFrames1.View                       = {CoordinateSystemView1, ExpressView};
+
+%----------------------------------------
+%---------- View Objects
+%----------------------------------------
+
+Create OpenFramesView CoordinateSystemView1;
+
+CoordinateSystemView1.ViewFrame          = CoordinateSystem;
+CoordinateSystemView1.ViewTrajectory     = Off;
+CoordinateSystemView1.InertialFrame      = Off;
+CoordinateSystemView1.SetDefaultLocation = Off;
+CoordinateSystemView1.SetCurrentLocation = On;
+CoordinateSystemView1.CurrentEye         = [ 19500 -12000 -5500 ];
+CoordinateSystemView1.CurrentCenter      = [ 0 0 -2500 ];
+CoordinateSystemView1.CurrentUp          = [ 0 0 1 ];
+
+
+Create OpenFramesView ExpressView;
+
+ExpressView.ViewFrame                    = MarsExpress;
+ExpressView.ViewTrajectory               = Off;
+ExpressView.InertialFrame                = On;
+ExpressView.LookAtFrame                  = Mars;
+ExpressView.ShortestAngle                = Off;
+ExpressView.SetDefaultLocation           = Off;
+ExpressView.SetCurrentLocation           = On;
+ExpressView.CurrentEye                   = [ 0 -3500 0 ];
+ExpressView.CurrentCenter                = [ 0 0 0 ];
+ExpressView.CurrentUp                    = [ 0 0 1 ];
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+Propagate spkProp(MarsExpress) {MarsExpress.ElapsedDays = 1.0};

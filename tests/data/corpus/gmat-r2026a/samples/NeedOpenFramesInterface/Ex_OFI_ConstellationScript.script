@@ -1,0 +1,343 @@
+%
+%  Ex_OFI_ConstellationScript
+%
+%  Script Mission - Constellation Propagation Example  
+%
+%  This script demonstrates how to propagate a constellation as a formation.
+%
+%  Released: R2020a
+%
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft Sat11;
+
+Sat11.DateFormat       = TAIModJulian;
+Sat11.Epoch            = '21545';
+Sat11.CoordinateSystem = EarthMJ2000Eq;
+Sat11.DisplayStateType = Cartesian;
+Sat11.X                = 688.5272682812904;
+Sat11.Y                = -688.5272682812873;
+Sat11.Z                = 6928.410542950397;
+Sat11.VX               = -5.338534050664235;
+Sat11.VY               = -5.338534050664234;
+Sat11.VZ               = 2.287982201885771e-15;
+
+
+Create Spacecraft Sat12;
+
+Sat12.DateFormat       = TAIModJulian;
+Sat12.Epoch            = '21545';
+Sat12.CoordinateSystem = EarthMJ2000Eq;
+Sat12.DisplayStateType = Cartesian;
+Sat12.X                = -4862.607377560832;
+Sat12.Y                = -5035.377343525906;
+Sat12.Z                = 8.488817860573396e-13;
+Sat12.VX               = -0.7580772104932414;
+Sat12.VY               = 0.726821527686825;
+Sat12.VZ               = -7.472616549480826;
+
+
+Create Spacecraft Sat13;
+
+Sat13.DateFormat       = TAIModJulian;
+Sat13.Epoch            = '21545';
+Sat13.CoordinateSystem = EarthMJ2000Eq;
+Sat13.DisplayStateType = Cartesian;
+Sat13.X                = -712.8495845396725;
+Sat13.Y                = 664.7429917302072;
+Sat13.Z                = -6935.342419431587;
+Sat13.VX               = 5.143823411855427;
+Sat13.VY               = 5.516075276766165;
+Sat13.VZ               = -1.372423280583216e-15;
+
+
+Create Spacecraft Sat14;
+
+Sat14.DateFormat       = TAIModJulian;
+Sat14.Epoch            = '21545';
+Sat14.CoordinateSystem = EarthMJ2000Eq;
+Sat14.DisplayStateType = Cartesian;
+Sat14.X                = 4683.913073533447;
+Sat14.Y                = 5202.012477838315;
+Sat14.Z                = -1.697763572114679e-12;
+Sat14.VX               = 0.7779318200050955;
+Sat14.VY               = -0.7055300656965543;
+Sat14.VZ               = 7.472616549480826;
+
+Create Spacecraft Sat21;
+
+Sat21.DateFormat       = TAIModJulian;
+Sat21.Epoch            = '21545';
+Sat21.CoordinateSystem = EarthMJ2000Eq;
+Sat21.DisplayStateType = Cartesian;
+Sat21.X                = 973.7246008670973;
+Sat21.Y                = 2.082368121974815e-12;
+Sat21.Z                = 6928.410542950397;
+Sat21.VX               = -1.407233930611204e-16;
+Sat21.VY               = -7.549827257639936;
+Sat21.VZ               = 2.287982201885771e-15;
+
+Create Spacecraft Sat22;
+
+Sat22.DateFormat       = TAIModJulian;
+Sat22.Epoch            = '21545';
+Sat22.CoordinateSystem = EarthMJ2000Eq;
+Sat22.DisplayStateType = Cartesian;
+Sat22.X                = 122.1668145192732;
+Sat22.Y                = -6998.932116361272;
+Sat22.Z                = 8.488817860573396e-13;
+Sat22.VX               = -1.049981967142473;
+Sat22.VY               = -0.02210110526303279;
+Sat22.VZ               = -7.472616549480826;
+
+Create Spacecraft Sat23;
+
+Sat23.DateFormat       = TAIModJulian;
+Sat23.Epoch            = '21545';
+Sat23.CoordinateSystem = EarthMJ2000Eq;
+Sat23.DisplayStateType = Cartesian;
+Sat23.X                = -974.1050523926782;
+Sat23.Y                = -34.01649799535283;
+Sat23.Z                = -6935.342419431587;
+Sat23.VX               = -0.2632218179877218;
+Sat23.VY               = 7.537686649485913;
+Sat23.VZ               = -1.372423280583216e-15;
+
+Create Spacecraft Sat24;
+
+Sat24.DateFormat       = TAIModJulian;
+Sat24.Epoch            = '21545';
+Sat24.CoordinateSystem = EarthMJ2000Eq;
+Sat24.DisplayStateType = Cartesian;
+Sat24.X                = -366.3516021126837;
+Sat24.Y                = 6990.404995680331;
+Sat24.Z                = -1.697763572114679e-12;
+Sat24.VX               = 1.04896595901142;
+Sat24.VY               = 0.05119577144137196;
+Sat24.VZ               = 7.472616549480826;
+
+Create Spacecraft Sat31;
+
+Sat31.DateFormat       = TAIModJulian;
+Sat31.Epoch            = '21545';
+Sat31.CoordinateSystem = EarthMJ2000Eq;
+Sat31.DisplayStateType = Cartesian;
+Sat31.X                = 688.5272682812873;
+Sat31.Y                = 688.5272682812904;
+Sat31.Z                = 6928.410542950397;
+Sat31.VX               = 5.338534050664234;
+Sat31.VY               = -5.338534050664235;
+Sat31.VZ               = 2.287982201885771e-15;
+
+Create Spacecraft Sat32;
+
+Sat32.DateFormat       = TAIModJulian;
+Sat32.Epoch            = '21545';
+Sat32.CoordinateSystem = EarthMJ2000Eq;
+Sat32.DisplayStateType = Cartesian;
+Sat32.X                = 5035.377343525907;
+Sat32.Y                = -4862.607377560831;
+Sat32.Z                = 8.488817860573396e-13;
+Sat32.VX               = -0.7268215276868248;
+Sat32.VY               = -0.7580772104932415;
+Sat32.VZ               = -7.472616549480826;
+
+Create Spacecraft Sat33;
+
+Sat33.DateFormat       = TAIModJulian;
+Sat33.Epoch            = '21545';
+Sat33.CoordinateSystem = EarthMJ2000Eq;
+Sat33.DisplayStateType = Cartesian;
+Sat33.X                = -664.7429917302073;
+Sat33.Y                = -712.8495845396725;
+Sat33.Z                = -6935.342419431587;
+Sat33.VX               = -5.516075276766165;
+Sat33.VY               = 5.143823411855427;
+Sat33.VZ               = -1.372423280583216e-15;
+
+Create Spacecraft Sat34;
+
+Sat34.DateFormat       = TAIModJulian;
+Sat34.Epoch            = '21545';
+Sat34.CoordinateSystem = EarthMJ2000Eq;
+Sat34.DisplayStateType = Cartesian;
+Sat34.X                = -5202.012477838313;
+Sat34.Y                = 4683.913073533448;
+Sat34.Z                = -1.697763572114679e-12;
+Sat34.VX               = 0.7055300656965544;
+Sat34.VY               = 0.7779318200050953;
+Sat34.VZ               = 7.472616549480826;
+
+Create Spacecraft Sat41;
+
+Sat41.DateFormat       = TAIModJulian;
+Sat41.Epoch            = '21545';
+Sat41.CoordinateSystem = EarthMJ2000Eq;
+Sat41.DisplayStateType = Cartesian;
+Sat41.X                = -2.022746655320065e-12;
+Sat41.Y                = 973.7246008670973;
+Sat41.Z                = 6928.410542950397;
+Sat41.VX               = 7.549827257639936;
+Sat41.VY               = -6.030017145594824e-16;
+Sat41.VZ               = 2.287982201885771e-15;
+
+Create Spacecraft Sat42;
+
+Sat42.DateFormat       = TAIModJulian;
+Sat42.Epoch            = '21545';
+Sat42.CoordinateSystem = EarthMJ2000Eq;
+Sat42.DisplayStateType = Cartesian;
+Sat42.X                = 6998.932116361272;
+Sat42.Y                = 122.1668145192743;
+Sat42.Z                = 8.488817860573396e-13;
+Sat42.VX               = 0.02210110526303296;
+Sat42.VY               = -1.049981967142473;
+Sat42.VZ               = -7.472616549480826;
+
+Create Spacecraft Sat43;
+
+Sat43.DateFormat       = TAIModJulian;
+Sat43.Epoch            = '21545';
+Sat43.CoordinateSystem = EarthMJ2000Eq;
+Sat43.DisplayStateType = Cartesian;
+Sat43.X                = 34.01649799535277;
+Sat43.Y                = -974.1050523926782;
+Sat43.Z                = -6935.342419431587;
+Sat43.VX               = -7.537686649485913;
+Sat43.VY               = -0.2632218179877214;
+Sat43.VZ               = -1.372423280583216e-15;
+
+Create Spacecraft Sat44;
+
+Sat44.DateFormat       = TAIModJulian;
+Sat44.Epoch            = '21545';
+Sat44.CoordinateSystem = EarthMJ2000Eq;
+Sat44.DisplayStateType = Cartesian;
+Sat44.X                = -6990.404995680331;
+Sat44.Y                = -366.3516021126818;
+Sat44.Z                = -1.697763572114679e-12;
+Sat44.VX               = -0.05119577144137168;
+Sat44.VY               = 1.04896595901142;
+Sat44.VZ               = 7.472616549480826;
+
+%----------------------------------------
+%---------- Formation
+%----------------------------------------
+
+Create Formation form;
+form.Add = {Sat11, Sat12, Sat13, Sat14, Sat21, Sat22, Sat23, Sat24, Sat31, Sat32, Sat33, Sat34, Sat41, Sat42, Sat43, Sat44};
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel fm;
+
+fm.CentralBody            = Earth;
+fm.PointMasses            = {Earth, Sun, Luna};
+fm.Drag                   = None;
+fm.SRP                    = Off;
+fm.RelativisticCorrection = Off;
+fm.ErrorControl           = RSSStep;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator prop;
+
+prop.FM                   = fm;
+prop.Type                 = RungeKutta89;
+prop.InitialStepSize      = 60;
+prop.Accuracy             = 1.0e-11;
+prop.MinStep              = 0.001;
+prop.MaxStep              = 2700;
+prop.MaxStepAttempts      = 50;
+prop.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface a3Dplot;
+
+a3Dplot.SolverIterations        = Current;
+a3Dplot.UpperLeft               = [ 0.15 0.07 ];
+a3Dplot.Size                    = [ 0.7 0.86 ];
+a3Dplot.Maximized               = false;
+a3Dplot.Add                     = {Sat11, Earth, Sat21, Sat31, Sat41, Sat12, Sat22, Sat32, Sat42, Sat13, Sat23, Sat33, Sat43, Sat14, Sat24, Sat34, Sat44, Sun};
+a3Dplot.DrawObject              = [ true true true true true true true true true true true true true true true true true ];
+a3Dplot.View                    = {CoordinateSystemView1, EarthView1};
+a3Dplot.CoordinateSystem        = EarthMJ2000Eq;
+a3Dplot.DrawObject              = [ true true ];
+a3Dplot.DrawTrajectory          = [ true true ];
+a3Dplot.DrawAxes                = [ false false ];
+a3Dplot.DrawXYPlane             = [ false false ];
+a3Dplot.DrawLabel               = [ true true ];
+a3Dplot.DrawUsePropLabel        = [ false false ];
+a3Dplot.DrawCenterPoint         = [ true true ];
+a3Dplot.DrawEndPoints           = [ true true ];
+a3Dplot.DrawVelocity            = [ false false ];
+a3Dplot.DrawGrid                = [ false false ];
+a3Dplot.DrawLineWidth           = [ 2 2 ];
+a3Dplot.DrawMarkerSize          = [ 10 10 ];
+a3Dplot.Axes                    = On;
+a3Dplot.AxesLabels              = On;
+a3Dplot.FrameLabel              = Off;
+a3Dplot.XYPlane                 = On;
+a3Dplot.EclipticPlane           = Off;
+a3Dplot.EnableStars             = On;
+a3Dplot.StarCount               = 40000;
+a3Dplot.MinStarMag              = -2;
+a3Dplot.MaxStarMag              = 6;
+a3Dplot.MinStarPixels           = 1;
+a3Dplot.MaxStarPixels           = 10;
+a3Dplot.MinStarDimRatio         = 0.5;
+a3Dplot.ShowPlot                = true;
+a3Dplot.ShowToolbar             = true;
+a3Dplot.SolverIterLastN         = 0;
+a3Dplot.ShowVR                  = false;
+a3Dplot.PlaybackTimeScale       = 3600;
+a3Dplot.MultisampleAntiAliasing = On;
+a3Dplot.MSAASamples             = 2;
+
+%----------------------------------------
+%---------- View Objects
+%----------------------------------------
+
+Create OpenFramesView CoordinateSystemView1;
+
+CoordinateSystemView1.ViewFrame          = CoordinateSystem;
+CoordinateSystemView1.ViewTrajectory     = Off;
+CoordinateSystemView1.InertialFrame      = Off;
+CoordinateSystemView1.SetDefaultLocation = Off;
+CoordinateSystemView1.SetCurrentLocation = On;
+CoordinateSystemView1.CurrentEye         = [ 1000 -18000 10000 ];
+CoordinateSystemView1.CurrentCenter      = [ 0 0 0 ];
+CoordinateSystemView1.CurrentUp          = [ 0 0 1 ];
+
+Create OpenFramesView EarthView1;
+
+EarthView1.ViewFrame                     = Earth;
+EarthView1.ViewTrajectory                = Off;
+EarthView1.InertialFrame                 = Off;
+EarthView1.SetDefaultLocation            = Off;
+EarthView1.SetCurrentLocation            = On;
+EarthView1.CurrentEye                    = [ 4000 -20000 3000 ];
+EarthView1.CurrentCenter                 = [ 0 0 0 ];
+EarthView1.CurrentUp                     = [ 0 0 1 ];
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+Propagate 'Prop 1 Day' prop(form) {Sat11.ElapsedSecs = 86400.0};
+
+
+
+

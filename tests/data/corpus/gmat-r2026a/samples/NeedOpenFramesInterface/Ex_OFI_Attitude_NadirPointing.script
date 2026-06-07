@@ -1,0 +1,124 @@
+%
+%  Ex_OFI_Attitude_NadirPointing
+%
+%  Use an attitude coordinate system defining a nadir-pointing attitude model.
+%
+%  Released: R2020a
+%
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft DMSP;
+
+DMSP.DateFormat                   = UTCGregorian;
+DMSP.Epoch                        = '01 Jul 2000 11:59:28.000';
+DMSP.CoordinateSystem             = EarthMJ2000Eq;
+DMSP.DisplayStateType             = Keplerian;
+DMSP.SMA                          = 9000.938817629016;
+DMSP.ECC                          = 0.02454974900598064;
+DMSP.INC                          = 100.850080056581;
+DMSP.RAAN                         = 306.6148021947984;
+DMSP.AOP                          = 314.1905515359929;
+DMSP.TA                           = 99.88774933204795;
+DMSP.Attitude                     = CoordinateSystemFixed;
+DMSP.AttitudeDisplayStateType     = 'EulerAngles';
+DMSP.AttitudeRateDisplayStateType = 'AngularVelocity';
+DMSP.AttitudeCoordinateSystem     = LVLH;
+DMSP.EulerAngleSequence           = '321';
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator DefaultProp;
+DefaultProp.FM = DefaultProp_ForceModel;
+
+Create ForceModel DefaultProp_ForceModel;
+DefaultProp.MaxStep = 0.123;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem LVLH;
+
+LVLH.Origin    = DMSP;
+LVLH.Axes      = ObjectReferenced;
+LVLH.YAxis     = -N;
+LVLH.ZAxis     = -R;
+LVLH.Primary   = Earth;
+LVLH.Secondary = DMSP;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface NadirView;
+
+NadirView.SolverIterations = Current;
+NadirView.UpperLeft        = [ 0.1 0.05 ];
+NadirView.Size             = [ 0.8 0.9 ];
+NadirView.Maximized        = true;
+NadirView.Add              = {DMSP, Earth};
+NadirView.CoordinateSystem = EarthMJ2000Eq;
+NadirView.View             = {NadirViewFrame, CoordinateSystemView1, EarthView1, DMSPView1};
+NadirView.DrawObject       = [ true true ];
+NadirView.CoordinateSystem = EarthMJ2000Eq;
+
+
+%----------------------------------------
+%---------- View Objects
+%----------------------------------------
+
+Create OpenFramesView CoordinateSystemView1;
+
+CoordinateSystemView1.ViewFrame          = CoordinateSystem;
+CoordinateSystemView1.ViewTrajectory     = Off;
+CoordinateSystemView1.InertialFrame      = Off;
+CoordinateSystemView1.SetDefaultLocation = Off;
+CoordinateSystemView1.SetCurrentLocation = On;
+CoordinateSystemView1.CurrentEye         = [ 5000 -6000 20000 ];
+CoordinateSystemView1.CurrentCenter      = [ 0 0 0 ];
+CoordinateSystemView1.CurrentUp          = [ -0.6 0.7 0.34 ];
+
+
+Create OpenFramesView NadirViewFrame;
+
+NadirViewFrame.ViewFrame          = DMSP;
+NadirViewFrame.ViewTrajectory     = Off;
+NadirViewFrame.InertialFrame      = Off;
+NadirViewFrame.LookAtFrame        = Earth;
+NadirViewFrame.ShortestAngle      = Off;
+NadirViewFrame.SetDefaultLocation = On;
+NadirViewFrame.DefaultEye         = [ 0 -1000 0 ];
+NadirViewFrame.DefaultCenter      = [ 0 0 0 ];
+NadirViewFrame.DefaultUp          = [ 0 0 1 ];
+NadirViewFrame.SetCurrentLocation = Off;
+
+Create OpenFramesView EarthView1;
+
+EarthView1.ViewFrame          = Earth;
+EarthView1.ViewTrajectory     = Off;
+EarthView1.InertialFrame      = Off;
+EarthView1.SetDefaultLocation = Off;
+EarthView1.SetCurrentLocation = Off;
+
+
+Create OpenFramesView DMSPView1;
+
+DMSPView1.ViewFrame          = DMSP;
+DMSPView1.ViewTrajectory     = Off;
+DMSPView1.InertialFrame      = Off;
+DMSPView1.SetDefaultLocation = Off;
+DMSPView1.SetCurrentLocation = On;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+Propagate 'Prop 10000 s' DefaultProp(DMSP) {DMSP.ElapsedSecs = 1000.0};

@@ -1,0 +1,612 @@
+%
+%  Ex_OFI_GivenEpochGoToTheMoon
+%
+%  Starting from an initial separation epoch, find a trajectory that captures 
+%  into a lunar orbit.
+%
+%  Released: R2020a
+%
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft MoonSat;
+
+MoonSat.DateFormat                   = UTCGregorian;
+MoonSat.Epoch                        = '15 Jul 2022 01:07:06.978';
+MoonSat.CoordinateSystem             = EarthMJ2000Eq;
+MoonSat.DisplayStateType             = Keplerian;
+MoonSat.SMA                          = 6563.00000000001;
+MoonSat.ECC                          = 0.001000000000001202;
+MoonSat.INC                          = 28.69999999999999;
+MoonSat.RAAN                         = 263;
+MoonSat.AOP                          = 359.9999991462263;
+MoonSat.TA                           = 8.537736462515939e-007;
+MoonSat.DryMass                      = 850;
+MoonSat.Cd                           = 2.2;
+MoonSat.Cr                           = 1.8;
+MoonSat.DragArea                     = 15;
+MoonSat.SRPArea                      = 20;
+MoonSat.SPADDragScaleFactor          = 1;
+MoonSat.SPADSRPScaleFactor           = 1;
+MoonSat.NAIFId                       = -10003001;
+MoonSat.NAIFIdReferenceFrame         = -9003001;
+MoonSat.OrbitColor                   = Red;
+MoonSat.TargetColor                  = Teal;
+MoonSat.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+MoonSat.CdSigma                      = 1e+070;
+MoonSat.CrSigma                      = 1e+070;
+MoonSat.Id                           = 'SatId';
+MoonSat.Attitude                     = CoordinateSystemFixed;
+MoonSat.SPADSRPInterpolationMethod   = Bilinear;
+MoonSat.SPADSRPScaleFactorSigma      = 1e+070;
+MoonSat.SPADDragInterpolationMethod  = Bilinear;
+MoonSat.SPADDragScaleFactorSigma     = 1e+070;
+MoonSat.ModelFile                    = 'aura.3ds';
+MoonSat.ModelOffsetX                 = 0;
+MoonSat.ModelOffsetY                 = 0;
+MoonSat.ModelOffsetZ                 = 0;
+MoonSat.ModelRotationX               = 0;
+MoonSat.ModelRotationY               = 0;
+MoonSat.ModelRotationZ               = 0;
+MoonSat.ModelScale                   = 1;
+MoonSat.AttitudeDisplayStateType     = 'Quaternion';
+MoonSat.AttitudeRateDisplayStateType = 'AngularVelocity';
+MoonSat.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+MoonSat.EulerAngleSequence           = '321';
+
+
+Create Spacecraft InitSat;
+
+InitSat.DateFormat                   = TAIModJulian;
+InitSat.Epoch                        = '21545';
+InitSat.CoordinateSystem             = EarthMJ2000Eq;
+InitSat.DisplayStateType             = Cartesian;
+InitSat.X                            = 7100;
+InitSat.Y                            = 0;
+InitSat.Z                            = 1300;
+InitSat.VX                           = 0;
+InitSat.VY                           = 7.35;
+InitSat.VZ                           = 1;
+InitSat.DryMass                      = 850;
+InitSat.Cd                           = 2.2;
+InitSat.Cr                           = 1.8;
+InitSat.DragArea                     = 15;
+InitSat.SRPArea                      = 1;
+InitSat.SPADDragScaleFactor          = 1;
+InitSat.SPADSRPScaleFactor           = 1;
+InitSat.NAIFId                       = -10004001;
+InitSat.NAIFIdReferenceFrame         = -9004001;
+InitSat.OrbitColor                   = Green;
+InitSat.TargetColor                  = LightGray;
+InitSat.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+InitSat.CdSigma                      = 1e+070;
+InitSat.CrSigma                      = 1e+070;
+InitSat.Id                           = 'SatId';
+InitSat.Attitude                     = CoordinateSystemFixed;
+InitSat.SPADSRPInterpolationMethod   = Bilinear;
+InitSat.SPADSRPScaleFactorSigma      = 1e+070;
+InitSat.SPADDragInterpolationMethod  = Bilinear;
+InitSat.SPADDragScaleFactorSigma     = 1e+070;
+InitSat.ModelFile                    = 'aura.3ds';
+InitSat.ModelOffsetX                 = 0;
+InitSat.ModelOffsetY                 = 0;
+InitSat.ModelOffsetZ                 = 0;
+InitSat.ModelRotationX               = 0;
+InitSat.ModelRotationY               = 0;
+InitSat.ModelRotationZ               = 0;
+InitSat.ModelScale                   = 1;
+InitSat.AttitudeDisplayStateType     = 'Quaternion';
+InitSat.AttitudeRateDisplayStateType = 'AngularVelocity';
+InitSat.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+InitSat.EulerAngleSequence           = '321';
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel NearMoonProp_ForceModel;
+
+NearMoonProp_ForceModel.CentralBody             = Luna;
+NearMoonProp_ForceModel.PointMasses             = {Sun, Earth, Jupiter, Luna};
+NearMoonProp_ForceModel.Drag                    = None;
+NearMoonProp_ForceModel.SRP                     = On;
+NearMoonProp_ForceModel.RelativisticCorrection  = Off;
+NearMoonProp_ForceModel.ErrorControl            = RSSStep;
+NearMoonProp_ForceModel.SRP.Flux                = 1367;
+NearMoonProp_ForceModel.SRP.SRPModel            = Spherical;
+NearMoonProp_ForceModel.SRP.Nominal_Sun         = 149597870.691;
+
+Create ForceModel NearEarthProp_ForceModel;
+
+NearEarthProp_ForceModel.CentralBody            = Earth;
+NearEarthProp_ForceModel.PointMasses            = {Earth, Sun, Luna};
+NearEarthProp_ForceModel.Drag                   = None;
+NearEarthProp_ForceModel.SRP                    = On;
+NearEarthProp_ForceModel.RelativisticCorrection = Off;
+NearEarthProp_ForceModel.ErrorControl           = RSSStep;
+NearEarthProp_ForceModel.SRP.Flux               = 1367;
+NearEarthProp_ForceModel.SRP.SRPModel           = Spherical;
+NearEarthProp_ForceModel.SRP.Nominal_Sun        = 149597870.691;
+
+Create ForceModel EarthPointMass_ForceModel;
+
+EarthPointMass_ForceModel.CentralBody            = Earth; % {Earth};
+EarthPointMass_ForceModel.Drag                   = None;
+EarthPointMass_ForceModel.SRP                    = Off;
+EarthPointMass_ForceModel.RelativisticCorrection = Off;
+EarthPointMass_ForceModel.ErrorControl           = RSSStep;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator NearMoonProp;
+
+NearMoonProp.FM                       = NearMoonProp_ForceModel;
+NearMoonProp.Type                     = RungeKutta89;
+NearMoonProp.InitialStepSize          = 60;
+NearMoonProp.Accuracy                 = 9.999999999999999e-012;
+NearMoonProp.MinStep                  = 0.001;
+NearMoonProp.MaxStep                  = 86400;
+NearMoonProp.MaxStepAttempts          = 50;
+NearMoonProp.StopIfAccuracyIsViolated = true;
+
+Create Propagator NearEarthProp;
+
+NearEarthProp.FM                       = NearEarthProp_ForceModel;
+NearEarthProp.Type                     = RungeKutta89;
+NearEarthProp.InitialStepSize          = 60;
+NearEarthProp.Accuracy                 = 9.999999999999999e-012;
+NearEarthProp.MinStep                  = 0.001;
+NearEarthProp.MaxStep                  = 160000;
+NearEarthProp.MaxStepAttempts          = 50;
+NearEarthProp.StopIfAccuracyIsViolated = true;
+
+Create Propagator EarthPointMass;
+
+EarthPointMass.FM                       = EarthPointMass_ForceModel;
+EarthPointMass.Type                     = RungeKutta89;
+EarthPointMass.InitialStepSize          = 60;
+EarthPointMass.Accuracy                 = 9.999999999999999e-012;
+EarthPointMass.MinStep                  = 0.001;
+EarthPointMass.MaxStep                  = 2700;
+EarthPointMass.MaxStepAttempts          = 50;
+EarthPointMass.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Burns
+%----------------------------------------
+
+Create ImpulsiveBurn TOI;
+
+TOI.CoordinateSystem   = Local;
+TOI.Origin             = Earth;
+TOI.Axes               = VNB;
+TOI.Element1           = 3.14;
+TOI.Element2           = 0;
+TOI.Element3           = 0;
+TOI.DecrementMass      = false;
+TOI.Isp                = 300;
+TOI.GravitationalAccel = 9.810000000000001;
+
+
+Create ImpulsiveBurn LOI;
+
+LOI.CoordinateSystem   = Local;
+LOI.Origin             = Luna;
+LOI.Axes               = VNB;
+LOI.Element1           = -0.5;
+LOI.Element2           = 0;
+LOI.Element3           = 0;
+LOI.DecrementMass      = false;
+LOI.Isp                = 300;
+LOI.GravitationalAccel = 9.810000000000001;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem EarthMoonRot;
+
+EarthMoonRot.Origin    = Earth;
+EarthMoonRot.Axes      = ObjectReferenced;
+EarthMoonRot.XAxis     = R;
+EarthMoonRot.ZAxis     = N;
+EarthMoonRot.Primary   = Earth;
+EarthMoonRot.Secondary = Luna;
+
+
+Create CoordinateSystem MoonInertial;
+
+MoonInertial.Origin = Luna;
+MoonInertial.Axes   = BodyInertial;
+
+%----------------------------------------
+%---------- Solvers
+%----------------------------------------
+
+Create DifferentialCorrector DC1;
+
+DC1.ShowProgress      = true;
+DC1.ReportStyle       = Normal;
+DC1.ReportFile        = 'DifferentialCorrectorDC1.data';
+DC1.MaximumIterations = 150;
+DC1.DerivativeMethod  = ForwardDifference;
+DC1.Algorithm         = NewtonRaphson;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface EarthMoonRotView;
+
+EarthMoonRotView.SolverIterations        = Current;
+EarthMoonRotView.UpperLeft               = [ 0.003529411764705883 0.01428571428571429 ];
+EarthMoonRotView.Size                    = [ 0.2976470588235294 0.8642857142857143 ];
+EarthMoonRotView.RelativeZOrder          = 179;
+EarthMoonRotView.Maximized               = false;
+EarthMoonRotView.Add                     = {MoonSat, Earth, Luna, Sun};
+EarthMoonRotView.View                    = {CoordinateSystemView1, EarthView1, LunaView1, SunView1, MoonSatView1};
+EarthMoonRotView.CoordinateSystem        = EarthMoonRot;
+EarthMoonRotView.DrawObject              = [ true true true false ];
+EarthMoonRotView.DrawTrajectory          = [ true true true false ];
+EarthMoonRotView.DrawAxes                = [ false false false false ];
+EarthMoonRotView.DrawXYPlane             = [ false false false false ];
+EarthMoonRotView.DrawLabel               = [ true true true false ];
+EarthMoonRotView.DrawUsePropLabel        = [ false false false false ];
+EarthMoonRotView.DrawCenterPoint         = [ true false false false ];
+EarthMoonRotView.DrawEndPoints           = [ true false false false ];
+EarthMoonRotView.DrawVelocity            = [ false false false false ];
+EarthMoonRotView.DrawGrid                = [ false false false false ];
+EarthMoonRotView.DrawLineWidth           = [ 2 2 2 2 ];
+EarthMoonRotView.DrawMarkerSize          = [ 10 10 10 10 ];
+EarthMoonRotView.DrawFontSize            = [ 14 14 14 14 ];
+EarthMoonRotView.Axes                    = Off;
+EarthMoonRotView.AxesLength              = 1;
+EarthMoonRotView.AxesLabels              = Off;
+EarthMoonRotView.FrameLabel              = Off;
+EarthMoonRotView.XYPlane                 = Off;
+EarthMoonRotView.EclipticPlane           = Off;
+EarthMoonRotView.EnableStars             = On;
+EarthMoonRotView.StarCatalog             = 'inp_StarsHYGv3.txt';
+EarthMoonRotView.StarCount               = 40000;
+EarthMoonRotView.MinStarMag              = -2;
+EarthMoonRotView.MaxStarMag              = 6;
+EarthMoonRotView.MinStarPixels           = 1;
+EarthMoonRotView.MaxStarPixels           = 10;
+EarthMoonRotView.MinStarDimRatio         = 0.5;
+EarthMoonRotView.ShowPlot                = true;
+EarthMoonRotView.ShowToolbar             = true;
+EarthMoonRotView.SolverIterLastN         = 1;
+EarthMoonRotView.ShowVR                  = false;
+EarthMoonRotView.PlaybackTimeScale       = 3600;
+EarthMoonRotView.MultisampleAntiAliasing = On;
+EarthMoonRotView.MSAASamples             = 2;
+EarthMoonRotView.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right'};
+
+Create OpenFramesInterface MoonInertialView;
+
+MoonInertialView.SolverIterations        = Current;
+MoonInertialView.UpperLeft               = [ 0.64 0.07738095238095238 ];
+MoonInertialView.Size                    = [ 0.3141176470588236 0.7309523809523809 ];
+MoonInertialView.RelativeZOrder          = 182;
+MoonInertialView.Maximized               = false;
+MoonInertialView.Add                     = {MoonSat, Earth, Luna, Sun};
+MoonInertialView.View                    = {CoordinateSystemView2, EarthView2, LunaView2, SunView2, MoonSatView2};
+MoonInertialView.CoordinateSystem        = MoonInertial;
+MoonInertialView.DrawObject              = [ true true true false ];
+MoonInertialView.DrawTrajectory          = [ true true true false ];
+MoonInertialView.DrawAxes                = [ false false false false ];
+MoonInertialView.DrawXYPlane             = [ false false false false ];
+MoonInertialView.DrawLabel               = [ true true true false ];
+MoonInertialView.DrawUsePropLabel        = [ false false false false ];
+MoonInertialView.DrawCenterPoint         = [ true true false false ];
+MoonInertialView.DrawEndPoints           = [ true true false false ];
+MoonInertialView.DrawVelocity            = [ false false false false ];
+MoonInertialView.DrawGrid                = [ false false false false ];
+MoonInertialView.DrawLineWidth           = [ 2 2 2 2 ];
+MoonInertialView.DrawMarkerSize          = [ 10 10 10 10 ];
+MoonInertialView.DrawFontSize            = [ 14 14 14 14 ];
+MoonInertialView.Axes                    = On;
+MoonInertialView.AxesLength              = 1;
+MoonInertialView.AxesLabels              = On;
+MoonInertialView.FrameLabel              = Off;
+MoonInertialView.XYPlane                 = On;
+MoonInertialView.EclipticPlane           = Off;
+MoonInertialView.EnableStars             = On;
+MoonInertialView.StarCatalog             = 'inp_StarsHYGv3.txt';
+MoonInertialView.StarCount               = 40000;
+MoonInertialView.MinStarMag              = -2;
+MoonInertialView.MaxStarMag              = 6;
+MoonInertialView.MinStarPixels           = 1;
+MoonInertialView.MaxStarPixels           = 10;
+MoonInertialView.MinStarDimRatio         = 0.5;
+MoonInertialView.ShowPlot                = true;
+MoonInertialView.ShowToolbar             = true;
+MoonInertialView.SolverIterLastN         = 1;
+MoonInertialView.ShowVR                  = false;
+MoonInertialView.PlaybackTimeScale       = 3600;
+MoonInertialView.TimeSyncParent          = EarthMoonRotView;
+MoonInertialView.MultisampleAntiAliasing = On;
+MoonInertialView.MSAASamples             = 2;
+MoonInertialView.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right'};
+
+Create OpenFramesInterface EarthInertialView;
+
+EarthInertialView.SolverIterations        = Current;
+EarthInertialView.UpperLeft               = [ 0.3064705882352941 0.008333333333333333 ];
+EarthInertialView.Size                    = [ 0.3205882352941177 0.8845238095238095 ];
+EarthInertialView.RelativeZOrder          = 186;
+EarthInertialView.Maximized               = false;
+EarthInertialView.Add                     = {MoonSat, Earth, Luna};
+EarthInertialView.View                    = {CoordinateSystemView3, EarthView3, LunaView3, MoonSatView3};
+EarthInertialView.CoordinateSystem        = EarthMJ2000Eq;
+EarthInertialView.DrawObject              = [ true true true ];
+EarthInertialView.DrawTrajectory          = [ true true true ];
+EarthInertialView.DrawAxes                = [ false false false ];
+EarthInertialView.DrawXYPlane             = [ false false false ];
+EarthInertialView.DrawLabel               = [ true true true ];
+EarthInertialView.DrawUsePropLabel        = [ false false false ];
+EarthInertialView.DrawCenterPoint         = [ true false false ];
+EarthInertialView.DrawEndPoints           = [ true false false ];
+EarthInertialView.DrawVelocity            = [ false false false ];
+EarthInertialView.DrawGrid                = [ false false false ];
+EarthInertialView.DrawLineWidth           = [ 2 2 2 ];
+EarthInertialView.DrawMarkerSize          = [ 10 10 10 ];
+EarthInertialView.DrawFontSize            = [ 14 14 14 ];
+EarthInertialView.Axes                    = On;
+EarthInertialView.AxesLength              = 1;
+EarthInertialView.AxesLabels              = On;
+EarthInertialView.FrameLabel              = Off;
+EarthInertialView.XYPlane                 = On;
+EarthInertialView.EclipticPlane           = Off;
+EarthInertialView.EnableStars             = On;
+EarthInertialView.StarCatalog             = 'inp_StarsHYGv3.txt';
+EarthInertialView.StarCount               = 40000;
+EarthInertialView.MinStarMag              = -2;
+EarthInertialView.MaxStarMag              = 6;
+EarthInertialView.MinStarPixels           = 1;
+EarthInertialView.MaxStarPixels           = 10;
+EarthInertialView.MinStarDimRatio         = 0.5;
+EarthInertialView.ShowPlot                = true;
+EarthInertialView.ShowToolbar             = true;
+EarthInertialView.SolverIterLastN         = 1;
+EarthInertialView.ShowVR                  = false;
+EarthInertialView.PlaybackTimeScale       = 3600;
+EarthInertialView.TimeSyncParent          = EarthMoonRotView;
+EarthInertialView.MultisampleAntiAliasing = On;
+EarthInertialView.MSAASamples             = 2;
+EarthInertialView.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right'};
+
+%----------------------------------------
+%---------- Arrays, Variables, Strings
+%----------------------------------------
+Create Variable RAAN AOP;
+
+%----------------------------------------
+%---------- User Objects
+%----------------------------------------
+
+Create OpenFramesView CoordinateSystemView1;
+
+CoordinateSystemView1.ViewFrame          = CoordinateSystem;
+CoordinateSystemView1.ViewTrajectory     = Off;
+CoordinateSystemView1.InertialFrame      = Off;
+CoordinateSystemView1.SetDefaultLocation = On;
+CoordinateSystemView1.DefaultEye         = [ 784111.9127555999 -122930.90219999 774925.77268214 ];
+CoordinateSystemView1.DefaultCenter      = [ 0 0 0 ];
+CoordinateSystemView1.DefaultUp          = [ -1 0 0 ];
+CoordinateSystemView1.SetCurrentLocation = On;
+CoordinateSystemView1.CurrentEye         = [ 752291.6722264162 80142.49080568181 893232.5148660259 ];
+CoordinateSystemView1.CurrentCenter      = [ -1.164153218269348e-09 1.80443748831749e-09 -6.984919309616089e-10 ];
+CoordinateSystemView1.CurrentUp          = [ -0.7658606857196743 0.08436206671978119 0.6374483914543653 ];
+CoordinateSystemView1.FOVy               = 45;
+
+Create OpenFramesView EarthView1;
+
+EarthView1.ViewFrame          = Earth;
+EarthView1.ViewTrajectory     = Off;
+EarthView1.InertialFrame      = Off;
+EarthView1.SetDefaultLocation = Off;
+EarthView1.SetCurrentLocation = Off;
+EarthView1.FOVy = 45;
+
+Create OpenFramesView LunaView1;
+
+LunaView1.ViewFrame          = Luna;
+LunaView1.ViewTrajectory     = Off;
+LunaView1.InertialFrame      = Off;
+LunaView1.SetDefaultLocation = Off;
+LunaView1.SetCurrentLocation = Off;
+LunaView1.FOVy               = 45;
+
+Create OpenFramesView SunView1;
+
+SunView1.ViewFrame          = Sun;
+SunView1.ViewTrajectory     = Off;
+SunView1.InertialFrame      = Off;
+SunView1.SetDefaultLocation = Off;
+SunView1.SetCurrentLocation = Off;
+SunView1.FOVy               = 45;
+
+Create OpenFramesView MoonSatView1;
+
+MoonSatView1.ViewFrame          = MoonSat;
+MoonSatView1.ViewTrajectory     = Off;
+MoonSatView1.InertialFrame      = Off;
+MoonSatView1.SetDefaultLocation = Off;
+MoonSatView1.SetCurrentLocation = Off;
+MoonSatView1.FOVy               = 45;
+
+Create OpenFramesView CoordinateSystemView2;
+
+CoordinateSystemView2.ViewFrame          = CoordinateSystem;
+CoordinateSystemView2.ViewTrajectory     = Off;
+CoordinateSystemView2.InertialFrame      = Off;
+CoordinateSystemView2.SetDefaultLocation = On;
+CoordinateSystemView2.DefaultEye         = [ 37165.94295312 36956.70356817 34446.40296051 ];
+CoordinateSystemView2.DefaultCenter      = [ 0 0 0 ];
+CoordinateSystemView2.DefaultUp          = [ -0.40315839 -0.37332493 0.83551889 ];
+CoordinateSystemView2.SetCurrentLocation = On;
+CoordinateSystemView2.CurrentEye         = [ 37165.94295312353 36956.70356816669 34446.40296051484 ];
+CoordinateSystemView2.CurrentCenter      = [ -5.820766091346741e-11 -2.91038304567337e-11 1.455191522836685e-11 ];
+CoordinateSystemView2.CurrentUp          = [ -0.4031583895233845 -0.3733249255051947 0.835518888448042 ];
+CoordinateSystemView2.FOVy               = 45;
+
+Create OpenFramesView EarthView2;
+
+EarthView2.ViewFrame          = Earth;
+EarthView2.ViewTrajectory     = Off;
+EarthView2.InertialFrame      = Off;
+EarthView2.SetDefaultLocation = Off;
+EarthView2.SetCurrentLocation = Off;
+EarthView2.FOVy               = 45;
+
+Create OpenFramesView LunaView2;
+
+LunaView2.ViewFrame          = Luna;
+LunaView2.ViewTrajectory     = Off;
+LunaView2.InertialFrame      = Off;
+LunaView2.SetDefaultLocation = Off;
+LunaView2.SetCurrentLocation = Off;
+LunaView2.FOVy               = 45;
+
+Create OpenFramesView SunView2;
+
+SunView2.ViewFrame          = Sun;
+SunView2.ViewTrajectory     = Off;
+SunView2.InertialFrame      = Off;
+SunView2.SetDefaultLocation = Off;
+SunView2.SetCurrentLocation = Off;
+SunView2.FOVy               = 45;
+
+Create OpenFramesView MoonSatView2;
+
+MoonSatView2.ViewFrame          = MoonSat;
+MoonSatView2.ViewTrajectory     = Off;
+MoonSatView2.InertialFrame      = Off;
+MoonSatView2.SetDefaultLocation = Off;
+MoonSatView2.SetCurrentLocation = Off;
+MoonSatView2.FOVy               = 45;
+
+Create OpenFramesView CoordinateSystemView3;
+
+CoordinateSystemView3.ViewFrame          = CoordinateSystem;
+CoordinateSystemView3.ViewTrajectory     = Off;
+CoordinateSystemView3.InertialFrame      = Off;
+CoordinateSystemView3.SetDefaultLocation = On;
+CoordinateSystemView3.DefaultEye         = [ -131914.46147338 94745.88788626999 1380343.42650867 ];
+CoordinateSystemView3.DefaultCenter      = [ 0 0 0 ];
+CoordinateSystemView3.DefaultUp          = [ 1 0 0 ];
+CoordinateSystemView3.SetCurrentLocation = On;
+CoordinateSystemView3.CurrentEye         = [ -131914.4614733833 94745.88788627381 1380343.426508671 ];
+CoordinateSystemView3.CurrentCenter      = [ 2.328306436538696e-10 -3.783497959375382e-10 0 ];
+CoordinateSystemView3.CurrentUp          = [ 0.9948062822677979 -0.03035784767435912 0.09715380509842729 ];
+CoordinateSystemView3.FOVy               = 45;
+
+Create OpenFramesView EarthView3;
+
+EarthView3.ViewFrame            = Earth;
+EarthView3.ViewTrajectory       = Off;
+EarthView3.InertialFrame        = Off;
+EarthView3.SetDefaultLocation   = Off;
+EarthView3.SetCurrentLocation   = Off;
+EarthView3.FOVy                 = 45;
+
+Create OpenFramesView LunaView3;
+
+LunaView3.ViewFrame             = Luna;
+LunaView3.ViewTrajectory        = Off;
+LunaView3.InertialFrame         = Off;
+LunaView3.SetDefaultLocation    = Off;
+LunaView3.SetCurrentLocation    = Off;
+LunaView3.FOVy                  = 45;
+
+Create OpenFramesView MoonSatView3;
+
+MoonSatView3.ViewFrame          = MoonSat;
+MoonSatView3.ViewTrajectory     = Off;
+MoonSatView3.InertialFrame      = Off;
+MoonSatView3.SetDefaultLocation = Off;
+MoonSatView3.SetCurrentLocation = Off;
+MoonSatView3.FOVy               = 45;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+%---------------------------------------------------------
+%  First Target RAAN and AOP to get close to the moon
+%---------------------------------------------------------
+
+%  Set spacecraft required for reinizializatoin after coarse targeting.
+InitSat = MoonSat;
+Toggle 'Turn Off Selected Plots' EarthInertialView MoonInertialView Off;
+
+%  This target loop varies the injection orbit RAAN and AOP to align the line of apsides with the moon.
+%  This is a course target loop that ensurues the s/c is in the vicinity of the Moon at orbit apogee.
+%  The RA and DEC contraints are applied in and Earth Moon rotating frame.  The x-axis points from Earth to Moon and
+%  the z-axis is normal to the plane of the lunar orbit about Earth.  In this frame, we RA = 0 and DEC = 0;
+Target 'Coarse Lunar Target' DC1 {SolveMode = Solve, ExitMode = SaveAndContinue, ShowProgressWindow = true};
+   
+   %  Vary parking orbit orientation
+   Vary 'Vary RAAN' DC1(MoonSat.RAAN = 45.1, {Perturbation = .00001, Lower = -9.999999e300, Upper = 9.999999e300, MaxStep = 5, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Vary 'Vary AOP' DC1(MoonSat.AOP   = 2.5, {Perturbation  = .00001, Lower = -9.999999e300, Upper = 9.999999e300, MaxStep = 5, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   
+   %  Apply TOI
+   Maneuver 'Apply TOI' TOI(MoonSat);
+   
+   %  Save variables for use in fine targeting loop
+   'Save RAAN' RAAN = MoonSat.RAAN;
+   'Save AOP' AOP   = MoonSat.AOP;
+   
+   
+   %  Propagate to Apoapsis using point mass earth to avoid potential issues by impacting moon for now.
+   Propagate 'Prop To Moon' EarthPointMass(MoonSat) {MoonSat.Earth.Apoapsis, MoonSat.ElapsedDays = 4.5};
+   
+   %  Define the constraints that the line of apsides is aligned with moon
+   Achieve 'RA  = 0' DC1(MoonSat.EarthMoonRot.RA  = 0, {Tolerance = 1});
+   Achieve 'DEC = 0' DC1(MoonSat.EarthMoonRot.DEC = 0, {Tolerance = 1});
+   
+EndTarget;  % For targeter DC1
+
+%---------------------------------------------------------
+%  Next Target RAAN,,AOP, and Transfer orbit Maneveur to
+%  achieve desired B-plane
+%---------------------------------------------------------
+
+MoonSat = InitSat;
+Toggle EarthInertialView MoonInertialView On;
+%  This loop determines the precise values of RAAN, AOP, and TOI to acheive desired lunar orbit conditions;
+Target 'Fine Lunar Target' DC1 {SolveMode = Solve, ExitMode = DiscardAndContinue, ShowProgressWindow = true};
+   
+   %  Vary parking orbit geometry using intial guess from coarse targeting
+   Vary 'Vary RAAN' DC1(MoonSat.RAAN = RAAN, {Perturbation = .000001, Lower = -9.999999e300, Upper = 9.999999e300, MaxStep = 2, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Vary 'Vary AOP' DC1(MoonSat.AOP   = AOP, {Perturbation = .000001, Lower  = -9.999999e300, Upper = 9.999999e300, MaxStep = 2, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Vary 'Vary TOI' DC1(TOI.Element1  = TOI.Element1, {Perturbation = .0000001, Lower = -9.999999e300, Upper = 9.999999e300, MaxStep = .01, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   
+   %  Apply TOI
+   Maneuver 'Apply TOI' TOI(MoonSat);
+   
+   
+   %  Propagate to the Moon
+   Propagate 'Prop To Moon' NearEarthProp(MoonSat) {MoonSat.Luna.Periapsis, MoonSat.ElapsedDays = 6, MoonSat.Luna.RMAG = 1000};
+   
+   %  Define required final orbit parameters
+   Achieve 'Achieve RadPer' DC1(MoonSat.Luna.RMAG = 15000, {Tolerance = 0.1});
+   Achieve 'Achieve BvectorAngle' DC1(MoonSat.MoonInertial.BVectorAngle = 75, {Tolerance = 0.1});
+   
+   Vary 'Vary LOI' DC1(LOI.Element1 = -0.6, {Perturbation = .00001, Lower = -9.999999e300, Upper = 9.999999e300, MaxStep = .3, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Maneuver 'Apply LOI' LOI(MoonSat);
+   
+   Achieve 'Achieve ECC' DC1(MoonSat.Luna.ECC = 0.01, {Tolerance = 0.1});
+   
+EndTarget;  % For targeter DC1
+
+Propagate 'Prop .5 days' NearMoonProp(MoonSat) {MoonSat.ElapsedDays = 4};

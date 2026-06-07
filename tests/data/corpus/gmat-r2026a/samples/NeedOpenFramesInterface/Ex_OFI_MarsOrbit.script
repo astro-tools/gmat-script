@@ -1,0 +1,544 @@
+%
+%  Ex_OFI_MarsOrbit
+%
+%  Script Mission - Mars Example
+%
+%  This script demonstrates how to set up a Mars centered mission with 
+%  propagation using a formation.
+%
+%  Released: R2020a
+%
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft MPS1;
+
+MPS1.DateFormat                   = TAIModJulian;
+MPS1.Epoch                        = '21645';
+MPS1.CoordinateSystem             = MarsMJ2000Eq;
+MPS1.DisplayStateType             = Keplerian;
+MPS1.SMA                          = 20000.93881760378;
+MPS1.ECC                          = 0.02454974900572;
+MPS1.INC                          = 59.99999999999912;
+MPS1.RAAN                         = 0;
+MPS1.AOP                          = 314.1905515374526;
+MPS1.TA                           = 269.9999999985527;
+MPS1.DryMass                      = 850;
+MPS1.Cd                           = 2.2;
+MPS1.Cr                           = 1.8;
+MPS1.DragArea                     = 15;
+MPS1.SRPArea                      = 1;
+MPS1.SPADDragScaleFactor          = 1;
+MPS1.SPADSRPScaleFactor           = 1;
+MPS1.NAIFId                       = -10057001;
+MPS1.NAIFIdReferenceFrame         = -9057001;
+MPS1.OrbitColor                   = Red;
+MPS1.TargetColor                  = Teal;
+MPS1.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+MPS1.CdSigma                      = 1e+070;
+MPS1.CrSigma                      = 1e+070;
+MPS1.Id                           = 'SatId';
+MPS1.Attitude                     = CoordinateSystemFixed;
+MPS1.SPADSRPInterpolationMethod   = Bilinear;
+MPS1.SPADSRPScaleFactorSigma      = 1e+070;
+MPS1.SPADDragInterpolationMethod  = Bilinear;
+MPS1.SPADDragScaleFactorSigma     = 1e+070;
+MPS1.ModelFile                    = 'aura.3ds';
+MPS1.ModelOffsetX                 = 0;
+MPS1.ModelOffsetY                 = 0;
+MPS1.ModelOffsetZ                 = 0;
+MPS1.ModelRotationX               = 0;
+MPS1.ModelRotationY               = 0;
+MPS1.ModelRotationZ               = 0;
+MPS1.ModelScale                   = 1;
+MPS1.AttitudeDisplayStateType     = 'Quaternion';
+MPS1.AttitudeRateDisplayStateType = 'AngularVelocity';
+MPS1.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+MPS1.EulerAngleSequence           = '321';
+
+
+Create Spacecraft MPS2;
+
+MPS2.DateFormat                   = TAIModJulian;
+MPS2.Epoch                        = '21645';
+MPS2.CoordinateSystem             = MarsMJ2000Eq;
+MPS2.DisplayStateType             = Keplerian;
+MPS2.SMA                          = 20000.93881760382;
+MPS2.ECC                          = 0.02454974900571914;
+MPS2.INC                          = 59.99999999999903;
+MPS2.RAAN                         = 90.00000000000098;
+MPS2.AOP                          = 314.1905515374482;
+MPS2.TA                           = 269.9999999985571;
+MPS2.DryMass                      = 850;
+MPS2.Cd                           = 2.2;
+MPS2.Cr                           = 1.8;
+MPS2.DragArea                     = 15;
+MPS2.SRPArea                      = 1;
+MPS2.SPADDragScaleFactor          = 1;
+MPS2.SPADSRPScaleFactor           = 1;
+MPS2.NAIFId                       = -10058001;
+MPS2.NAIFIdReferenceFrame         = -9058001;
+MPS2.OrbitColor                   = Green;
+MPS2.TargetColor                  = LightGray;
+MPS2.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+MPS2.CdSigma                      = 1e+070;
+MPS2.CrSigma                      = 1e+070;
+MPS2.Id                           = 'SatId';
+MPS2.Attitude                     = CoordinateSystemFixed;
+MPS2.SPADSRPInterpolationMethod   = Bilinear;
+MPS2.SPADSRPScaleFactorSigma      = 1e+070;
+MPS2.SPADDragInterpolationMethod  = Bilinear;
+MPS2.SPADDragScaleFactorSigma     = 1e+070;
+MPS2.ModelFile                    = 'aura.3ds';
+MPS2.ModelOffsetX                 = 0;
+MPS2.ModelOffsetY                 = 0;
+MPS2.ModelOffsetZ                 = 0;
+MPS2.ModelRotationX               = 0;
+MPS2.ModelRotationY               = 0;
+MPS2.ModelRotationZ               = 0;
+MPS2.ModelScale                   = 1;
+MPS2.AttitudeDisplayStateType     = 'Quaternion';
+MPS2.AttitudeRateDisplayStateType = 'AngularVelocity';
+MPS2.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+MPS2.EulerAngleSequence           = '321';
+
+
+Create Spacecraft MPS3;
+
+MPS3.DateFormat                   = TAIModJulian;
+MPS3.Epoch                        = '21645';
+MPS3.CoordinateSystem             = MarsMJ2000Eq;
+MPS3.DisplayStateType             = Keplerian;
+MPS3.SMA                          = 20000.93881763405;
+MPS3.ECC                          = 0.02454974900670282;
+MPS3.INC                          = 59.99999999998493;
+MPS3.RAAN                         = 180;
+MPS3.AOP                          = 314.1905515365383;
+MPS3.TA                           = 99.88774933153867;
+MPS3.DryMass                      = 850;
+MPS3.Cd                           = 2.2;
+MPS3.Cr                           = 1.8;
+MPS3.DragArea                     = 15;
+MPS3.SRPArea                      = 1;
+MPS3.SPADDragScaleFactor          = 1;
+MPS3.SPADSRPScaleFactor           = 1;
+MPS3.NAIFId                       = -10059001;
+MPS3.NAIFIdReferenceFrame         = -9059001;
+MPS3.OrbitColor                   = Yellow;
+MPS3.TargetColor                  = DarkGray;
+MPS3.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+MPS3.CdSigma                      = 1e+070;
+MPS3.CrSigma                      = 1e+070;
+MPS3.Id                           = 'SatId';
+MPS3.Attitude                     = CoordinateSystemFixed;
+MPS3.SPADSRPInterpolationMethod   = Bilinear;
+MPS3.SPADSRPScaleFactorSigma      = 1e+070;
+MPS3.SPADDragInterpolationMethod  = Bilinear;
+MPS3.SPADDragScaleFactorSigma     = 1e+070;
+MPS3.ModelFile                    = 'aura.3ds';
+MPS3.ModelOffsetX                 = 0;
+MPS3.ModelOffsetY                 = 0;
+MPS3.ModelOffsetZ                 = 0;
+MPS3.ModelRotationX               = 0;
+MPS3.ModelRotationY               = 0;
+MPS3.ModelRotationZ               = 0;
+MPS3.ModelScale                   = 1;
+MPS3.AttitudeDisplayStateType     = 'Quaternion';
+MPS3.AttitudeRateDisplayStateType = 'AngularVelocity';
+MPS3.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+MPS3.EulerAngleSequence           = '321';
+
+
+Create Spacecraft MPS4;
+
+MPS4.DateFormat                   = TAIModJulian;
+MPS4.Epoch                        = '21645';
+MPS4.CoordinateSystem             = MarsMJ2000Eq;
+MPS4.DisplayStateType             = Keplerian;
+MPS4.SMA                          = 20000.9388176305;
+MPS4.ECC                          = 0.02454974900634087;
+MPS4.INC                          = 59.99999999999967;
+MPS4.RAAN                         = 270.0000000000026;
+MPS4.AOP                          = 270.0000000002155;
+MPS4.TA                           = 99.8877493318531;
+MPS4.DryMass                      = 850;
+MPS4.Cd                           = 2.2;
+MPS4.Cr                           = 1.8;
+MPS4.DragArea                     = 15;
+MPS4.SRPArea                      = 1;
+MPS4.SPADDragScaleFactor          = 1;
+MPS4.SPADSRPScaleFactor           = 1;
+MPS4.NAIFId                       = -10060001;
+MPS4.NAIFIdReferenceFrame         = -9060001;
+MPS4.OrbitColor                   = Blue;
+MPS4.TargetColor                  = DimGray;
+MPS4.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+MPS4.CdSigma                      = 1e+070;
+MPS4.CrSigma                      = 1e+070;
+MPS4.Id                           = 'SatId';
+MPS4.Attitude                     = CoordinateSystemFixed;
+MPS4.SPADSRPInterpolationMethod   = Bilinear;
+MPS4.SPADSRPScaleFactorSigma      = 1e+070;
+MPS4.SPADDragInterpolationMethod  = Bilinear;
+MPS4.SPADDragScaleFactorSigma     = 1e+070;
+MPS4.ModelFile                    = 'aura.3ds';
+MPS4.ModelOffsetX                 = 0;
+MPS4.ModelOffsetY                 = 0;
+MPS4.ModelOffsetZ                 = 0;
+MPS4.ModelRotationX               = 0;
+MPS4.ModelRotationY               = 0;
+MPS4.ModelRotationZ               = 0;
+MPS4.ModelScale                   = 1;
+MPS4.AttitudeDisplayStateType     = 'Quaternion';
+MPS4.AttitudeRateDisplayStateType = 'AngularVelocity';
+MPS4.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+MPS4.EulerAngleSequence           = '321';
+
+
+Create Spacecraft MarsOrbiter;
+
+MarsOrbiter.DateFormat                   = TAIModJulian;
+MarsOrbiter.Epoch                        = '21645';
+MarsOrbiter.CoordinateSystem             = MarsMJ2000Eq;
+MarsOrbiter.DisplayStateType             = Keplerian;
+MarsOrbiter.SMA                          = 6000.938817624505;
+MarsOrbiter.ECC                          = 0.02454974900552332;
+MarsOrbiter.INC                          = 0;
+MarsOrbiter.RAAN                         = 0;
+MarsOrbiter.AOP                          = 314.1905515349503;
+MarsOrbiter.TA                           = 99.88774933306067;
+MarsOrbiter.DryMass                      = 850;
+MarsOrbiter.Cd                           = 2.2;
+MarsOrbiter.Cr                           = 1.8;
+MarsOrbiter.DragArea                     = 15;
+MarsOrbiter.SRPArea                      = 1;
+MarsOrbiter.SPADDragScaleFactor          = 1;
+MarsOrbiter.SPADSRPScaleFactor           = 1;
+MarsOrbiter.NAIFId                       = -10061001;
+MarsOrbiter.NAIFIdReferenceFrame         = -9061001;
+MarsOrbiter.OrbitColor                   = Pink;
+MarsOrbiter.TargetColor                  = DarkSlateGray;
+MarsOrbiter.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+MarsOrbiter.CdSigma                      = 1e+070;
+MarsOrbiter.CrSigma                      = 1e+070;
+MarsOrbiter.Id                           = 'SatId';
+MarsOrbiter.Attitude                     = CoordinateSystemFixed;
+MarsOrbiter.SPADSRPInterpolationMethod   = Bilinear;
+MarsOrbiter.SPADSRPScaleFactorSigma      = 1e+070;
+MarsOrbiter.SPADDragInterpolationMethod  = Bilinear;
+MarsOrbiter.SPADDragScaleFactorSigma     = 1e+070;
+MarsOrbiter.ModelFile                    = 'aura.3ds';
+MarsOrbiter.ModelOffsetX                 = 0;
+MarsOrbiter.ModelOffsetY                 = 0;
+MarsOrbiter.ModelOffsetZ                 = 0;
+MarsOrbiter.ModelRotationX               = 0;
+MarsOrbiter.ModelRotationY               = 0;
+MarsOrbiter.ModelRotationZ               = 0;
+MarsOrbiter.ModelScale                   = 1;
+MarsOrbiter.AttitudeDisplayStateType     = 'Quaternion';
+MarsOrbiter.AttitudeRateDisplayStateType = 'AngularVelocity';
+MarsOrbiter.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+MarsOrbiter.EulerAngleSequence           = '321';
+
+
+Create Spacecraft MarsSupply;
+
+MarsSupply.DateFormat                   = TAIModJulian;
+MarsSupply.Epoch                        = '21645';
+MarsSupply.CoordinateSystem             = MarsMJ2000Eq;
+MarsSupply.DisplayStateType             = Keplerian;
+MarsSupply.SMA                          = -29999.99999999502;
+MarsSupply.ECC                          = 1.300000000000161;
+MarsSupply.INC                          = 9.999999999981332;
+MarsSupply.RAAN                         = 332.4999999998959;
+MarsSupply.AOP                          = 0;
+MarsSupply.TA                           = 245.0000000000101;
+MarsSupply.DryMass                      = 850;
+MarsSupply.Cd                           = 2.2;
+MarsSupply.Cr                           = 1.8;
+MarsSupply.DragArea                     = 15;
+MarsSupply.SRPArea                      = 1;
+MarsSupply.SPADDragScaleFactor          = 1;
+MarsSupply.SPADSRPScaleFactor           = 1;
+MarsSupply.NAIFId                       = -10062001;
+MarsSupply.NAIFIdReferenceFrame         = -9062001;
+MarsSupply.OrbitColor                   = Lime;
+MarsSupply.TargetColor                  = LightGray;
+MarsSupply.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+MarsSupply.CdSigma                      = 1e+070;
+MarsSupply.CrSigma                      = 1e+070;
+MarsSupply.Id                           = 'SatId';
+MarsSupply.Attitude                     = CoordinateSystemFixed;
+MarsSupply.SPADSRPInterpolationMethod   = Bilinear;
+MarsSupply.SPADSRPScaleFactorSigma      = 1e+070;
+MarsSupply.SPADDragInterpolationMethod  = Bilinear;
+MarsSupply.SPADDragScaleFactorSigma     = 1e+070;
+MarsSupply.ModelFile                    = 'aura.3ds';
+MarsSupply.ModelOffsetX                 = 0;
+MarsSupply.ModelOffsetY                 = 0;
+MarsSupply.ModelOffsetZ                 = 0;
+MarsSupply.ModelRotationX               = 0;
+MarsSupply.ModelRotationY               = 0;
+MarsSupply.ModelRotationZ               = 0;
+MarsSupply.ModelScale                   = 1;
+MarsSupply.AttitudeDisplayStateType     = 'Quaternion';
+MarsSupply.AttitudeRateDisplayStateType = 'AngularVelocity';
+MarsSupply.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+MarsSupply.EulerAngleSequence           = '321';
+
+%----------------------------------------
+%---------- Formation
+%----------------------------------------
+
+Create Formation MPS;
+MPS.Add = {MPS1, MPS2, MPS3, MPS4, MarsOrbiter, MarsSupply};
+
+
+%----------------------------------------
+%---------- ForceModels and Propagators
+%----------------------------------------
+
+Create ForceModel MarsProp_ForceModel;
+
+MarsProp_ForceModel.CentralBody            = Mars;
+MarsProp_ForceModel.PointMasses            = {Mars};
+MarsProp_ForceModel.Drag                   = None;
+MarsProp_ForceModel.SRP                    = Off;
+MarsProp_ForceModel.RelativisticCorrection = Off;
+MarsProp_ForceModel.ErrorControl           = RSSStep;
+
+
+Create ForceModel EarthProp_ForceModel;
+
+EarthProp_ForceModel.CentralBody            = Earth;
+EarthProp_ForceModel.PointMasses            = {Earth};
+EarthProp_ForceModel.Drag                   = None;
+EarthProp_ForceModel.SRP                    = Off;
+EarthProp_ForceModel.RelativisticCorrection = Off;
+EarthProp_ForceModel.ErrorControl           = RSSStep;
+
+
+Create ForceModel SunProp_ForceModel;
+
+SunProp_ForceModel.CentralBody            = Sun;
+SunProp_ForceModel.PointMasses            = {Sun, Earth, Luna};
+SunProp_ForceModel.Drag                   = None;
+SunProp_ForceModel.SRP                    = Off;
+SunProp_ForceModel.RelativisticCorrection = Off;
+SunProp_ForceModel.ErrorControl           = RSSStep;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator MarsProp;
+
+MarsProp.FM                       = MarsProp_ForceModel;
+MarsProp.Type                     = RungeKutta89;
+MarsProp.InitialStepSize          = 60;
+MarsProp.Accuracy                 = 1e-012;
+MarsProp.MinStep                  = 0.001;
+MarsProp.MaxStep                  = 2700;
+MarsProp.MaxStepAttempts          = 50;
+MarsProp.StopIfAccuracyIsViolated = true;
+
+
+Create Propagator EarthProp;
+
+EarthProp.FM                       = EarthProp_ForceModel;
+EarthProp.Type                     = RungeKutta89;
+EarthProp.InitialStepSize          = 60;
+EarthProp.Accuracy                 = 1e-012;
+EarthProp.MinStep                  = 0.001;
+EarthProp.MaxStep                  = 86400;
+EarthProp.MaxStepAttempts          = 50;
+EarthProp.StopIfAccuracyIsViolated = true;
+
+
+Create Propagator SunProp;
+
+SunProp.FM                       = SunProp_ForceModel;
+SunProp.Type                     = RungeKutta89;
+SunProp.InitialStepSize          = 60;
+SunProp.Accuracy                 = 9.999999999999999e-012;
+SunProp.MinStep                  = 0.001;
+SunProp.MaxStep                  = 160000;
+SunProp.MaxStepAttempts          = 50;
+SunProp.StopIfAccuracyIsViolated = true;
+
+
+%----------------------------------------
+%---------- Burns
+%----------------------------------------
+
+Create ImpulsiveBurn TOI;
+
+TOI.CoordinateSystem     = Local;
+TOI.Origin               = Mars;
+TOI.Axes                 = VNB;
+TOI.Element1             = -1.15;
+TOI.Element2             = 0;
+TOI.Element3             = 0;
+TOI.DecrementMass        = false;
+TOI.Isp                  = 300;
+TOI.GravitationalAccel   = 9.810000000000001;
+
+
+Create ImpulsiveBurn MarsTOI;
+
+MarsTOI.CoordinateSystem   = Local;
+MarsTOI.Origin             = Earth;
+MarsTOI.Axes               = VNB;
+MarsTOI.Element1           = 0;
+MarsTOI.Element2           = 0;
+MarsTOI.Element3           = 0;
+MarsTOI.DecrementMass      = false;
+MarsTOI.Isp                = 300;
+MarsTOI.GravitationalAccel = 9.810000000000001;
+
+
+Create ImpulsiveBurn MarsMCC;
+
+MarsMCC.CoordinateSystem   = Local;
+MarsMCC.Origin             = Sun;
+MarsMCC.Axes               = VNB;
+MarsMCC.Element1           = 0;
+MarsMCC.Element2           = 0;
+MarsMCC.Element3           = 0;
+MarsMCC.DecrementMass      = false;
+MarsMCC.Isp                = 300;
+MarsMCC.GravitationalAccel = 9.810000000000001;
+
+Create ImpulsiveBurn MarsBPlane;
+
+MarsBPlane.CoordinateSystem   = Local;
+MarsBPlane.Origin             = Sun;
+MarsBPlane.Axes               = VNB;
+MarsBPlane.Element1           = 0;
+MarsBPlane.Element2           = 0;
+MarsBPlane.Element3           = 0;
+MarsBPlane.DecrementMass      = false;
+MarsBPlane.Isp                = 300;
+MarsBPlane.GravitationalAccel = 9.810000000000001;
+
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem MarsMJ2000Eq;
+
+MarsMJ2000Eq.Origin = Mars;
+MarsMJ2000Eq.Axes   = MJ2000Eq;
+
+Create CoordinateSystem SunMJ2kEc;
+
+SunMJ2kEc.Origin = Sun;
+SunMJ2kEc.Axes   = MJ2000Ec;
+
+Create CoordinateSystem SunMJ2kEq;
+
+SunMJ2kEq.Origin = Sun;
+SunMJ2kEq.Axes   = MJ2000Eq;
+
+
+Create CoordinateSystem EarthSunRot;
+
+EarthSunRot.Origin    = Earth;
+EarthSunRot.Axes      = ObjectReferenced;
+EarthSunRot.XAxis     = R;
+EarthSunRot.ZAxis     = N;
+EarthSunRot.Primary   = Sun;
+EarthSunRot.Secondary = Earth;
+
+%----------------------------------------
+%---------- Solvers
+%----------------------------------------
+
+Create DifferentialCorrector MarsTOIDC;
+
+MarsTOIDC.ShowProgress      = true;
+MarsTOIDC.ReportStyle       = Normal;
+MarsTOIDC.ReportFile        = 'DifferentialCorrectorMarsTOIDC.data';
+MarsTOIDC.MaximumIterations = 25;
+MarsTOIDC.DerivativeMethod  = ForwardDifference;
+MarsTOIDC.Algorithm         = NewtonRaphson;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface MarsMJ2KView;
+
+MarsMJ2KView.SolverIterations        = Current;
+MarsMJ2KView.UpperLeft               = [ 0.4994117647058823 0 ];
+MarsMJ2KView.Size                    = [ 0.4994117647058823 0.9988095238095238 ];
+MarsMJ2KView.RelativeZOrder          = 233;
+MarsMJ2KView.Maximized               = false;
+MarsMJ2KView.Add                     = {Mars, MPS1, MPS2, MPS3, MPS4, MarsOrbiter, MarsSupply, Sun};
+MarsMJ2KView.View                    = {CoordinateSystemView1};
+MarsMJ2KView.CoordinateSystem        = MarsMJ2000Eq;
+MarsMJ2KView.DrawObject              = [ true true true true true true true true ];
+MarsMJ2KView.DrawTrajectory          = [ true true true true true true true true ];
+MarsMJ2KView.DrawAxes                = [ false false false false false false false false ];
+MarsMJ2KView.DrawXYPlane             = [ false false false false false false false false ];
+MarsMJ2KView.DrawLabel               = [ true true true true true true true true ];
+MarsMJ2KView.DrawUsePropLabel        = [ false false false false false false false false ];
+MarsMJ2KView.DrawCenterPoint         = [ true true true true true true true true ];
+MarsMJ2KView.DrawEndPoints           = [ true true true true true true true true ];
+MarsMJ2KView.DrawVelocity            = [ false false false false false false false false ];
+MarsMJ2KView.DrawGrid                = [ false false false false false false false false ];
+MarsMJ2KView.DrawLineWidth           = [ 2 2 2 2 2 2 2 2 ];
+MarsMJ2KView.DrawMarkerSize          = [ 10 10 10 10 10 10 10 10 ];
+MarsMJ2KView.DrawFontSize            = [ 14 14 14 14 14 14 14 14 ];
+MarsMJ2KView.Axes                    = On;
+MarsMJ2KView.AxesLength              = 1;
+MarsMJ2KView.AxesLabels              = On;
+MarsMJ2KView.FrameLabel              = Off;
+MarsMJ2KView.XYPlane                 = On;
+MarsMJ2KView.EclipticPlane           = Off;
+MarsMJ2KView.EnableStars             = On;
+MarsMJ2KView.StarCatalog             = 'inp_StarsHYGv3.txt';
+MarsMJ2KView.StarCount               = 40000;
+MarsMJ2KView.MinStarMag              = -2;
+MarsMJ2KView.MaxStarMag              = 6;
+MarsMJ2KView.MinStarPixels           = 1;
+MarsMJ2KView.MaxStarPixels           = 10;
+MarsMJ2KView.MinStarDimRatio         = 0.5;
+MarsMJ2KView.ShowPlot                = true;
+MarsMJ2KView.ShowToolbar             = true;
+MarsMJ2KView.SolverIterLastN         = 1;
+MarsMJ2KView.ShowVR                  = false;
+MarsMJ2KView.PlaybackTimeScale       = 3600;
+MarsMJ2KView.MultisampleAntiAliasing = On;
+MarsMJ2KView.MSAASamples             = 2;
+MarsMJ2KView.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right'};
+
+%----------------------------------------
+%---------- View Objects
+%----------------------------------------
+
+Create OpenFramesView CoordinateSystemView1;
+
+CoordinateSystemView1.ViewFrame          = CoordinateSystem;
+CoordinateSystemView1.ViewTrajectory     = Off;
+CoordinateSystemView1.InertialFrame      = Off;
+CoordinateSystemView1.SetDefaultLocation = Off;
+CoordinateSystemView1.SetCurrentLocation = On;
+CoordinateSystemView1.CurrentEye         = [ 40000 -40000 40000 ];
+CoordinateSystemView1.CurrentCenter      = [ 0 0 0 ];
+CoordinateSystemView1.CurrentUp          = [ 0 0 1 ];
+CoordinateSystemView1.FOVy               = 45;
+%GMAT MarsBPlane.Element3                = -0.214972341605;
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+Propagate 'Prop to Periapsis' MarsProp(MPS) {MPS1.Mars.Periapsis};
+Maneuver  'Apply TOI' TOI(MarsSupply);
+Propagate 'Prop 1 Day' MarsProp(MPS) {MPS1.ElapsedDays = 1};
