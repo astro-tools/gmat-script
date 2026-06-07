@@ -1,0 +1,5 @@
+% config_section_crlf - CRLF line endings, must round-trip byte-for-byte (D6).
+Create Spacecraft Sat;
+Sat.SMA = 7000;
+Sat.DateFormat = UTCGregorian;
+FM.PointMasses = {Sun, Luna};

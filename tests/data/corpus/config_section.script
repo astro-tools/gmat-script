@@ -1,0 +1,53 @@
+%
+%  config_section — a hand-written configuration-section fixture.
+%
+%  Exercises the lexical core + configuration grammar (Create, assignments, the value grammar,
+%  #Include, comments, the ... continuation) across every shape the grammar must accept. It carries
+%  no mission sequence, so the whole file is a configuration section and must parse with zero ERROR
+%  and re-emit byte-for-byte.
+%
+
+#Include 'support/common.script';
+
+%---------- Spacecraft
+Create Spacecraft Sat;
+Sat.DateFormat       = UTCGregorian;
+Sat.Epoch            = '01 Jan 2025 12:00:00.000';
+Sat.CoordinateSystem = EarthMJ2000Eq;
+Sat.SMA              = 7000.5;
+Sat.ECC              = 0.001;
+Sat.INC              = 28.5;
+Sat.Epoch            = 19 Aug 2015 00:00:00.000;
+
+%---------- Variables, arrays, strings (comma- and space-separated names)
+Create Variable SECONDS_PER_DAY, RTD;
+Create Array Q[1,4] DCM[3,3];
+Create String reportName
+
+reportName = 'out.report'
+DCM = [1 0 0; 0 1 0; 0 0 1];
+Q   = [ 0 0 0 1 ];
+
+%---------- Force model
+Create ForceModel FM;
+FM.CentralBody                      = Earth;
+FM.PrimaryBodies                    = {Earth};
+FM.PointMasses                      = {Sun, Luna};
+FM.GravityField.Earth.Degree        = 4;
+FM.GravityField.Earth.PotentialFile = 'JGM2.cof';
+
+%---------- A vector with a multi-word enum and an unquoted path
+Create Vector ToSun;
+ToSun.VectorType = Relative Position;
+ToSun.DataFile   = ../data/vectors/to_sun.dat
+
+%---------- A view object whose field name begins with a digit
+Create OrbitView View;
+View.Add            = {Sat, ...
+                       Earth, Luna};
+View.3DModelFile    = 'models/sat.3ds';
+View.ViewPointVector = [ -30000 0 0 ];
+
+%---------- An array-indexed assignment, a labelled assignment, and stray semicolons
+Q(1,1) = -0.5;;
+GMAT 'Seed RTD' RTD = 57.29577951308232;

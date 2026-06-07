@@ -25,7 +25,7 @@ def test_vendored_grammar_loads_and_parses() -> None:
     from gmat_script._grammar import language
 
     parser = Parser(Language(language()))
-    tree = parser.parse(b"Sat Earth")
+    tree = parser.parse(b"Create Spacecraft Sat;\nSat.SMA = 7000;\n")
     assert tree.root_node.type == "source_file"
     assert not tree.root_node.has_error
 
