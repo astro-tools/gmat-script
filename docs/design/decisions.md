@@ -6,8 +6,8 @@ implementation has one contract to build against. New decisions append to this f
 
 These decisions resolve the open questions the charter deferred to kickoff and **freeze the grammar
 scope + CST node taxonomy on paper** before any grammar code lands. They are grounded in a survey of
-the GMAT R2026a stock corpus — **162 `.script` files + 1 `.gmf`** under
-`/mnt/d/gmat-win-R2026a/samples/` — cross-checked against the GMAT User's Guide; the empirical
+the GMAT R2026a stock corpus — the **162 `.script` files + 1 `.gmf`** shipped in the `samples/`
+directory of a GMAT R2026a install — cross-checked against the GMAT User's Guide; the empirical
 figures cited throughout come from that survey (reproduced in the appendix). The corpus is the
 acceptance oracle: the grammar is "done" for v0.1 when every one of those files parses with zero
 `ERROR` nodes and re-emits byte-for-byte.
@@ -360,7 +360,8 @@ Recorded so #4 / #5 implement the real surface:
 
 ## Appendix — corpus survey
 
-GMAT R2026a stock corpus at `/mnt/d/gmat-win-R2026a/samples/`: **162 `.script` + 1 `.gmf`**.
+GMAT R2026a stock corpus (the `samples/` directory of a GMAT R2026a install): **162 `.script` + 1
+`.gmf`**.
 
 - **`Create` types:** 62 distinct. Most frequent: Spacecraft (293), OpenFramesView (267), Propagator
   (195), ForceModel (188), OpenFramesInterface (158), CoordinateSystem (157), Variable (154),
