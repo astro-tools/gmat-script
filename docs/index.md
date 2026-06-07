@@ -1,22 +1,20 @@
 # gmat-script
 
 Parse, format, lint, and edit [GMAT](https://gmat.gsfc.nasa.gov/) `.script` mission files from
-Python — built on a [tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar, with a typed
-AST and mutation API, a canonical formatter, a linter, and editor tooling (LSP + VS Code extension)
-layered on top. The whole stack operates on script **text**; nothing here requires a GMAT install.
+Python — built on a [tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar. The whole
+stack operates on script **text**; nothing here requires a GMAT install.
 
 ```python
 from gmat_script import parse
 
-tree = parse(open("flyby.script").read())
+tree = parse("Create Spacecraft Sat\nSat.SMA = 7000\n")
+tree.has_errors      # False
+tree.to_source()     # round-trips byte-for-byte to the input
 ```
 
-!!! note "Early development"
-    The package is being built milestone by milestone. The tree-sitter grammar, the `parse` entry
-    point, and the `gmat-script parse` CLI come first; the typed AST, formatter, and linter follow.
-    See the [issues](https://github.com/astro-tools/gmat-script/issues) and
-    [milestones](https://github.com/astro-tools/gmat-script/milestones) for the plan. No release is
-    published yet.
+Today gmat-script ships the parser and the `gmat-script parse` command-line tool. The typed AST and
+mutation API, the canonical formatter, the linter, and the editor tooling build on top of the same
+tree as they land.
 
 ## What it is
 
@@ -24,19 +22,25 @@ tree = parse(open("flyby.script").read())
   full R2026a sample corpus and re-emits it byte-for-byte.
 - A Python library that loads that grammar from a **vendored, precompiled** binding — so
   `pip install gmat-script` needs no C or Node toolchain, and never GMAT.
-- A `gmat-script` command-line tool for parsing (and, as later milestones land, formatting and
-  linting) scripts from the shell or CI.
+- A `gmat-script` command-line tool for parsing scripts from the shell or CI (with formatting and
+  linting to follow as later milestones land).
 
 ## What it is not
 
-- **Not** a propagator or astrodynamics engine — it reads and transforms script *text*; running a
-  mission is GMAT's job.
+- **Not** a propagator or astrodynamics engine — it reads and transforms script *text*; computing
+  orbits and running a mission is GMAT's job.
 - **Not** dependent on a GMAT install at runtime. Reading, checking, formatting, and editing a
   script needs only this package.
+- **Not** an engine-dependent validator — "does it parse" is structural and answered here; "does it
+  run / converge" needs GMAT.
 
 ## Where to go next
 
-- **[API reference](api.md)** — the public surface.
+- **[Getting started](getting-started.md)** — install and run your first parse.
+- **[Grammar surface](grammar-surface.md)** — the node taxonomy and what is covered / deferred.
+- **[`parse` CLI](cli.md)** — the command-line syntax gate.
+- **[Error reporting](errors.md)** — how malformed input is surfaced.
+- **[API reference](api.md)** — the public Python surface.
 - **[Design decisions](design/decisions.md)** — the grammar scope, CST node taxonomy, and the
   build/vendoring contract the implementation is built against.
 
