@@ -1,0 +1,46 @@
+================================================================================
+script block: opaque body preserved as a single raw token
+================================================================================
+
+BeginMissionSequence
+BeginScript
+   x = 5;
+   GMAT y = x + 1;
+EndScript
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (script_block
+    (script_body)))
+
+================================================================================
+script block: with a label
+================================================================================
+
+BeginMissionSequence
+BeginScript 'Config and Init'
+   Sat.X = 7000;
+EndScript
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (script_block
+    (script_body)))
+
+================================================================================
+script block: empty body
+================================================================================
+
+BeginMissionSequence
+BeginScript
+EndScript
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (script_block))

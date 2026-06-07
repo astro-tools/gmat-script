@@ -1,0 +1,268 @@
+================================================================================
+mission sequence: the BeginMissionSequence boundary
+================================================================================
+
+Create Spacecraft Sat;
+BeginMissionSequence;
+Propagate Prop(Sat) {Sat.ElapsedDays = 1};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (create_command
+    type: (identifier)
+    name: (identifier))
+  (begin_mission_sequence)
+  (command
+    name: (identifier)
+    (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier)))
+    (list
+      (option_assignment
+        left: (member_expression
+          object: (identifier)
+          property: (identifier))
+        right: (number)))))
+
+================================================================================
+command: simple commands with an arg
+================================================================================
+
+BeginMissionSequence
+Maneuver TOI(Sat);
+Save Sat;
+Stop;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (command
+    name: (identifier)
+    (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier))))
+  (command
+    name: (identifier)
+    (identifier))
+  (command
+    name: (identifier)))
+
+================================================================================
+command: a command label after the keyword
+================================================================================
+
+BeginMissionSequence
+Maneuver 'Apply TOI' TOI(DefaultSC);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (command
+    name: (identifier)
+    label: (command_label)
+    (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier)))))
+
+================================================================================
+command: a command label before a bare-call head
+================================================================================
+
+BeginMissionSequence
+'Target From Inside Function' TargeterInsideFunction;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (command
+    label: (command_label)
+    name: (identifier)))
+
+================================================================================
+command: Toggle with object refs and an On/Off identifier
+================================================================================
+
+BeginMissionSequence
+Toggle ReportFile1 On;
+Report rf Sat.A1ModJulian Sat.X Sat.Y;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (command
+    name: (identifier)
+    (identifier)
+    (identifier))
+  (command
+    name: (identifier)
+    (identifier)
+    (member_expression
+      object: (identifier)
+      property: (identifier))
+    (member_expression
+      object: (identifier)
+      property: (identifier))
+    (member_expression
+      object: (identifier)
+      property: (identifier))))
+
+================================================================================
+command: a bare member-call command (no output binding)
+================================================================================
+
+launchBound.SetModelParameter(CentralBody, Earth);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (command
+    name: (call_expression
+      function: (member_expression
+        object: (identifier)
+        property: (identifier))
+      arguments: (argument_list
+        (identifier)
+        (identifier)))))
+
+================================================================================
+propagate: BackProp and Synchronized modifiers
+================================================================================
+
+BeginMissionSequence
+Propagate BackProp prop(Sc) {Sc.ElapsedSecs = backPropDuration};
+Propagate Synchronized DefaultProp(Sat1, Sat2) {Sat1.ElapsedDays = 1};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (command
+    name: (identifier)
+    (identifier)
+    (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier)))
+    (list
+      (option_assignment
+        left: (member_expression
+          object: (identifier)
+          property: (identifier))
+        right: (identifier))))
+  (command
+    name: (identifier)
+    (identifier)
+    (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier)
+        (identifier)))
+    (list
+      (option_assignment
+        left: (member_expression
+          object: (identifier)
+          property: (identifier))
+        right: (number)))))
+
+================================================================================
+propagate: stop condition and option block with mixed entries
+================================================================================
+
+BeginMissionSequence
+Propagate 'Earth RMAG' DefaultProp(DefaultSC) {DefaultSC.Earth.RMAG = 400000, StopTolerance = 1e-005, OrbitColor = Green};
+Propagate DefaultProp(DefaultSC) {DefaultSC.Earth.Apoapsis, OrbitColor = Green};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (command
+    name: (identifier)
+    label: (command_label)
+    (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier)))
+    (list
+      (option_assignment
+        left: (member_expression
+          object: (member_expression
+            object: (identifier)
+            property: (identifier))
+          property: (identifier))
+        right: (number))
+      (option_assignment
+        left: (identifier)
+        right: (number))
+      (option_assignment
+        left: (identifier)
+        right: (identifier))))
+  (command
+    name: (identifier)
+    (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier)))
+    (list
+      (member_expression
+        object: (member_expression
+          object: (identifier)
+          property: (identifier))
+        property: (identifier))
+      (option_assignment
+        left: (identifier)
+        right: (identifier)))))
+
+================================================================================
+command: arguments continue across a ... line continuation
+================================================================================
+
+BeginMissionSequence
+Report rf Sat.X Sat.Y ...
+   Sat.Z Sat.VX;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (command
+    name: (identifier)
+    (identifier)
+    (member_expression
+      object: (identifier)
+      property: (identifier))
+    (member_expression
+      object: (identifier)
+      property: (identifier))
+    (member_expression
+      object: (identifier)
+      property: (identifier))
+    (member_expression
+      object: (identifier)
+      property: (identifier))))
+
+================================================================================
+command: unquoted path argument inside a call (EMTG SetModelParameter)
+================================================================================
+
+launchBound.SetModelParameter(Opt, ../data/emtg/file.emtg_launchvehicleopt);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (command
+    name: (call_expression
+      function: (member_expression
+        object: (identifier)
+        property: (identifier))
+      arguments: (argument_list
+        (identifier)
+        (unquoted_value)))))

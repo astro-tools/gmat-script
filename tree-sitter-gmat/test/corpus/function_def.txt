@@ -1,0 +1,77 @@
+================================================================================
+function definition: outputs, name, and parameters
+================================================================================
+
+function [dr, dv] = Ex_RICdelta(rv1, rv2)
+BeginMissionSequence
+Stop;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_definition
+    (identifier)
+    (identifier)
+    name: (identifier)
+    (parameter_list
+      (identifier)
+      (identifier)))
+  (begin_mission_sequence)
+  (command
+    name: (identifier)))
+
+================================================================================
+function definition: single output, space before the parameter list
+================================================================================
+
+function [q] = ComposeQuaternions (qA, qB)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_definition
+    (identifier)
+    name: (identifier)
+    (parameter_list
+      (identifier)
+      (identifier))))
+
+================================================================================
+function definition: no output list
+================================================================================
+
+function TargeterInsideFunction()
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_definition
+    name: (identifier)
+    (parameter_list)))
+
+================================================================================
+function definition: empty output list and a trailing semicolon
+================================================================================
+
+function [] = RaiseApogee(burnSize);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_definition
+    name: (identifier)
+    (parameter_list
+      (identifier))))
+
+================================================================================
+function definition: no parameter list
+================================================================================
+
+function [outs] = GetCDStates
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_definition
+    (identifier)
+    name: (identifier)))

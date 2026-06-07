@@ -1,16 +1,24 @@
 /**
- * @file Tree-sitter grammar for GMAT mission scripts — lexical core + configuration section.
+ * @file Tree-sitter grammar for GMAT mission scripts.
  *
- * Implements the lexical layer, the configuration section (`Create` resource declarations and
- * `resource.field = value` assignments), and the shared value / expression grammar, per the frozen
- * CST node taxonomy in docs/design/decisions.md (D3 / D4). The grammar is a deliberately permissive
- * superset: it accepts what the parser must understand structurally and leaves semantic rules
- * (literal-only-in-configuration, type validity, …) to the linter.
+ * Implements the full v0.1 surface per the frozen CST node taxonomy in docs/design/decisions.md
+ * (D3 / D4 / D10): the lexical core, the configuration section (`Create` declarations and
+ * `resource.field = value` assignments), the shared value / expression grammar, and the mission
+ * sequence — the `BeginMissionSequence` boundary, the generic command set with its argument grammar,
+ * the bracket-LHS `function_call_command`, the control-flow (`If` / `For` / `While`) and solver
+ * (`Target` / `Optimize`) blocks, the opaque `BeginScript` block, and the GmatFunction (`.gmf`)
+ * `function` header. The grammar is a deliberately permissive superset: it accepts what the parser
+ * must understand structurally and defers semantic rules (literal-only-in-configuration, valid
+ * keywords, no-parens-in-conditions, …) to the linter.
  *
- * The mission sequence — `BeginMissionSequence` and everything after it: commands, control-flow and
- * solver blocks, and the bracket-LHS function-call command — extends this same grammar in the next
- * grammar milestone. Its node types slot into the marked `source_file` / `binary_expression`
- * extension points; nothing here needs to change for them.
+ * Statement boundaries. A GMAT statement is one logical line: it ends at a newline (or `;`), and the
+ * `...` continuation folds the next line into it. Because the configuration section's variadic
+ * `Create` name lists and the mission sequence's variadic command arguments both consume bare
+ * identifiers, a newline cannot be plain layout — two adjacent `;`-less commands would otherwise
+ * merge. So statements are delimited by a hidden external `_terminator` token (`;` / newline(s) /
+ * EOF) scanned in src/scanner.c; it is suppressed inside brackets, where the grammar does not expect
+ * it (so newlines there stay layout) and after a `...` continuation. The terminator is hidden, so it
+ * does not appear in the tree and re-emission stays byte-exact (D6).
  *
  * @license MIT
  */
@@ -18,16 +26,18 @@
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
-// Expression precedence, loosest to tightest. Relational and logical operators (used only in
-// `If` / `While` conditions) join `binary_expression` with the mission-sequence grammar; their
-// precedence levels will sit below ADD.
+// Expression precedence, loosest to tightest. Relational / logical operators appear only in `If` /
+// `While` conditions; arithmetic sits above them, member / call access tightest.
 const PREC = {
-  ADD: 3, // + -
-  MUL: 4, // * /
-  POW: 5, // ^   (right associative)
-  UNARY: 6, // leading + -
-  CALL: 7, // f(...) / A(i, j)
-  MEMBER: 8, // a.b
+  OR: 1, // |
+  AND: 2, // &
+  COMPARE: 3, // < <= > >= == ~=
+  ADD: 4, // + -
+  MUL: 5, // * /
+  POW: 6, // ^   (right associative)
+  UNARY: 7, // leading + -
+  CALL: 8, // f(...) / A(i, j)
+  MEMBER: 9, // a.b
 };
 
 module.exports = grammar({
@@ -35,40 +45,57 @@ module.exports = grammar({
 
   // Whitespace, newlines, and the `...` line continuation are layout, preserved as the parser's
   // between-token text so re-emission stays lossless (D6). A `% …` comment attaches anywhere as an
-  // `extra`. The `...` continuation is layout, not a node, so it is an anonymous token here.
-  extras: ($) => [/\s/, $.comment, token(seq("...", /[^\S\n]*/, /\r?\n/))],
+  // `extra`. The `...` continuation is layout, not a node, so it is an anonymous token here. A
+  // newline is layout *here* but is also offered to the external scanner first (see `externals`),
+  // which claims it as a `_terminator` at statement boundaries.
+  extras: ($) => [/\s/, $.comment, token(prec(1, seq("...", /[^\S\n]*/, /\r?\n/)))],
 
-  // `unquoted_value` is scanned externally (see src/scanner.c): GMAT's line-oriented config values
-  // include raw, rest-of-line forms — multi-word enums, unquoted paths / dates, the doubled-quote
-  // artifact — that the structured value grammar cannot represent (D13). The scanner emits it only
-  // when the value is not a structured form, so it never competes with the literals below.
-  externals: ($) => [$.unquoted_value],
+  // Externally scanned tokens (see src/scanner.c):
+  //   - `unquoted_value` — GMAT's raw rest-of-line config values (multi-word enums, unquoted paths /
+  //     dates, the doubled-quote artifact) that the structured value grammar cannot represent (D13).
+  //   - `script_body` — the opaque raw text inside a `BeginScript` … `EndScript` block (D4).
+  //   - `_terminator` — the statement boundary (`;` / newline(s) / EOF); hidden, so it never appears
+  //     in the tree. The scanner only emits it where the grammar marks it valid, so newlines inside
+  //     `(…)` / `{…}` / `[…]` stay layout.
+  externals: ($) => [$.unquoted_value, $.script_body, $._terminator],
 
-  // The lexer treats `identifier` as the "word" token, so the `Create` / `GMAT` keywords are
+  // The lexer treats `identifier` as the "word" token, so keywords (`Create`, `If`, `Target`, …) are
   // extracted as whole-word keywords and an object legitimately *named* like one still lexes as an
   // identifier outside the keyword position.
   word: ($) => $.identifier,
 
-  // A `Create` name-list and a following identifier-led assignment both start with an identifier,
-  // and newlines are layout (D3 / D6), not statement terminators — so where a `Create` ends without
-  // a `;` cannot be decided by one token of lookahead. The two interpretations diverge at the next
-  // token (`= …` makes it an assignment; another name keeps the list), so GLR yields a single valid
-  // parse; this lets the generator defer the choice to it.
-  conflicts: ($) => [[$.create_command]],
-
   rules: {
-    // The configuration section: a run of `#Include` directives, `Create` declarations, and
-    // assignments (comments and blank lines attach as extras). The mission sequence —
-    // `BeginMissionSequence` and the commands / blocks after it — is added to this choice next.
+    // The file: a run of statements (configuration *and* mission sequence — the split is positional,
+    // recovered from the tree, not a different node type; D5). Comments and blank lines attach as
+    // extras.
     source_file: ($) => repeat($._statement),
 
-    _statement: ($) => choice($.include, $.create_command, $.assignment_command),
+    // Every statement is one logical line, closed by the hidden `_terminator`.
+    _statement: ($) =>
+      seq(
+        choice(
+          $.include,
+          $.create_command,
+          $.assignment_command,
+          $.function_call_command,
+          $.command,
+          $.begin_mission_sequence,
+          $.if_statement,
+          $.for_statement,
+          $.while_statement,
+          $.target_statement,
+          $.optimize_statement,
+          $.script_block,
+          $.function_definition,
+        ),
+        $._terminator,
+      ),
 
     // ---- structural ---------------------------------------------------------------------------
 
-    // `#Include 'path'` preprocessor directive; top-level only; the trailing `;` is optional (both
-    // forms occur in the corpus).
-    include: ($) => seq("#Include", field("path", $.string), repeat(";")),
+    // `#Include 'path'` preprocessor directive; top-level only. The trailing `;` (both forms occur in
+    // the corpus) is consumed by the statement terminator.
+    include: ($) => seq("#Include", field("path", $.string)),
 
     // `Create <Type> <name> [<name> …]`. `<Type>` is parsed generically (any identifier) so new or
     // plugin resource types parse without a grammar change; type validity is the linter's job. Each
@@ -78,14 +105,16 @@ module.exports = grammar({
         "Create",
         field("type", $.identifier),
         repeat1(seq(field("name", $.identifier), optional($.array_size), optional(","))),
-        repeat(";"),
       ),
 
     // The `Array` size suffix, following the name it sizes: `A[3, 3]`. Generic (any name may carry
     // it) — pairing it to `Array` resources is the linter's job.
     array_size: ($) => seq("[", commaSep1($.number), "]"),
 
-    // ---- assignment ---------------------------------------------------------------------------
+    // `BeginMissionSequence` — the configuration ↔ sequence boundary, a marker command.
+    begin_mission_sequence: (_) => "BeginMissionSequence",
+
+    // ---- assignment / function call -----------------------------------------------------------
 
     // `[GMAT] [label] <lhs> = <rhs>`. The optional leading `GMAT` keyword and the optional
     // single-quoted command label are both modelled per D3; the same node serves a literal
@@ -97,8 +126,17 @@ module.exports = grammar({
         field("left", $._lhs),
         "=",
         field("right", $._value),
-        repeat(";"),
       ),
+
+    // `[<out>, …] = <name>(<args>)` — a function-call command that binds outputs. The bracket-list
+    // LHS distinguishes it from an assignment; `<name>` may be dotted
+    // (`Python.IODFunctions.ThreePositionIOD`) and the parenthesised argument list is optional
+    // (`[now] = Python.time.time`, `[s] = path`). The bare no-output call form (`MyFunc(args);`) is a
+    // generic `command`, not this node (D4).
+    function_call_command: ($) =>
+      seq(field("outputs", $.output_list), "=", field("function", $._reference)),
+
+    output_list: ($) => seq("[", optional(commaSep1($.identifier)), "]"),
 
     // An object / field path, or an array-indexed target like `A(1, 1)`.
     _lhs: ($) => $._reference,
@@ -108,6 +146,127 @@ module.exports = grammar({
     // doubled-quote artifact). The external scanner emits `unquoted_value` only for the raw case, so
     // the two alternatives never overlap (D13).
     _value: ($) => choice($._expression, $.unquoted_value),
+
+    // ---- generic command ----------------------------------------------------------------------
+
+    // The generic mission command: `<head> [label] <args…>`. `<head>` is a reference — a keyword
+    // identifier (`Propagate`, `Maneuver`, `Vary`, `Toggle`, `Save`, `Stop`, `BeginFiniteBurn`, …,
+    // and any unrecognised keyword) or a bare-call reference (`Obj.SetModelParameter(args)`,
+    // `TargeterInsideFunction`). Arguments use the value grammar plus the `Prop(Sat) {…}` /
+    // `DC(TOI.Element1 = 0.5, {…})` forms. `BeginFiniteBurn` / `EndFiniteBurn` and `BeginFileThrust`
+    // / `EndFileThrust` are *not* blocks — they parse as ordinary `command` pairs (D3).
+    command: ($) =>
+      prec.right(
+        seq(
+          // The label sits after a command keyword (`Propagate 'label' …`) or before a bare-call
+          // head (`'label' TargeterInsideFunction;`) — at most one, either side (D3).
+          choice(
+            seq(field("label", $.command_label), field("name", $._reference)),
+            seq(field("name", $._reference), optional(field("label", $.command_label))),
+          ),
+          repeat($._command_argument),
+        ),
+      ),
+
+    _command_argument: ($) =>
+      choice($._reference, $.string, $.number, $.unary_expression, $.list),
+
+    // ---- control-flow / solver blocks ---------------------------------------------------------
+
+    // `If <cond> … [Else …] EndIf`. `ElseIf` is not in the corpus — deferred / best-effort (D4).
+    if_statement: ($) =>
+      seq(
+        "If",
+        optional(field("label", $.command_label)),
+        field("condition", $._expression),
+        $._terminator,
+        repeat($._statement),
+        optional($.else_clause),
+        "EndIf",
+      ),
+
+    else_clause: ($) => seq("Else", $._terminator, repeat($._statement)),
+
+    // `For <var> = <start>:[<step>:]<stop> … EndFor`.
+    for_statement: ($) =>
+      seq(
+        "For",
+        optional(field("label", $.command_label)),
+        field("variable", $._reference),
+        "=",
+        field("range", $.for_range),
+        $._terminator,
+        repeat($._statement),
+        "EndFor",
+      ),
+
+    for_range: ($) =>
+      seq(
+        field("from", $._expression),
+        ":",
+        field("to", $._expression),
+        optional(seq(":", field("by", $._expression))),
+      ),
+
+    // `While <cond> … EndWhile`.
+    while_statement: ($) =>
+      seq(
+        "While",
+        optional(field("label", $.command_label)),
+        field("condition", $._expression),
+        $._terminator,
+        repeat($._statement),
+        "EndWhile",
+      ),
+
+    // `Target <solver> [{opts}] … EndTarget` — nests `Vary` / `Achieve` / etc. as ordinary commands.
+    target_statement: ($) =>
+      seq(
+        "Target",
+        optional(field("label", $.command_label)),
+        field("solver", $._reference),
+        optional(field("options", $.list)),
+        $._terminator,
+        repeat($._statement),
+        "EndTarget",
+      ),
+
+    // `Optimize <solver> [{opts}] … EndOptimize` — nests `Vary` / `Minimize` / `NonlinearConstraint`.
+    optimize_statement: ($) =>
+      seq(
+        "Optimize",
+        optional(field("label", $.command_label)),
+        field("solver", $._reference),
+        optional(field("options", $.list)),
+        $._terminator,
+        repeat($._statement),
+        "EndOptimize",
+      ),
+
+    // `BeginScript … EndScript` — opaque: the body is a single raw-text token (`script_body`,
+    // externally scanned), not re-parsed (D4).
+    script_block: ($) =>
+      seq(
+        "BeginScript",
+        optional(field("label", $.command_label)),
+        optional($.script_body),
+        "EndScript",
+      ),
+
+    // ---- GmatFunction header (.gmf) -----------------------------------------------------------
+
+    // `function [[<out>, …] =] <name> [(<param>, …)]` — the `.gmf` header (D10). The output list and
+    // the parameter list are each optional and bracketed / parenthesised when present (void
+    // functions, empty `[]`, no-parens forms all occur).
+    function_definition: ($) =>
+      seq(
+        "function",
+        optional(seq("[", optional(commaSep1($.identifier)), "]", "=")),
+        field("name", $.identifier),
+        optional($.parameter_list),
+      ),
+
+    parameter_list: ($) => seq("(", optional(commaSep1($.identifier)), ")"),
 
     // ---- expressions / values -----------------------------------------------------------------
 
@@ -148,7 +307,21 @@ module.exports = grammar({
         seq(field("function", $._reference), field("arguments", $.argument_list)),
       ),
 
-    argument_list: ($) => seq("(", optional(commaSep1($._expression)), ")"),
+    // Call / index arguments. Beyond plain expressions, the solver-command call form carries keyword
+    // arguments (`DC(TOI.Element1 = 0.5, …)`) — modelled as `option_assignment`, the same node the
+    // `{…}` option blocks use.
+    argument_list: ($) => seq("(", optional(commaSep1($._argument)), ")"),
+
+    // A call argument may also be a raw `unquoted_value` — the EMTG `SetModelParameter` calls pass
+    // unquoted file paths (`SetModelParameter(Opt, ../data/x.emtg_launchvehicleopt)`). The external
+    // scanner emits it only for the raw case and stops at `,` / `)`, so structured args are
+    // unaffected (D13).
+    _argument: ($) => choice($._expression, $.option_assignment, $.unquoted_value),
+
+    // `<ref> = <value>` inside a `{…}` option block or a solver-command call. Distinct from the
+    // top-level `assignment_command` (no `GMAT` keyword, no label, no terminator).
+    option_assignment: ($) =>
+      seq(field("left", $._reference), "=", field("right", $._expression)),
 
     parenthesized_expression: ($) => seq("(", $._expression, ")"),
 
@@ -164,10 +337,19 @@ module.exports = grammar({
     _unary_operand: ($) =>
       choice($.number, $._reference, $.parenthesized_expression, $.unary_expression),
 
-    // Arithmetic only here; relational (`< <= > >= == ~=`) and logical (`& |`) operators join this
-    // rule with the condition grammar in the mission-sequence milestone.
+    // Arithmetic `+ - * / ^`; relational `< <= > >= == ~=`; logical `& |`. Relational / logical
+    // appear in `If` / `While` conditions; GMAT forbids parens there, but the grammar stays
+    // permissive and lets the linter enforce.
     binary_expression: ($) => {
       const factor = [
+        ["|", PREC.OR],
+        ["&", PREC.AND],
+        ["==", PREC.COMPARE],
+        ["~=", PREC.COMPARE],
+        ["<", PREC.COMPARE],
+        ["<=", PREC.COMPARE],
+        [">", PREC.COMPARE],
+        [">=", PREC.COMPARE],
         ["+", PREC.ADD],
         ["-", PREC.ADD],
         ["*", PREC.MUL],
@@ -195,9 +377,11 @@ module.exports = grammar({
       );
     },
 
-    // Brace-list: empty, nestable; holds strings / refs / nested lists. Elements are separated by
-    // commas or whitespace, and GMAT tolerates empty slots (`{a, , b}`), so commas are free-standing.
-    list: ($) => seq("{", repeat(choice($._expression, ",")), "}"),
+    // Brace-list: empty, nestable; holds values, nested lists, and the `field = value` option
+    // entries of command / solver option blocks (`{Sat.ElapsedSecs = 8640, OrbitColor = Red}`).
+    // Elements are separated by commas or whitespace, and GMAT tolerates empty slots (`{a, , b}`),
+    // so commas are free-standing.
+    list: ($) => seq("{", repeat(choice($.option_assignment, $._expression, ",")), "}"),
 
     // Square-bracket array / matrix literal: 1-D (whitespace- or comma-separated) and 2-D (with `;`
     // row separators — e.g. the 6×6 `OrbitErrorCovariance`). Elements are literals: numbers
@@ -224,7 +408,10 @@ module.exports = grammar({
     // not a comment (the corpus has `sprintf('%.15f …')`), so it is allowed. `string` and
     // `command_label` share one terminal and are told apart by grammar position.
     string: ($) => $._single_quoted,
-    command_label: ($) => $._single_quoted,
+    // A single-quoted token immediately after a command keyword / head is the command label, not a
+    // string-valued first argument or condition — pervasive in the corpus. Higher precedence makes
+    // that the deterministic reading wherever the two compete.
+    command_label: ($) => prec(1, $._single_quoted),
     _single_quoted: (_) => token(seq("'", /[^'\n]*/, "'")),
 
     // `% …` to end of line; no block comments. An `extra`, so it attaches anywhere.

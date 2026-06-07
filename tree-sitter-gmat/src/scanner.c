@@ -1,21 +1,22 @@
 /*
- * External scanner for GMAT's unquoted, rest-of-logical-line values.
+ * External scanner for GMAT scripts. Three tokens, all of which need line-aware lookahead the
+ * context-free lexer cannot express (see docs/design/decisions.md, D13 / D4 / the statement-boundary
+ * note in grammar.js):
  *
- * GMAT's initialization values are line-oriented: a value is "the rest of the logical line,"
- * interpreted afterward by the field's type. Most values are recognized structured forms — numbers,
- * quoted strings, `{…}` / `[…]` literals, references, expressions — which the generated grammar
- * parses directly. But the stock corpus also carries values that no structured form can represent:
- * unquoted multi-word enums (`Relative Position`), unquoted file paths (`../data/x.och`), unquoted
- * dates (`19 Aug 2015 00:00:00.000`), and the doubled-quote artifact (`''…''`). Per the GMAT User
- * Guide (Script Language → File Paths, Enumerated Values) and the running samples, these are valid
- * GMAT and must parse. See docs/design/decisions.md (D13).
+ *   - UNQUOTED_VALUE — GMAT's unquoted, rest-of-logical-line config values: multi-word enums
+ *     (`Relative Position`), unquoted file paths (`../data/x.och`), unquoted dates
+ *     (`19 Aug 2015 …`), and the doubled-quote artifact (`''…''`). No structured value form can
+ *     represent these, so they are scanned raw and emitted only at a value position.
  *
- * Because the grammar (D3 / D6) keeps newlines as layout rather than statement terminators, a value
- * spanning the rest of the line cannot be recognized by the context-free lexer: the same prefix
- * (`Relative`) begins both a structured reference and a raw multi-word value. This scanner resolves
- * it with one token of line-aware lookahead. At a value position it scans to the end of the logical
- * line and emits `unquoted_value` only when the content carries a "raw" signature the structured
- * grammar cannot model; otherwise it defers, letting the grammar parse the structured form.
+ *   - SCRIPT_BODY — the opaque raw text inside a `BeginScript` … `EndScript` block, consumed
+ *     verbatim up to (but not including) the `EndScript` keyword, never re-parsed.
+ *
+ *   - TERMINATOR — the statement boundary (`;`, one-or-more newlines, or EOF). A GMAT statement is
+ *     one logical line; because the grammar's variadic `Create` name lists and command arguments
+ *     consume bare identifiers, a newline cannot be plain layout or two `;`-less statements would
+ *     merge. This token is hidden and emitted only where the grammar marks it valid — so newlines
+ *     inside `(…)` / `{…}` / `[…]` (where it is not valid) stay layout, and the `...` continuation
+ *     (an `extra` that swallows its own newline) never reaches the scanner as a boundary.
  */
 
 #include "tree_sitter/parser.h"
@@ -25,6 +26,8 @@
 
 enum TokenType {
   UNQUOTED_VALUE,
+  SCRIPT_BODY,
+  TERMINATOR,
 };
 
 // Characters that begin a structured form the grammar parses on its own.
@@ -32,9 +35,12 @@ static inline bool starts_structured(int32_t c) {
   return c == '{' || c == '[' || c == '(';
 }
 
-// Statement / value boundaries: an un-continued line break, the optional terminator, a comment, EOF.
+// Statement / value boundaries: an un-continued line break, the optional terminator, a comment, EOF
+// — plus `,` and `)`, which bound a raw value used as a call argument (`f(opt, ../path)`). No
+// structured-or-unquoted GMAT value contains a bare `,` / `)`, so adding them never truncates a
+// value position; it only stops a raw call-argument value at its separator / closing paren.
 static inline bool ends_value(int32_t c) {
-  return c == '\n' || c == '\r' || c == ';' || c == '%' || c == 0;
+  return c == '\n' || c == '\r' || c == ';' || c == '%' || c == ',' || c == ')' || c == 0;
 }
 
 // A "word" character — the makings of a bareword (identifier, number, or dotted token). Two
@@ -43,6 +49,8 @@ static inline bool is_word(int32_t c) {
   return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' ||
          c == '.';
 }
+
+static inline bool is_hspace(int32_t c) { return c == ' ' || c == '\t'; }
 
 void *tree_sitter_gmat_external_scanner_create(void) { return NULL; }
 void tree_sitter_gmat_external_scanner_destroy(void *payload) { (void)payload; }
@@ -57,15 +65,103 @@ void tree_sitter_gmat_external_scanner_deserialize(void *payload, const char *bu
   (void)length;
 }
 
-bool tree_sitter_gmat_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
-  (void)payload;
+// Try to match the literal `EndScript` followed by a non-word boundary at the current position,
+// consuming the matched characters. Returns true on a full, boundary-terminated match.
+static bool match_end_script(TSLexer *lexer) {
+  static const char kw[] = "EndScript";
+  for (int i = 0; kw[i] != 0; i++) {
+    if (lexer->lookahead != (int32_t)kw[i]) {
+      return false;
+    }
+    lexer->advance(lexer, false);
+  }
+  int32_t after = lexer->lookahead;
+  return !is_word(after);
+}
 
-  if (!valid_symbols[UNQUOTED_VALUE]) {
-    return false;
+// SCRIPT_BODY: consume everything from here to the line that begins `EndScript`, exclusive.
+static bool scan_script_body(TSLexer *lexer) {
+  // Leading whitespace / newlines sit between `BeginScript` and the body content, not in it.
+  while (is_hspace(lexer->lookahead) || lexer->lookahead == '\r' || lexer->lookahead == '\n') {
+    lexer->advance(lexer, true);
+  }
+  if (lexer->lookahead == 0) {
+    return false; // nothing but whitespace, then EOF — empty body
   }
 
+  bool any = false;
+  for (;;) {
+    // At a line start: the body ends here if this line is the `EndScript` terminator.
+    lexer->mark_end(lexer);
+    while (is_hspace(lexer->lookahead)) {
+      lexer->advance(lexer, false);
+    }
+    if (match_end_script(lexer)) {
+      if (!any) {
+        return false; // empty body — let the grammar match `EndScript` directly
+      }
+      lexer->result_symbol = SCRIPT_BODY; // end already marked at this line's start
+      return true;
+    }
+
+    // Not `EndScript`: this whole line is body. Consume through its newline, then re-check.
+    for (;;) {
+      int32_t c = lexer->lookahead;
+      if (c == 0) {
+        lexer->mark_end(lexer);
+        lexer->result_symbol = SCRIPT_BODY;
+        return any; // EOF before EndScript — emit what we have (recovery)
+      }
+      lexer->advance(lexer, false);
+      any = true;
+      if (c == '\n') {
+        break;
+      }
+    }
+  }
+}
+
+// TERMINATOR: a `;`, one-or-more newlines, or EOF at a statement boundary.
+static bool scan_terminator(TSLexer *lexer) {
+  // Skip horizontal whitespace between the last token and the terminator.
+  while (is_hspace(lexer->lookahead) || lexer->lookahead == '\r') {
+    lexer->advance(lexer, true);
+  }
+  // A trailing line comment with no preceding `;` still ends the statement — skip it to reach the
+  // newline (the comment bytes round-trip as interstitial; only this rare no-`;` case loses the
+  // comment node, the `;` case below stops before the comment so it stays a node).
+  if (lexer->lookahead == '%') {
+    while (lexer->lookahead != '\n' && lexer->lookahead != 0) {
+      lexer->advance(lexer, true);
+    }
+  }
+
+  int32_t c = lexer->lookahead;
+  if (c != ';' && c != '\n' && c != 0) {
+    return false; // more content on this logical line — defer
+  }
+
+  // Consume a run of terminators and the blank lines between them, so consecutive statements leave
+  // no empty statement behind. Stop before a comment or content so own-line comments still attach as
+  // `comment` nodes.
+  while (true) {
+    c = lexer->lookahead;
+    if (c == ';' || c == '\n' || c == '\r' || is_hspace(c)) {
+      lexer->advance(lexer, false);
+    } else {
+      break;
+    }
+  }
+  lexer->mark_end(lexer);
+  lexer->result_symbol = TERMINATOR;
+  return true;
+}
+
+// UNQUOTED_VALUE: GMAT's raw rest-of-logical-line value, emitted only when it carries a signature no
+// structured form has.
+static bool scan_unquoted_value(TSLexer *lexer) {
   // Skip leading horizontal whitespace; it sits between the `=` and the value, not in the token.
-  while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
+  while (is_hspace(lexer->lookahead)) {
     lexer->advance(lexer, true);
   }
 
@@ -99,12 +195,37 @@ bool tree_sitter_gmat_external_scanner_scan(void *payload, TSLexer *lexer, const
       break;
     }
 
+    // A quoted string is opaque: the spaces, separators, and path characters inside it are data, not
+    // value structure, so a structured value that merely *contains* a string (`strcmp('a b', 'c')`)
+    // must not be mistaken for a raw multi-word value. Skip the string so it neither trips a raw
+    // signature nor ends the value, and treat it as a non-word for the multi-word heuristic.
+    if (c == '\'') {
+      lexer->advance(lexer, false);
+      while (lexer->lookahead != '\'' && lexer->lookahead != '\n' && lexer->lookahead != 0) {
+        lexer->advance(lexer, false);
+      }
+      if (lexer->lookahead == '\'') {
+        lexer->advance(lexer, false);
+      }
+      any = true;
+      space_pending = false;
+      prev_word = false;
+      continue;
+    }
+
+    // A bracketed sub-structure — a call / index `(…)`, an array `[…]`, or a list `{…}` — means the
+    // value is structured, not raw (`diag([1 2 3])`, `Sqrt(a / b)`). Its insides would otherwise trip
+    // the raw signatures below; defer and let the grammar parse it.
+    if (starts_structured(c)) {
+      return false;
+    }
+
     // Path and time characters never appear in a structured GMAT value.
     if (c == '/' || c == '\\' || c == ':') {
       raw = true;
     }
 
-    if (c == ' ' || c == '\t') {
+    if (is_hspace(c)) {
       space_pending = any;
     } else {
       bool word = is_word(c);
@@ -127,4 +248,25 @@ bool tree_sitter_gmat_external_scanner_scan(void *payload, TSLexer *lexer, const
   lexer->mark_end(lexer);
   lexer->result_symbol = UNQUOTED_VALUE;
   return true;
+}
+
+bool tree_sitter_gmat_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
+  (void)payload;
+
+  // The terminator is offered first so a newline at a statement boundary becomes a boundary rather
+  // than layout. Where it is not valid (inside brackets) the scanner falls through and the newline
+  // stays an `extra`.
+  if (valid_symbols[TERMINATOR] && scan_terminator(lexer)) {
+    return true;
+  }
+
+  if (valid_symbols[SCRIPT_BODY] && scan_script_body(lexer)) {
+    return true;
+  }
+
+  if (valid_symbols[UNQUOTED_VALUE]) {
+    return scan_unquoted_value(lexer);
+  }
+
+  return false;
 }

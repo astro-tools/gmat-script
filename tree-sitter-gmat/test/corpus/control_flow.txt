@@ -1,0 +1,201 @@
+================================================================================
+if: condition, body, and EndIf
+================================================================================
+
+BeginMissionSequence
+If Sat.TA > 90
+   Maneuver TOI(Sat);
+EndIf
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (if_statement
+    condition: (binary_expression
+      left: (member_expression
+        object: (identifier)
+        property: (identifier))
+      right: (number))
+    (command
+      name: (identifier)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (identifier))))))
+
+================================================================================
+if: with a label and an Else branch
+================================================================================
+
+BeginMissionSequence
+If 'If Alt < Threshold' LEOsat.Earth.Altitude < 342
+   Maneuver Raise(LEOsat);
+Else
+   Stop;
+EndIf
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (if_statement
+    label: (command_label)
+    condition: (binary_expression
+      left: (member_expression
+        object: (member_expression
+          object: (identifier)
+          property: (identifier))
+        property: (identifier))
+      right: (number))
+    (command
+      name: (identifier)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (identifier))))
+    (else_clause
+      (command
+        name: (identifier)))))
+
+================================================================================
+if: a compound relational condition joined by logical operators
+================================================================================
+
+BeginMissionSequence
+If compareStartMjd < eph1StartMjd | compareStartMjd < eph2StartMjd
+   Stop;
+EndIf
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (if_statement
+    condition: (binary_expression
+      left: (binary_expression
+        left: (identifier)
+        right: (identifier))
+      right: (binary_expression
+        left: (identifier)
+        right: (identifier)))
+    (command
+      name: (identifier))))
+
+================================================================================
+for: start:step:stop range, with trailing semicolon
+================================================================================
+
+BeginMissionSequence
+For I = 1:1:14;
+   Propagate Prop(Sat) {Sat.ElapsedDays = 1};
+EndFor
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (for_statement
+    variable: (identifier)
+    range: (for_range
+      from: (number)
+      to: (number)
+      by: (number))
+    (command
+      name: (identifier)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (identifier)))
+      (list
+        (option_assignment
+          left: (member_expression
+            object: (identifier)
+            property: (identifier))
+          right: (number))))))
+
+================================================================================
+for: two-element start:stop range
+================================================================================
+
+BeginMissionSequence
+For i = 1:20
+   Report rf i;
+EndFor
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (for_statement
+    variable: (identifier)
+    range: (for_range
+      from: (number)
+      to: (number))
+    (command
+      name: (identifier)
+      (identifier)
+      (identifier))))
+
+================================================================================
+while: condition and body
+================================================================================
+
+BeginMissionSequence
+While Sat1.UTCModJulian ~= start
+   Propagate Prop(Sat1) {Sat1.ElapsedSecs = 60};
+EndWhile
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (while_statement
+    condition: (binary_expression
+      left: (member_expression
+        object: (identifier)
+        property: (identifier))
+      right: (identifier))
+    (command
+      name: (identifier)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (identifier)))
+      (list
+        (option_assignment
+          left: (member_expression
+            object: (identifier)
+            property: (identifier))
+          right: (number))))))
+
+================================================================================
+control flow: nested blocks
+================================================================================
+
+BeginMissionSequence
+For i = 1:3
+   If a1 > a2
+      Maneuver Burn(Sat);
+   EndIf
+EndFor
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (for_statement
+    variable: (identifier)
+    range: (for_range
+      from: (number)
+      to: (number))
+    (if_statement
+      condition: (binary_expression
+        left: (identifier)
+        right: (identifier))
+      (command
+        name: (identifier)
+        (call_expression
+          function: (identifier)
+          arguments: (argument_list
+            (identifier)))))))

@@ -1,0 +1,62 @@
+================================================================================
+recovery: an unterminated If still yields a usable tree (localised error)
+================================================================================
+
+BeginMissionSequence
+Maneuver Burn(Sat);
+If Sat.TA > 90
+   Propagate Prop(Sat) {Sat.ElapsedSecs = 60};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (command
+    name: (identifier)
+    (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier))))
+  (ERROR
+    (binary_expression
+      left: (member_expression
+        object: (identifier)
+        property: (identifier))
+      right: (number))
+    (command
+      name: (identifier)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (identifier)))
+      (list
+        (option_assignment
+          left: (member_expression
+            object: (identifier)
+            property: (identifier))
+          right: (number))))))
+
+================================================================================
+recovery: a stray EndFor does not fail the whole tree
+================================================================================
+
+BeginMissionSequence
+Maneuver Burn(Sat);
+EndFor
+Save Sat;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (command
+    name: (identifier)
+    (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier))))
+  (command
+    name: (identifier))
+  (command
+    name: (identifier)
+    (identifier)))
