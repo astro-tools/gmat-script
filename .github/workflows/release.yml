@@ -68,6 +68,37 @@ jobs:
         with:
           skip-existing: true
 
+  # Publish the tree-sitter grammar to npm so editor / syntax-highlighting consumers can pull it
+  # without the Python package. The grammar is a self-contained npm package under tree-sitter-gmat/,
+  # versioned independently of the Python distribution. Auth is npm OIDC trusted publishing — no
+  # stored token — and provenance is attached automatically. The job is idempotent: it skips when the
+  # version is already on the registry, so a tag whose grammar version was bootstrapped by a manual
+  # publish is a no-op here.
+  publish-npm:
+    name: publish to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Use an OIDC-capable npm
+        run: npm install -g npm@latest
+      - name: Publish grammar to npm (skip if the version is already published)
+        working-directory: tree-sitter-gmat
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if npm view "tree-sitter-gmat@${version}" version >/dev/null 2>&1; then
+            echo "tree-sitter-gmat@${version} is already on the registry — skipping."
+          else
+            npm publish
+          fi
+
   github-release:
     name: github release
     needs: publish-pypi
