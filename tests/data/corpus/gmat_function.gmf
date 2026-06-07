@@ -1,0 +1,18 @@
+%  A GmatFunction fixture: the `function` header plus a body that reuses the script surface
+%  (Global, Create, BeginMissionSequence, a solver block, a function-call command). Same grammar as
+%  a .script (D10); parsed for zero ERROR nodes and a byte-exact round-trip (D6).
+
+function [dr, dv] = Ex_RICdelta(rv1, rv2)
+
+Global 'Make Objects Global' DC
+
+Create Variable crossProd;
+
+BeginMissionSequence
+
+[crossProd] = cross(rv1, rv2);
+
+Target 'Solve' DC {SolveMode = Solve};
+   Vary DC(dr = 0.0, {Perturbation = 0.0001});
+   Achieve DC(dv = 0.0, {Tolerance = 1e-6});
+EndTarget

@@ -1,0 +1,145 @@
+================================================================================
+target: solver, option block, nested Vary/Maneuver/Achieve, EndTarget
+================================================================================
+
+BeginMissionSequence
+Target 'Raise' DC {SolveMode = Solve, ExitMode = DiscardAndContinue};
+   Vary 'Vary TOI.V' DC(TOI.Element1 = 0.5, {Perturbation = 0.0001, MaxStep = 0.2});
+   Maneuver 'Apply TOI' TOI(DefaultSC);
+   Achieve 'Achieve RMAG' DC(DefaultSC.Earth.RMAG = 42165, {Tolerance = 0.1});
+EndTarget;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (target_statement
+    label: (command_label)
+    solver: (identifier)
+    options: (list
+      (option_assignment
+        left: (identifier)
+        right: (identifier))
+      (option_assignment
+        left: (identifier)
+        right: (identifier)))
+    (command
+      name: (identifier)
+      label: (command_label)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (option_assignment
+            left: (member_expression
+              object: (identifier)
+              property: (identifier))
+            right: (number))
+          (list
+            (option_assignment
+              left: (identifier)
+              right: (number))
+            (option_assignment
+              left: (identifier)
+              right: (number))))))
+    (command
+      name: (identifier)
+      label: (command_label)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (identifier))))
+    (command
+      name: (identifier)
+      label: (command_label)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (option_assignment
+            left: (member_expression
+              object: (member_expression
+                object: (identifier)
+                property: (identifier))
+              property: (identifier))
+            right: (number))
+          (list
+            (option_assignment
+              left: (identifier)
+              right: (number))))))))
+
+================================================================================
+target: solver with no option block
+================================================================================
+
+BeginMissionSequence
+Target DC
+   Achieve DC(Sat.SMA = 7000);
+EndTarget
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (target_statement
+    solver: (identifier)
+    (command
+      name: (identifier)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (option_assignment
+            left: (member_expression
+              object: (identifier)
+              property: (identifier))
+            right: (number)))))))
+
+================================================================================
+optimize: nested Vary/Minimize/NonlinearConstraint, EndOptimize
+================================================================================
+
+BeginMissionSequence
+Optimize 'Optimal Transfer' SQP1 {SolveMode = Solve, ExitMode = DiscardAndContinue};
+   Vary SQP1(TOI.Element1 = 0.5);
+   NonlinearConstraint SQP1(Sat.SMA = 7000);
+   Minimize SQP1(Cost);
+EndOptimize
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (optimize_statement
+    label: (command_label)
+    solver: (identifier)
+    options: (list
+      (option_assignment
+        left: (identifier)
+        right: (identifier))
+      (option_assignment
+        left: (identifier)
+        right: (identifier)))
+    (command
+      name: (identifier)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (option_assignment
+            left: (member_expression
+              object: (identifier)
+              property: (identifier))
+            right: (number)))))
+    (command
+      name: (identifier)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (option_assignment
+            left: (member_expression
+              object: (identifier)
+              property: (identifier))
+            right: (number)))))
+    (command
+      name: (identifier)
+      (call_expression
+        function: (identifier)
+        arguments: (argument_list
+          (identifier))))))

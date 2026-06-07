@@ -1,0 +1,94 @@
+================================================================================
+function call command: single output
+================================================================================
+
+BeginMissionSequence
+[crossProd] = cross(vec1, vec2);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (function_call_command
+    outputs: (output_list
+      (identifier))
+    function: (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier)
+        (identifier)))))
+
+================================================================================
+function call command: multiple outputs
+================================================================================
+
+BeginMissionSequence
+[dr, dv] = Ex_RICdelta(rv1, rv2);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (function_call_command
+    outputs: (output_list
+      (identifier)
+      (identifier))
+    function: (call_expression
+      function: (identifier)
+      arguments: (argument_list
+        (identifier)
+        (identifier)))))
+
+================================================================================
+function call command: dotted external name with string and ref args
+================================================================================
+
+BeginMissionSequence
+[V2, Log] = Python.IODFunctions.ThreePositionIOD(R1, R2, R3, T1, T2, T3);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (function_call_command
+    outputs: (output_list
+      (identifier)
+      (identifier))
+    function: (call_expression
+      function: (member_expression
+        object: (member_expression
+          object: (identifier)
+          property: (identifier))
+        property: (identifier))
+      arguments: (argument_list
+        (identifier)
+        (identifier)
+        (identifier)
+        (identifier)
+        (identifier)
+        (identifier)))))
+
+================================================================================
+function call command: no argument list
+================================================================================
+
+BeginMissionSequence
+[now] = Python.time.time;
+[s] = path;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (begin_mission_sequence)
+  (function_call_command
+    outputs: (output_list
+      (identifier))
+    function: (member_expression
+      object: (member_expression
+        object: (identifier)
+        property: (identifier))
+      property: (identifier)))
+  (function_call_command
+    outputs: (output_list
+      (identifier))
+    function: (identifier)))
