@@ -10,4 +10,4 @@ from __future__ import annotations
 from .parser import ErrorNode, Position, Tree, parse
 
 __all__ = ["ErrorNode", "Position", "Tree", "parse"]
-__version__ = "0.1.0"
+__version__ = "0.1.1"

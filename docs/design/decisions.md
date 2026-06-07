@@ -124,6 +124,13 @@ need during active development. So the grammar stays in-repo for v0.x. A split t
 repo is **revisited at v1.0**, once the grammar is frozen and the npm package has external consumers
 whose cadence diverges from the Python library's.
 
+**Versioning — lockstep (amended at the v0.1.1 release).** Although the grammar publishes to npm on
+its own, its version number is kept in **lockstep** with the Python `gmat-script` distribution: a
+release tag bumps and ships both at the same version, even when only one of them changed. This trades
+the independent cadence noted above for a single version to reason about across the two artifacts.
+The split-to-a-dedicated-repo option still stands for v1.0 if the cadences later diverge enough to
+warrant it.
+
 ## D2 — dependencies, version pins, and the vendoring strategy
 
 **The Python binding is the PyPI package `tree-sitter`.** The bindings live in the
