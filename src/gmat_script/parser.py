@@ -66,6 +66,8 @@ class ErrorNode:
 
 
 _ERROR_MESSAGE = "unexpected token"
+# Message for a MISSING hidden token (the statement terminator) that the child walk cannot reach.
+_MISSING_TERMINATOR_MESSAGE = "missing statement separator"
 
 
 def _to_position(point: Point) -> Position:
@@ -74,12 +76,20 @@ def _to_position(point: Point) -> Position:
 
 
 def _collect_errors(root: Node) -> list[ErrorNode]:
-    """Walk the tree and collect every ``ERROR`` / ``MISSING`` node, in source order.
+    """Collect every ``ERROR`` / ``MISSING`` node, in source order (D7).
 
-    An ``ERROR`` node's descendants are the partial / unexpected tokens of that same broken
-    construct, so the walk does not descend into it — one record per error, not one per token.
-    ``MISSING`` nodes are handled for completeness (D7); in practice this grammar recovers via
-    ``ERROR`` spans and does not emit them.
+    The walk records one entry per broken construct: an ``ERROR`` node's descendants are the
+    partial / unexpected tokens of that same construct, so the walk does not descend into it, and a
+    visible ``MISSING`` token (e.g. a ``MISSING ')'``) is recorded directly.
+
+    A ``MISSING`` instance of a *hidden* token — this grammar's statement ``_terminator`` — is the
+    one case the child walk cannot see: tree-sitter flags it on ``root.has_error`` but does not
+    surface it through the node-child API (``child_count`` omits it; ``.children``, ``child(i)``, a
+    ``TreeCursor`` walk, and ``(MISSING)`` queries all skip it in tree-sitter 0.25). Left unhandled,
+    such a tree would read as clean and the CLI would exit 0 on input tree-sitter rejects. So when
+    the tree is flagged erroneous but the walk localised nothing, descend by ``has_error`` to the
+    narrowest accessible subtree still flagged and synthesise one record there — keeping
+    :attr:`Tree.errors` consistent with the authoritative :attr:`Tree.has_errors`.
     """
     errors: list[ErrorNode] = []
     stack: list[Node] = [root]
@@ -96,6 +106,23 @@ def _collect_errors(root: Node) -> list[ErrorNode]:
             )
             continue
         stack.extend(node.children)
+
+    if not errors and root.has_error:
+        node = root
+        while True:
+            flagged = next((child for child in node.children if child.has_error), None)
+            if flagged is None:
+                break
+            node = flagged
+        errors.append(
+            ErrorNode(
+                type="MISSING",
+                start=_to_position(node.start_point),
+                end=_to_position(node.end_point),
+                message=_MISSING_TERMINATOR_MESSAGE,
+            )
+        )
+
     errors.sort(key=lambda error: (error.start.line, error.start.column))
     return errors
 
@@ -146,8 +173,14 @@ class Tree:
 
     @property
     def has_errors(self) -> bool:
-        """Whether the tree contains any ``ERROR`` or ``MISSING`` node."""
-        return bool(self.errors)
+        """Whether the tree contains any ``ERROR`` or ``MISSING`` node.
+
+        Reads tree-sitter's own ``has_error`` flag, which is authoritative: it counts a ``MISSING``
+        instance of a hidden token (the statement terminator) that the node-child API does not
+        expose, so this never under-reports relative to :attr:`errors` (see
+        :func:`_collect_errors`).
+        """
+        return self._tree.root_node.has_error
 
 
 def parse(source: str) -> Tree:
