@@ -100,9 +100,6 @@ include = [
 build = "cp310-*"
 skip = "*-musllinux*"
 build-frontend = "build"
-# Resolve build dependencies fresh rather than from cibuildwheel's bundled "pinned" set: that
-# snapshot ships a pre-PEP-639 hatchling which rejects the SPDX license / license-files metadata.
-dependency-versions = "latest"
 test-requires = ["tree-sitter>=0.25,<0.26"]
 test-command = "python -c \"import gmat_script; from gmat_script._grammar import language; from tree_sitter import Language; Language(language())\""
 
