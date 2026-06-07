@@ -1,26 +1,35 @@
 ================================================================================
-scaffold: bare identifiers
+comments: leading, trailing, and blank lines attach as layout
 ================================================================================
 
-Sat Earth Luna
+% leading comment
 
---------------------------------------------------------------------------------
-
-(source_file
-  (identifier)
-  (identifier)
-  (identifier))
-
-================================================================================
-scaffold: comments attach as interstitial text
-================================================================================
-
-% a leading comment
-Sat % a trailing comment
+Create Spacecraft Sat; % trailing comment
 
 --------------------------------------------------------------------------------
 
 (source_file
   (comment)
-  (identifier)
+  (create_command
+    type: (identifier)
+    name: (identifier))
   (comment))
+
+================================================================================
+line continuation: ... before a newline continues a statement
+================================================================================
+
+RF.Add = {a, ...
+    b, c}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (member_expression
+      object: (identifier)
+      property: (identifier))
+    right: (list
+      (identifier)
+      (identifier)
+      (identifier))))

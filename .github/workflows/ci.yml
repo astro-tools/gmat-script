@@ -89,7 +89,8 @@ jobs:
           from gmat_script._grammar import language
           from tree_sitter import Language, Parser
 
-          Parser(Language(language())).parse(b"Sat")
+          tree = Parser(Language(language())).parse(b"Create Spacecraft Sat;")
+          assert tree.root_node.type == "source_file" and not tree.root_node.has_error
           print("minimal install OK", gmat_script.__version__)
           PY
 

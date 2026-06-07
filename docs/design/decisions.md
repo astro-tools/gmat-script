@@ -497,6 +497,65 @@ or a generated ABI the pinned runtime cannot load — is caught by the grammar-b
 which regenerates with the pinned CLI and runs the corpus tests, so it fails CI rather than a user's
 `import`.
 
+## D13 — unquoted, rest-of-line values: the `unquoted_value` node and the external scanner
+
+Building the configuration-section grammar (#4) against the full stock corpus surfaced value forms
+the D3 value taxonomy could not represent. The kickoff survey (appendix) under-counted the value
+surface: it catalogued the structured forms (numbers, strings, references, brace-lists, square-
+bracket literals, expressions) but missed that GMAT's initialization values are fundamentally
+**line-oriented** — a value is *"the rest of the logical line,"* interpreted afterward by the
+field's type. The authoritative reference (GMAT User Guide, *Script Language* —
+`docs/help/html/ScriptLanguage.html`) and the running stock samples confirm four such forms:
+
+- **Multi-word unquoted enums** — `VectorType = Relative Position`, `StarSettings = Virtual Reality`
+  (the spec asserts enum values are quote-optional *"as none contain spaces"* — but these do, in 6
+  shipped scripts that run).
+- **Unquoted file paths** — `FileName = ../data/misc/GuessWithUnityControl.och` (spec-blessed:
+  *"Quotes are mandatory if the path contains spaces, but are optional otherwise."*).
+- **Unquoted dates** — `Sat.Epoch = 19 Aug 2015 00:00:00.000` (whitespace-bearing, unquoted; the
+  spec recommends quoting, GMAT accepts it).
+- **The doubled-quote artifact** — `InitialEpoch = ''01 Jan 2000 11:59:28.000''` (not spec-legal —
+  there are no string escapes — but shipped and run in 4 scripts).
+
+**Decision.** The value grammar gains an `unquoted_value` node: the raw rest of the logical line,
+used when the right-hand side is not one of the structured forms. This is added to the frozen D3
+taxonomy (the one node the freeze did not anticipate). The assignment RHS is therefore
+`choice(<structured value>, unquoted_value)`.
+
+**Mechanism — an external scanner.** Because the grammar keeps newlines as layout, not statement
+terminators (D3 / D6), the context-free lexer cannot tell a value that *is* a clean structured form
+from one that merely *starts* like one (`Relative` vs `Relative Position`); token precedence and
+longest-match cannot express "structured iff it spans the whole value." So `unquoted_value` is lexed
+by a tree-sitter **external scanner** (`tree-sitter-gmat/src/scanner.c`, declared via `externals`).
+At a value position it scans to the end of the logical line and emits `unquoted_value` **only** when
+the content carries a signature no structured form has — a `/`, `\`, or `:`; a leading `''`; or two
+barewords separated by only whitespace — and otherwise defers, letting the grammar parse the
+structured value. The scanner is stateless. `parser.c` **and** `scanner.c` are committed; the
+Hatchling build hook compiles both (plus the binding) into the single vendored abi3 extension, so
+D12's toolchain-free / GMAT-free install guarantees are unchanged — one more committed C file, no
+new install-time dependency.
+
+**Folded-in relaxations.** The same corpus pass fixed three smaller gaps, all within the existing
+node set: comma-separated `Create` names (`Create String s1, s2` — spec-documented, originally
+implemented whitespace-only), empty list elements (`{a, , b}`), stray trailing semicolons (`30;;`),
+and field names beginning with a digit (`Earth.3DModelFile` — a property may lead with a digit even
+though a resource name may not, so the property is its own token aliased to `identifier`).
+
+**Spec vs. reality.** Where the User Guide's prose is stricter than GMAT's running behaviour, the
+grammar follows the behaviour, because the stock corpus (which all loads and runs in GMAT) is the
+acceptance oracle (D-language-model). The same principle already governs two earlier choices: a `%`
+inside a string is data, not a comment (the spec forbids `%` in strings, yet `sprintf('%.15f …')`
+ships and runs), and 2-D `[…;…]` matrix literals are accepted (the spec says array literals are
+1-D, yet the 6×6 `OrbitErrorCovariance` ships). The linter (v0.3), not the grammar, is where GMAT's
+stricter rules are enforced.
+
+**Scope boundary confirmed.** With D13, every configuration-section *construct* — `Create`,
+`resource.field = value` (structured or unquoted), `#Include`, lists, array / matrix literals,
+comments, blank lines, the `...` continuation — parses with zero `ERROR` across all 162 stock
+scripts. The only pre-`BeginMissionSequence` lines that do not parse are bare member-call **command**
+statements (`Obj.SetModelParameter(…)`, 9 OptimalControl / EMTG scripts) — a generic `command` (the
+bare no-output call, D3 / D4), which the mission-sequence grammar implements, not #4.
+
 ---
 
 ## Forward notes (not v0.1 decisions)

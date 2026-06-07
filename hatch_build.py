@@ -1,7 +1,8 @@
 """Hatchling build hook: compile and vendor the tree-sitter-gmat grammar.
 
-Compiles the grammar's generated parser (``tree-sitter-gmat/src/parser.c``) together with the
-Python binding (``tree-sitter-gmat/bindings/python/binding.c``) into a single CPython
+Compiles the grammar's generated parser (``tree-sitter-gmat/src/parser.c``), its external scanner
+(``tree-sitter-gmat/src/scanner.c``, which lexes GMAT's raw rest-of-line ``unquoted_value`` — D13),
+and the Python binding (``tree-sitter-gmat/bindings/python/binding.c``) into a single CPython
 stable-ABI (abi3, floor 3.10) extension, vendored at ``gmat_script/_grammar/_binding``. The wheel
 therefore ships the compiled grammar and needs no C or Node toolchain at install time (decisions
 D2 / D9 / D12). Building it needs only a C compiler — never Node or the tree-sitter CLI, because
@@ -25,6 +26,7 @@ _ABI3_PYTHON_TAG = "cp310"
 _ROOT = Path(__file__).parent
 _GRAMMAR = _ROOT / "tree-sitter-gmat"
 _PARSER_C = _GRAMMAR / "src" / "parser.c"
+_SCANNER_C = _GRAMMAR / "src" / "scanner.c"
 _BINDING_C = _GRAMMAR / "bindings" / "python" / "binding.c"
 _PARSER_INCLUDE = _GRAMMAR / "src"
 
@@ -50,7 +52,7 @@ def _compile_extension() -> Path:
 
     ext = Extension(
         name=_EXT_FULLNAME,
-        sources=[str(_PARSER_C), str(_BINDING_C)],
+        sources=[str(_PARSER_C), str(_SCANNER_C), str(_BINDING_C)],
         include_dirs=[str(_PARSER_INCLUDE)],
         define_macros=[("Py_LIMITED_API", _ABI3_MACRO)],
         py_limited_api=True,

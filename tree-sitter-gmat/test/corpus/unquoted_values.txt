@@ -1,0 +1,74 @@
+================================================================================
+unquoted value: multi-word enum
+================================================================================
+
+ToSun.VectorType = Relative Position;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (member_expression
+      object: (identifier)
+      property: (identifier))
+    right: (unquoted_value)))
+
+================================================================================
+unquoted value: unquoted file path
+================================================================================
+
+trajectoryGuess.FileName = ../data/misc/GuessWithUnityControl.och
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (member_expression
+      object: (identifier)
+      property: (identifier))
+    right: (unquoted_value)))
+
+================================================================================
+unquoted value: unquoted date
+================================================================================
+
+Sat.Epoch = 19 Aug 2015 00:00:00.000;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (member_expression
+      object: (identifier)
+      property: (identifier))
+    right: (unquoted_value)))
+
+================================================================================
+unquoted value: doubled-quote artifact
+================================================================================
+
+SolarPowerSystem1.InitialEpoch = ''01 Jan 2000 11:59:28.000'';
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (member_expression
+      object: (identifier)
+      property: (identifier))
+    right: (unquoted_value)))
+
+================================================================================
+unquoted value: a single-token value is still structured, not unquoted
+================================================================================
+
+DefaultProp.Type = RungeKutta89
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (member_expression
+      object: (identifier)
+      property: (identifier))
+    right: (identifier)))

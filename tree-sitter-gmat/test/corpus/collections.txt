@@ -1,0 +1,141 @@
+================================================================================
+list: empty brace-list
+================================================================================
+
+PointMasses = {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (list)))
+
+================================================================================
+list: comma-separated members
+================================================================================
+
+PrimaryBodies = {Sun, Luna}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (list
+      (identifier)
+      (identifier))))
+
+================================================================================
+list: reference members
+================================================================================
+
+Add = {Sat.X, Sat.Y}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (list
+      (member_expression
+        object: (identifier)
+        property: (identifier))
+      (member_expression
+        object: (identifier)
+        property: (identifier)))))
+
+================================================================================
+list: nested
+================================================================================
+
+n = {a, {b, c}}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (list
+      (identifier)
+      (list
+        (identifier)
+        (identifier)))))
+
+================================================================================
+array literal: one-dimensional, whitespace-separated
+================================================================================
+
+DefaultEye = [ 30000 0 0]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (array_literal
+      (number)
+      (number)
+      (number))))
+
+================================================================================
+array literal: booleans and comma separation
+================================================================================
+
+a = [ true false]
+b = [1, 2, 3]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (array_literal
+      (identifier)
+      (identifier)))
+  (assignment_command
+    left: (identifier)
+    right: (array_literal
+      (number)
+      (number)
+      (number))))
+
+================================================================================
+array literal: signed elements
+================================================================================
+
+DefaultEye = [ -90000 -90000 20000 ]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (array_literal
+      (unary_expression
+        operand: (number))
+      (unary_expression
+        operand: (number))
+      (number))))
+
+================================================================================
+array literal: two-dimensional matrix with semicolon row separators
+================================================================================
+
+I3 = [1 0 0; 0 1 0; 0 0 1]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment_command
+    left: (identifier)
+    right: (array_literal
+      (number)
+      (number)
+      (number)
+      (number)
+      (number)
+      (number)
+      (number)
+      (number)
+      (number))))
