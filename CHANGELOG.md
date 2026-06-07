@@ -7,6 +7,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-06-07
+
+### Added
+
+- A README for the `tree-sitter-gmat` grammar package — describing the grammar, its editor /
+  tree-sitter usage, and the link to the Python library — so the npm package page documents how to
+  get started.
+
+### Changed
+
+- The `tree-sitter-gmat` package homepage now points to the documentation site.
+- `gmat-script` (PyPI) and `tree-sitter-gmat` (npm) are now released in version lockstep. This patch
+  carries the Python distribution forward unchanged from 0.1.0 to keep the two at the same version.
+
 ## [0.1.0] — 2026-06-07
 
 Initial release: a tree-sitter grammar for GMAT mission scripts and an install-free Python parser

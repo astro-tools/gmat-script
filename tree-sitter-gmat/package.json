@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-gmat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "GMAT mission script grammar for tree-sitter",
   "license": "MIT",
   "keywords": [
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/astro-tools/gmat-script.git"
   },
-  "homepage": "https://github.com/astro-tools/gmat-script#readme",
+  "homepage": "https://astro-tools.github.io/gmat-script/",
   "bugs": {
     "url": "https://github.com/astro-tools/gmat-script/issues"
   },

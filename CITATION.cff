@@ -11,7 +11,7 @@ type: software
 authors:
   - given-names: Dimitrije
     family-names: Jankovic
-version: 0.1.0
+version: 0.1.1
 date-released: "2026-06-07"
 license: MIT
 repository-code: "https://github.com/astro-tools/gmat-script"
