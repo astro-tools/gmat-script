@@ -1,0 +1,5 @@
+node_modules/
+# tree-sitter build/cache artifacts (the generated parser under src/ IS committed)
+build/
+*.wasm
+.tree-sitter/

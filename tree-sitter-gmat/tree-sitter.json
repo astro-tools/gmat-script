@@ -1,0 +1,37 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "gmat",
+      "scope": "source.gmat",
+      "file-types": [
+        "script",
+        "gmf"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "GMAT mission script grammar for tree-sitter",
+    "authors": [
+      {
+        "name": "Dimitrije Jankovic"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/astro-tools/gmat-script"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": false,
+    "node": false,
+    "python": true,
+    "rust": false,
+    "swift": false
+  }
+}
