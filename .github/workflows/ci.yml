@@ -1,0 +1,147 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      # 3 OSes × 3 Python minors. The build hook compiles the vendored grammar natively on each
+      # cell, so this also proves the C extension builds and loads on Linux, Windows, and macOS.
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Install project
+        run: uv sync --all-groups
+      - name: Run pytest
+        run: uv run pytest -m "not corpus" --cov --cov-report=term-missing
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --all-groups
+      - run: uv run ruff check
+      - run: uv run ruff format --check
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --all-groups
+      - run: uv run mypy
+
+  # Smoke-check that `pip install .` builds the wheel (committed parser.c + a C compiler — no Node),
+  # installs only the runtime dependency, and that the vendored grammar loads with no dev tooling.
+  minimal-install:
+    name: minimal install smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install .
+      - name: import + load grammar on a clean install
+        run: |
+          python - <<'PY'
+          import gmat_script
+          from gmat_script._grammar import language
+          from tree_sitter import Language, Parser
+
+          Parser(Language(language())).parse(b"Sat")
+          print("minimal install OK", gmat_script.__version__)
+          PY
+
+  # Regenerate the parser with the pinned tree-sitter CLI and fail if the committed src/ is stale
+  # (the ABI / drift detector), then run the grammar's corpus tests. This is the only Node job.
+  grammar-build:
+    name: grammar build + tree-sitter test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tree-sitter-gmat
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Regenerate parser and check it matches the committed source
+        run: |
+          npx tree-sitter generate
+          git diff --exit-code -- src/
+      - name: Run grammar corpus tests
+        run: npx tree-sitter test
+
+  # Corpus parse-coverage: every fixture parses with zero ERROR nodes. Wired now against placeholder
+  # fixtures; the stock GMAT sample corpus lands in a later milestone.
+  corpus-coverage:
+    name: corpus parse-coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --all-groups
+      - run: uv run pytest -m corpus -v
+
+  # Validate CITATION.cff against the Citation File Format v1.2.0 schema.
+  citation:
+    name: citation file (cffconvert)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install cffconvert==2.0.0
+      - run: cffconvert --validate -i CITATION.cff
