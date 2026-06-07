@@ -116,23 +116,36 @@ jobs:
       - name: Run grammar corpus tests
         run: npx tree-sitter test
 
-  # Corpus parse-coverage: every fixture parses with zero ERROR nodes. Wired now against placeholder
-  # fixtures; the stock GMAT sample corpus lands in a later milestone.
+  # Corpus parse-coverage: the full stock GMAT R2026a sample corpus (162 .script + 9 .gmf) parses
+  # with zero ERROR/MISSING nodes and re-emits byte-for-byte, on every OS/Python cell — the Windows
+  # cells exercise the CRLF byte-exact path the -text gitattributes protect. check_corpus.py logs the
+  # file/error counts and fails on an incomplete corpus, so silent truncation is impossible; the
+  # `-m corpus` pytest run adds per-file attribution.
   corpus-coverage:
-    name: corpus parse-coverage
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    name: corpus parse-coverage (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.10', '3.11', '3.12']
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
-      - uses: astral-sh/setup-uv@v7
+          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - run: uv sync --all-groups
-      - run: uv run pytest -m corpus -v
+      - name: Validate corpus and log file/error counts
+        run: uv run python tests/check_corpus.py
+      - name: Per-file corpus tests
+        run: uv run pytest -m corpus -v
 
   # Validate CITATION.cff against the Citation File Format v1.2.0 schema.
   citation:
