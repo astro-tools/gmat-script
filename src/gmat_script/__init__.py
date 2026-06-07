@@ -7,7 +7,7 @@ decisions under ``docs/design/`` for the contract this package implements.
 
 from __future__ import annotations
 
-from .parser import parse
+from .parser import ErrorNode, Position, Tree, parse
 
-__all__ = ["parse"]
+__all__ = ["ErrorNode", "Position", "Tree", "parse"]
 __version__ = "0.1.0.dev0"

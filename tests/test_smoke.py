@@ -13,9 +13,10 @@ def test_version_is_a_nonempty_string() -> None:
     assert gmat_script.__version__
 
 
-def test_parse_is_exported_and_stubbed() -> None:
-    with pytest.raises(NotImplementedError):
-        gmat_script.parse("Create Spacecraft Sat;")
+def test_parse_is_exported_and_parses() -> None:
+    tree = gmat_script.parse("Create Spacecraft Sat;")
+    assert tree.root_node.type == "source_file"
+    assert not tree.has_errors
 
 
 def test_vendored_grammar_loads_and_parses() -> None:
