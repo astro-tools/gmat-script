@@ -1,0 +1,4 @@
+% Placeholder corpus fixture — replaced by the stock GMAT R2026a sample corpus once the grammar
+% covers it. Until then it holds only content the scaffold grammar accepts, so the corpus-coverage
+% job exercises the parse path for real instead of running empty.
+Sat Earth Luna
