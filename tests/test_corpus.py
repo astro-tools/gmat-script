@@ -13,6 +13,7 @@ checkout fails loudly instead of collecting zero parametrised cases and passing 
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
 
 _CORPUS_DIR = Path(__file__).parent / "data" / "corpus"
 _STOCK_DIR = _CORPUS_DIR / "gmat-r2026a"
+_NODE_TYPES = Path(__file__).parent.parent / "tree-sitter-gmat" / "src" / "node-types.json"
 
 # Expected stock-corpus file counts (see gmat-r2026a/PROVENANCE.md). Asserted by
 # test_corpus_inventory so an incomplete corpus fails the build rather than silently shrinking the
@@ -45,6 +47,23 @@ def _iter_leaves(node: Node) -> Iterator[Node]:
         return
     for child in node.children:
         yield from _iter_leaves(child)
+
+
+def _iter_named(node: Node) -> Iterator[Node]:
+    """Yield *node* and every descendant that is a named node."""
+    if node.is_named:
+        yield node
+    for child in node.children:
+        yield from _iter_named(child)
+
+
+def _declared_named_node_types() -> set[str]:
+    """The named node types the grammar defines (from the committed ``node-types.json``)."""
+    return {
+        entry["type"]
+        for entry in json.loads(_NODE_TYPES.read_text(encoding="utf-8"))
+        if entry.get("named") and not entry["type"].startswith("_")
+    }
 
 
 def _reconstruct(root: Node, source: bytes) -> bytes:
@@ -93,3 +112,17 @@ def test_fixture_roundtrips_byte_for_byte(fixture: Path) -> None:
     source = fixture.read_bytes()
     tree = parse(source.decode("utf-8"))
     assert _reconstruct(tree.root_node, source) == source, f"{fixture.name} did not round-trip"
+
+
+@pytest.mark.corpus
+def test_corpus_exercises_every_named_node_type() -> None:
+    """Every named node type the grammar defines is produced by the corpus (the construct-coverage
+    guarantee). A node type no fixture reaches would be a dead grammar rule or an untested
+    construct; a regression that stopped emitting one would fail here loudly."""
+    declared = _declared_named_node_types()
+    seen: set[str] = set()
+    for fixture in _FIXTURES:
+        for node in _iter_named(parse(fixture.read_bytes().decode("utf-8")).root_node):
+            seen.add(node.type)
+    missing = declared - seen
+    assert not missing, f"node types never produced by the corpus: {sorted(missing)}"
