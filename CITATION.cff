@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use gmat-script in academic work, please cite it using the metadata below."
+title: gmat-script
+abstract: >-
+  gmat-script is a permissively-licensed Python library and tree-sitter grammar for GMAT mission
+  scripts. It parses GMAT .script and GmatFunction (.gmf) files into a concrete syntax tree that
+  re-emits byte-for-byte, and layers a typed AST with a mutation API, a canonical formatter, a
+  linter, and editor tooling on top. The whole stack operates on script text and needs no GMAT
+  install.
+type: software
+authors:
+  - given-names: Dimitrije
+    family-names: Jankovic
+license: MIT
+repository-code: "https://github.com/astro-tools/gmat-script"
+url: "https://github.com/astro-tools/gmat-script"
+keywords:
+  - gmat
+  - tree-sitter
+  - parser
+  - astrodynamics
+  - mission-analysis

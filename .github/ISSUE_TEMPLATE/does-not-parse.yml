@@ -1,0 +1,52 @@
+name: My script does not parse / lints wrong
+description: A valid GMAT script fails to parse, parses wrong, or draws an incorrect lint diagnostic.
+title: "<short summary>"
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        gmat-script targets the GMAT R2026a script surface. The fastest fix comes from the smallest
+        snippet that reproduces the problem — please reduce it as far as you can.
+  - type: textarea
+    id: snippet
+    attributes:
+      label: The offending snippet
+      description: >-
+        The smallest piece of script (or GmatFunction) that reproduces the problem. Paste the text
+        itself — not a screenshot — so it can be added to the test corpus.
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What goes wrong
+      options:
+        - Fails to parse (ERROR / MISSING nodes)
+        - Parses, but into the wrong tree
+        - Re-emits with a difference (not byte-for-byte)
+        - Lints wrong (false positive or missed diagnostic)
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: How the snippet should parse / lint, and how you know (GMAT runs it, the User's Guide, …).
+    validations:
+      required: true
+  - type: input
+    id: gmat_version
+    attributes:
+      label: GMAT version the script targets
+      placeholder: "e.g. R2026a"
+    validations:
+      required: true
+  - type: input
+    id: gmat_script_version
+    attributes:
+      label: gmat-script version
+      placeholder: "e.g. 0.1.0, or git sha"
+    validations:
+      required: true
