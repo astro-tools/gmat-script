@@ -1,0 +1,99 @@
+%
+%  Ex_OFI_Attitude_Inertial
+%
+%  Use an inertially-fixed spacecraft atttitude.
+%
+%  Released: R2020a
+%
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft DefaultSC;
+
+DefaultSC.DateFormat                   = UTCGregorian;
+DefaultSC.Epoch                        = '01 Jul 2000 11:59:28.000';
+DefaultSC.SMA                          = 8999.999999999995;
+DefaultSC.ECC                          = 0.02454974900598272;
+DefaultSC.INC                          = 12.85008005658097;
+DefaultSC.RAAN                         = 306.6148021947984;
+DefaultSC.AOP                          = 314.1905515359913;
+DefaultSC.TA                           = 99.88774933204955;
+DefaultSC.Attitude                     = CoordinateSystemFixed;
+DefaultSC.AttitudeDisplayStateType     = 'EulerAngles';
+DefaultSC.AttitudeRateDisplayStateType = 'AngularVelocity';
+DefaultSC.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+DefaultSC.EulerAngleSequence           = '321';
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create ForceModel DefaultProp_ForceModel;
+
+Create Propagator DefaultProp;
+
+DefaultProp.FM      = DefaultProp_ForceModel;
+DefaultProp.MaxStep = 1;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface EarthView;
+
+EarthView.SolverIterations = Current;
+EarthView.UpperLeft        = [ 0.1 0.05 ];
+EarthView.Size             = [ 0.8 0.9 ];
+EarthView.Maximized        = false;
+EarthView.Add              = {DefaultSC, Earth};
+EarthView.DrawObject       = [ true true ];
+
+EarthView.View             = {CoordinateSystemView1, EarthView1, DefaultSCView1};
+EarthView.CoordinateSystem = EarthMJ2000Eq;
+
+%----------------------------------------
+%---------- View Objects
+%----------------------------------------
+
+Create OpenFramesView CoordinateSystemView1;
+
+CoordinateSystemView1.ViewFrame          = CoordinateSystem;
+CoordinateSystemView1.ViewTrajectory     = Off;
+CoordinateSystemView1.InertialFrame      = Off;
+CoordinateSystemView1.SetDefaultLocation = Off;
+CoordinateSystemView1.SetCurrentLocation = On;
+CoordinateSystemView1.CurrentEye         = [ 15000 15000 0 ];
+CoordinateSystemView1.CurrentCenter      = [ 0 0 0 ];
+CoordinateSystemView1.CurrentUp          = [ 0 0 1 ];
+
+
+Create OpenFramesView EarthView1;
+
+EarthView1.ViewFrame              = Earth;
+EarthView1.ViewTrajectory         = Off;
+EarthView1.InertialFrame          = Off;
+EarthView1.SetDefaultLocation     = Off;
+EarthView1.SetCurrentLocation     = Off;
+
+
+Create OpenFramesView DefaultSCView1;
+
+DefaultSCView1.ViewFrame          = DefaultSC;
+DefaultSCView1.ViewTrajectory     = Off;
+DefaultSCView1.InertialFrame      = Off;
+DefaultSCView1.SetDefaultLocation = Off;
+DefaultSCView1.SetCurrentLocation = On;
+DefaultSCView1.CurrentEye         = [ 600 500 450 ];
+DefaultSCView1.CurrentCenter      = [ 0 0 0 ];
+DefaultSCView1.CurrentUp          = [ 0 0 1 ];
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+Propagate 'Prop 10000 s' DefaultProp(DefaultSC) {DefaultSC.ElapsedSecs = 10000.0};

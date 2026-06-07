@@ -1,0 +1,570 @@
+%
+%  Ex_OFI_FieldOfView
+%
+%  This script visualizes some GMAT FOV models.
+%  Contributed by Thinking Systems, Inc.
+%
+%  Released: R2020a
+%
+
+
+%**************************************************************
+%                          DEFAULT SETUP                      *
+%**************************************************************
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft Spacecraft1;
+
+Spacecraft1.DateFormat                   = TAIModJulian;
+Spacecraft1.Epoch                        = '21530';
+Spacecraft1.CoordinateSystem             = EarthMJ2000Eq;
+Spacecraft1.DisplayStateType             = Keplerian;
+Spacecraft1.SMA                          = 14999.99999999999;
+Spacecraft1.ECC                          = 0.02454974900598161;
+Spacecraft1.INC                          = 12.85008005658097;
+Spacecraft1.RAAN                         = 306.6148021947984;
+Spacecraft1.AOP                          = 314.1905515359908;
+Spacecraft1.TA                           = 99.88774933205012;
+Spacecraft1.DryMass                      = 850;
+Spacecraft1.Cd                           = 2.2;
+Spacecraft1.Cr                           = 1.8;
+Spacecraft1.DragArea                     = 15;
+Spacecraft1.SRPArea                      = 1;
+Spacecraft1.SPADDragScaleFactor          = 1;
+Spacecraft1.SPADSRPScaleFactor           = 1;
+Spacecraft1.NAIFId                       = -10002001;
+Spacecraft1.NAIFIdReferenceFrame         = -9002001;
+Spacecraft1.OrbitColor                   = Green;
+Spacecraft1.TargetColor                  = LightGray;
+Spacecraft1.OrbitErrorCovariance         = [ 1e+70 0 0 0 0 0 ; 0 1e+70 0 0 0 0 ; 0 0 1e+70 0 0 0 ; 0 0 0 1e+70 0 0 ; 0 0 0 0 1e+70 0 ; 0 0 0 0 0 1e+70 ];
+Spacecraft1.CdSigma                      = 1e+70;
+Spacecraft1.CrSigma                      = 1e+70;
+Spacecraft1.Id                           = 'SatId';
+Spacecraft1.Attitude                     = NadirPointing;
+Spacecraft1.SPADSRPInterpolationMethod   = Bilinear;
+Spacecraft1.SPADSRPScaleFactorSigma      = 1e+70;
+Spacecraft1.SPADDragInterpolationMethod  = Bilinear;
+Spacecraft1.SPADDragScaleFactorSigma     = 1e+70;
+Spacecraft1.AddHardware                  = {Antenna1};
+Spacecraft1.ModelFile                    = 'aura.3ds';
+Spacecraft1.ModelOffsetX                 = 0;
+Spacecraft1.ModelOffsetY                 = 0;
+Spacecraft1.ModelOffsetZ                 = 0;
+Spacecraft1.ModelRotationX               = 0;
+Spacecraft1.ModelRotationY               = 0;
+Spacecraft1.ModelRotationZ               = 0;
+Spacecraft1.ModelScale                   = 1;
+Spacecraft1.AttitudeDisplayStateType     = 'Quaternion';
+Spacecraft1.AttitudeRateDisplayStateType = 'AngularVelocity';
+Spacecraft1.EulerAngleSequence           = '321';
+Spacecraft1.AttitudeReferenceBody        = Earth;
+Spacecraft1.AttitudeConstraintType       = 'OrbitNormal';
+Spacecraft1.BodyAlignmentVectorX         = 1;
+Spacecraft1.BodyAlignmentVectorY         = 0;
+Spacecraft1.BodyAlignmentVectorZ         = 0;
+Spacecraft1.BodyConstraintVectorX        = 0;
+Spacecraft1.BodyConstraintVectorY        = 0;
+Spacecraft1.BodyConstraintVectorZ        = 1;
+
+Create Spacecraft Spacecraft2;
+
+Spacecraft2.DateFormat                   = TAIModJulian;
+Spacecraft2.Epoch                        = '21530';
+Spacecraft2.CoordinateSystem             = EarthMJ2000Eq;
+Spacecraft2.DisplayStateType             = Keplerian;
+Spacecraft2.SMA                          = 20000.00000000007;
+Spacecraft2.ECC                          = 0.02454974900598024;
+Spacecraft2.INC                          = 59.99999999999999;
+Spacecraft2.RAAN                         = 306.6148021947984;
+Spacecraft2.AOP                          = 314.1905515359961;
+Spacecraft2.TA                           = 99.88774933204422;
+Spacecraft2.DryMass                      = 850;
+Spacecraft2.Cd                           = 2.2;
+Spacecraft2.Cr                           = 1.8;
+Spacecraft2.DragArea                     = 15;
+Spacecraft2.SRPArea                      = 1;
+Spacecraft2.SPADDragScaleFactor          = 1;
+Spacecraft2.SPADSRPScaleFactor           = 1;
+Spacecraft2.NAIFId                       = -10003001;
+Spacecraft2.NAIFIdReferenceFrame         = -9003001;
+Spacecraft2.OrbitColor                   = Yellow;
+Spacecraft2.TargetColor                  = DarkGray;
+Spacecraft2.OrbitErrorCovariance         = [ 1e+70 0 0 0 0 0 ; 0 1e+70 0 0 0 0 ; 0 0 1e+70 0 0 0 ; 0 0 0 1e+70 0 0 ; 0 0 0 0 1e+70 0 ; 0 0 0 0 0 1e+70 ];
+Spacecraft2.CdSigma                      = 1e+70;
+Spacecraft2.CrSigma                      = 1e+70;
+Spacecraft2.Id                           = 'SatId';
+Spacecraft2.Attitude                     = NadirPointing;
+Spacecraft2.SPADSRPInterpolationMethod   = Bilinear;
+Spacecraft2.SPADSRPScaleFactorSigma      = 1e+70;
+Spacecraft2.SPADDragInterpolationMethod  = Bilinear;
+Spacecraft2.SPADDragScaleFactorSigma     = 1e+70;
+Spacecraft2.AddHardware                  = {Antenna1, Antenna2};
+Spacecraft2.ModelFile                    = 'aura.3ds';
+Spacecraft2.ModelOffsetX                 = 0;
+Spacecraft2.ModelOffsetY                 = 0;
+Spacecraft2.ModelOffsetZ                 = 0;
+Spacecraft2.ModelRotationX               = 0;
+Spacecraft2.ModelRotationY               = 0;
+Spacecraft2.ModelRotationZ               = 0;
+Spacecraft2.ModelScale                   = 1;
+Spacecraft2.AttitudeDisplayStateType     = 'Quaternion';
+Spacecraft2.AttitudeRateDisplayStateType = 'AngularVelocity';
+Spacecraft2.EulerAngleSequence           = '321';
+Spacecraft2.AttitudeReferenceBody        = Earth;
+Spacecraft2.AttitudeConstraintType       = 'OrbitNormal';
+Spacecraft2.BodyAlignmentVectorX         = 1;
+Spacecraft2.BodyAlignmentVectorY         = 0;
+Spacecraft2.BodyAlignmentVectorZ         = 0;
+Spacecraft2.BodyConstraintVectorX        = 0;
+Spacecraft2.BodyConstraintVectorY        = 0;
+Spacecraft2.BodyConstraintVectorZ        = 1;
+
+Create Spacecraft Spacecraft3;
+
+Spacecraft3.DateFormat                   = TAIModJulian;
+Spacecraft3.Epoch                        = '21530';
+Spacecraft3.CoordinateSystem             = EarthMJ2000Eq;
+Spacecraft3.DisplayStateType             = Keplerian;
+Spacecraft3.SMA                          = 83474.31799999969;
+Spacecraft3.ECC                          = 0.8965199999999988;
+Spacecraft3.INC                          = 0;
+Spacecraft3.RAAN                         = 0;
+Spacecraft3.AOP                          = 360;
+Spacecraft3.TA                           = 179.9999966933489;
+Spacecraft3.DryMass                      = 850;
+Spacecraft3.Cd                           = 2.2;
+Spacecraft3.Cr                           = 1.8;
+Spacecraft3.DragArea                     = 15;
+Spacecraft3.SRPArea                      = 1;
+Spacecraft3.SPADDragScaleFactor          = 1;
+Spacecraft3.SPADSRPScaleFactor           = 1;
+Spacecraft3.NAIFId                       = -123456789;
+Spacecraft3.NAIFIdReferenceFrame         = -123456789;
+Spacecraft3.OrbitColor                   = [164 184 78];
+Spacecraft3.TargetColor                  = Teal;
+Spacecraft3.OrbitErrorCovariance         = [ 1e+70 0 0 0 0 0 ; 0 1e+70 0 0 0 0 ; 0 0 1e+70 0 0 0 ; 0 0 0 1e+70 0 0 ; 0 0 0 0 1e+70 0 ; 0 0 0 0 0 1e+70 ];
+Spacecraft3.CdSigma                      = 1e+70;
+Spacecraft3.CrSigma                      = 1e+70;
+Spacecraft3.Id                           = 'SatId';
+Spacecraft3.Attitude                     = NadirPointing;
+Spacecraft3.SPADSRPInterpolationMethod   = Bilinear;
+Spacecraft3.SPADSRPScaleFactorSigma      = 1e+70;
+Spacecraft3.SPADDragInterpolationMethod  = Bilinear;
+Spacecraft3.SPADDragScaleFactorSigma     = 1e+70;
+Spacecraft3.AddHardware                  = {Antenna3};
+Spacecraft3.ModelFile                    = '../data/vehicle/models/aura.3ds';
+Spacecraft3.ModelOffsetX                 = 0;
+Spacecraft3.ModelOffsetY                 = 0;
+Spacecraft3.ModelOffsetZ                 = 0;
+Spacecraft3.ModelRotationX               = 0;
+Spacecraft3.ModelRotationY               = 0;
+Spacecraft3.ModelRotationZ               = 0;
+Spacecraft3.ModelScale                   = 1;
+Spacecraft3.AttitudeDisplayStateType     = 'Quaternion';
+Spacecraft3.AttitudeRateDisplayStateType = 'AngularVelocity';
+Spacecraft3.EulerAngleSequence           = '321';
+Spacecraft3.AttitudeReferenceBody        = Earth;
+Spacecraft3.AttitudeConstraintType       = 'OrbitNormal';
+Spacecraft3.BodyAlignmentVectorX         = 1;
+Spacecraft3.BodyAlignmentVectorY         = 0;
+Spacecraft3.BodyAlignmentVectorZ         = 0;
+Spacecraft3.BodyConstraintVectorX        = 0;
+Spacecraft3.BodyConstraintVectorY        = 0;
+Spacecraft3.BodyConstraintVectorZ        = 1;
+
+%----------------------------------------
+%---------- Hardware Components
+%----------------------------------------
+
+Create Antenna Antenna1;
+
+Antenna1.FieldOfView      = coneFOV;
+Antenna1.DirectionX       = 1;
+Antenna1.DirectionY       = 0;
+Antenna1.DirectionZ       = 0;
+Antenna1.SecondDirectionX = 0;
+Antenna1.SecondDirectionY = 1;
+Antenna1.SecondDirectionZ = 0;
+Antenna1.HWOriginInBCSX   = 100;
+Antenna1.HWOriginInBCSY   = -100;
+Antenna1.HWOriginInBCSZ   = 0;
+
+Create Antenna Antenna2;
+
+Antenna2.FieldOfView      = rectFOV;
+Antenna2.DirectionX       = 1;
+Antenna2.DirectionY       = 0;
+Antenna2.DirectionZ       = 0;
+Antenna2.SecondDirectionX = 0;
+Antenna2.SecondDirectionY = 0;
+Antenna2.SecondDirectionZ = 1;
+Antenna2.HWOriginInBCSX   = 100;
+Antenna2.HWOriginInBCSY   = -200;
+Antenna2.HWOriginInBCSZ   = 0;
+
+Create Antenna Antenna3;
+
+Antenna3.FieldOfView      = ArrowFOV;
+Antenna3.DirectionX       = 1;
+Antenna3.DirectionY       = 0;
+Antenna3.DirectionZ       = 0;
+Antenna3.SecondDirectionX = 0;
+Antenna3.SecondDirectionY = 0;
+Antenna3.SecondDirectionZ = 1;
+Antenna3.HWOriginInBCSX   = 100;
+Antenna3.HWOriginInBCSY   = 0;
+Antenna3.HWOriginInBCSZ   = 0;
+
+Create Antenna StationAntenna1;
+
+StationAntenna1.FieldOfView      = TenDegEl;
+StationAntenna1.DirectionX       = 0;
+StationAntenna1.DirectionY       = 0;
+StationAntenna1.DirectionZ       = 1;
+StationAntenna1.SecondDirectionX = 1;
+StationAntenna1.SecondDirectionY = 0;
+StationAntenna1.SecondDirectionZ = 0;
+StationAntenna1.HWOriginInBCSX   = 0;
+StationAntenna1.HWOriginInBCSY   = 0;
+StationAntenna1.HWOriginInBCSZ   = 0;
+
+Create Antenna TucsonAntenna;
+
+%GMAT TucsonAntenna.FieldOfView  = ArrowFOV;
+TucsonAntenna.FieldOfView        = TucsonMask;
+TucsonAntenna.DirectionX         = 0;
+TucsonAntenna.DirectionY         = 0;
+TucsonAntenna.DirectionZ         = 1;
+TucsonAntenna.SecondDirectionX   = 1;
+TucsonAntenna.SecondDirectionY   = 0;
+TucsonAntenna.SecondDirectionZ   = 0;
+TucsonAntenna.HWOriginInBCSX     = 0;
+TucsonAntenna.HWOriginInBCSY     = 0;
+TucsonAntenna.HWOriginInBCSZ     = 0;
+
+%----------------------------------------
+%---------- FieldOfView Components
+%----------------------------------------
+
+Create ConicalFOV coneFOV;
+
+coneFOV.Color            = [0 255 0];
+coneFOV.Alpha            = 128;
+coneFOV.FieldOfViewAngle = 20;
+
+Create RectangularFOV rectFOV;
+
+rectFOV.Color           = [255 0 0];
+rectFOV.Alpha           = 200;
+rectFOV.AngleWidth      = 10;
+rectFOV.AngleHeight     = 20;
+
+Create CustomFOV ArrowFOV;
+
+ArrowFOV.Color          = [0 0 255];
+ArrowFOV.Alpha          = 255;
+ArrowFOV.ConeAngles     = [ 15 15 8 15 15 8 15 ];
+ArrowFOV.ClockAngles    = [ 0 90 90.09999999999999 150 210 270 270.1 ];
+
+Create ConicalFOV TenDegEl;
+
+TenDegEl.Color            = [255 255 0];
+TenDegEl.Alpha            = 64;
+TenDegEl.FieldOfViewAngle = 80;
+
+Create CustomFOV TucsonMask;
+
+TucsonMask.Color       = [0 0 255];
+TucsonMask.Alpha       = 45;
+TucsonMask.ConeAngles  = [ 75 75 77 77 75 70 66 66 70 50 45 55 70 70 70 65 75 59.99999999999999 59.99999999999999 59.99999999999999 65 70 70 75 65 ];
+TucsonMask.ClockAngles = [ 0 20 25 35 45 50 59.99999999999999 70 80 90 92 93 100 120 140 160 180 200 221 240 260 280 300 320 340 ];
+
+%----------------------------------------
+%---------- GroundStations
+%----------------------------------------
+
+Create GroundStation Canberra;
+
+Canberra.OrbitColor       = Thistle;
+Canberra.TargetColor      = DarkGray;
+Canberra.CentralBody      = Earth;
+Canberra.StateType        = Spherical;
+Canberra.HorizonReference = Ellipsoid;
+Canberra.Location1        = -35.46345149652494;
+Canberra.Location2        = 149.128998;
+Canberra.Location3        = 0.577;
+Canberra.Id               = 'StationId';
+Canberra.AddHardware      = {StationAntenna1};
+Canberra.IonosphereModel  = 'None';
+Canberra.TroposphereModel = 'None';
+Canberra.DataSource       = 'Constant';
+Canberra.Temperature      = 295.1;
+Canberra.Pressure         = 1013.5;
+Canberra.Humidity         = 55;
+Canberra.MinimumElevationAngle = 7;
+
+Create GroundStation Tucson;
+
+Tucson.OrbitColor       = Thistle;
+Tucson.TargetColor      = DarkGray;
+Tucson.CentralBody      = Earth;
+Tucson.StateType        = Spherical;
+Tucson.HorizonReference = Sphere;
+Tucson.Location1        = 32.2226;
+Tucson.Location2        = 249.0253;
+Tucson.Location3        = 0.7282;
+Tucson.Id               = 'Tucson';
+Tucson.AddHardware      = {TucsonAntenna};
+Tucson.IonosphereModel  = 'None';
+Tucson.TroposphereModel = 'None';
+Tucson.DataSource       = 'Constant';
+Tucson.Temperature      = 295.1;
+Tucson.Pressure         = 1013.5;
+Tucson.Humidity         = 55;
+Tucson.MinimumElevationAngle = 7;
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel LowEarthProp_ForceModel;
+
+LowEarthProp_ForceModel.CentralBody                      = Earth;
+LowEarthProp_ForceModel.PrimaryBodies                    = {Earth};
+LowEarthProp_ForceModel.PointMasses                      = {Luna, Sun};
+LowEarthProp_ForceModel.SRP                              = On;
+LowEarthProp_ForceModel.RelativisticCorrection           = Off;
+LowEarthProp_ForceModel.ErrorControl                     = RSSStep;
+LowEarthProp_ForceModel.GravityField.Earth.Degree        = 10;
+LowEarthProp_ForceModel.GravityField.Earth.Order         = 10;
+LowEarthProp_ForceModel.GravityField.Earth.StmLimit      = 100;
+LowEarthProp_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+LowEarthProp_ForceModel.GravityField.Earth.TideModel     = 'None';
+LowEarthProp_ForceModel.SRP.Flux                         = 1367;
+LowEarthProp_ForceModel.SRP.SRPModel                     = Spherical;
+LowEarthProp_ForceModel.SRP.Nominal_Sun                  = 149597870.691;
+LowEarthProp_ForceModel.Drag.AtmosphereModel             = JacchiaRoberts;
+LowEarthProp_ForceModel.Drag.HistoricWeatherSource       = 'ConstantFluxAndGeoMag';
+LowEarthProp_ForceModel.Drag.PredictedWeatherSource      = 'ConstantFluxAndGeoMag';
+LowEarthProp_ForceModel.Drag.CSSISpaceWeatherFile        = 'SpaceWeather-All-v1.2.txt';
+LowEarthProp_ForceModel.Drag.SchattenFile                = 'SchattenPredict.txt';
+LowEarthProp_ForceModel.Drag.F107                        = 150;
+LowEarthProp_ForceModel.Drag.F107A                       = 150;
+LowEarthProp_ForceModel.Drag.MagneticIndex               = 3;
+LowEarthProp_ForceModel.Drag.SchattenErrorModel          = 'Nominal';
+LowEarthProp_ForceModel.Drag.SchattenTimingModel         = 'NominalCycle';
+LowEarthProp_ForceModel.Drag.DragModel                   = 'Spherical';
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator LowEarthProp;
+
+LowEarthProp.FM              = LowEarthProp_ForceModel;
+LowEarthProp.Type            = RungeKutta89;
+LowEarthProp.InitialStepSize = 60;
+LowEarthProp.Accuracy        = 9.999999999999999e-12;
+LowEarthProp.MinStep         = 0.001;
+LowEarthProp.MaxStep         = 2700;
+LowEarthProp.MaxStepAttempts = 50;
+LowEarthProp.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Burns
+%----------------------------------------
+
+Create ImpulsiveBurn DefaultIB;
+
+DefaultIB.CoordinateSystem = Local;
+DefaultIB.Origin           = Earth;
+DefaultIB.Axes             = VNB;
+DefaultIB.Element1         = 0;
+DefaultIB.Element2         = 0;
+DefaultIB.Element3         = 0;
+DefaultIB.DecrementMass    = false;
+DefaultIB.Isp              = 300;
+DefaultIB.GravitationalAccel = 9.81;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+
+Create OpenFramesInterface OpenFrames1;
+
+OpenFrames1.SolverIterations        = Current;
+OpenFrames1.UpperLeft               = [ 0.1006655574043261 0.01930758988015979 ];
+OpenFrames1.Size                    = [ 0.6 0.8 ];
+OpenFrames1.RelativeZOrder          = 11;
+OpenFrames1.Maximized               = true;
+OpenFrames1.Add                     = {Spacecraft1, Spacecraft2, Spacecraft3, Canberra, Tucson, Earth, Sun, Luna};
+OpenFrames1.View                    = {EarthView, Spacecraft1View, Spacecraft2View, Spacecraft3View, TucsonView};
+OpenFrames1.SensorMask              = {SC1FOV, SC2FOV, SC3FOV, GS1FOV, TucsonFOV};
+OpenFrames1.CoordinateSystem        = EarthMJ2000Eq;
+OpenFrames1.DrawObject              = [ true true true true true true true true ];
+OpenFrames1.DrawTrajectory          = [ true true true false false true true true ];
+OpenFrames1.DrawAxes                = [ true false false true true false false false ];
+OpenFrames1.DrawXYPlane             = [ false false false false false false false false ];
+OpenFrames1.DrawLabel               = [ true true true true true true true true ];
+OpenFrames1.DrawUsePropLabel        = [ false false false false false false false false ];
+OpenFrames1.DrawCenterPoint         = [ true true true false false false true true ];
+OpenFrames1.DrawEndPoints           = [ true true true false false false true true ];
+OpenFrames1.DrawVelocity            = [ false false false false false false false false ];
+OpenFrames1.DrawGrid                = [ false false false false false false false false ];
+OpenFrames1.DrawLineWidth           = [ 2 2 2 2 2 2 2 2 ];
+OpenFrames1.DrawMarkerSize          = [ 10 10 10 10 10 10 10 10 ];
+OpenFrames1.DrawFontSize            = [ 14 14 14 14 14 14 14 14 ];
+OpenFrames1.Axes                    = Off;
+OpenFrames1.AxesLength              = 1;
+OpenFrames1.AxesLabels              = On;
+OpenFrames1.FrameLabel              = Off;
+OpenFrames1.XYPlane                 = Off;
+OpenFrames1.EclipticPlane           = Off;
+OpenFrames1.EnableStars             = On;
+OpenFrames1.StarCatalog             = 'inp_StarsHYGv3.txt';
+OpenFrames1.StarCount               = 40000;
+OpenFrames1.MinStarMag              = -2;
+OpenFrames1.MaxStarMag              = 6;
+OpenFrames1.MinStarPixels           = 1;
+OpenFrames1.MaxStarPixels           = 10;
+OpenFrames1.MinStarDimRatio         = 0.5;
+OpenFrames1.ShowPlot                = true;
+OpenFrames1.ShowToolbar             = true;
+OpenFrames1.SolverIterLastN         = 1;
+OpenFrames1.ShowVR                  = false;
+OpenFrames1.PlaybackTimeScale       = 3600;
+OpenFrames1.MultisampleAntiAliasing = On;
+OpenFrames1.MSAASamples             = 2;
+OpenFrames1.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right'};
+
+
+%----------------------------------------
+%---------- OFI Views
+%----------------------------------------
+
+Create OpenFramesView EarthView;
+
+EarthView.ViewFrame          = Earth;
+EarthView.ViewTrajectory     = Off;
+EarthView.InertialFrame      = On;
+EarthView.SetDefaultLocation = Off;
+EarthView.SetCurrentLocation = On;
+EarthView.CurrentEye         = [ -58743.97619659809 -45817.37898907513 -3023.517072508667 ];
+EarthView.CurrentCenter      = [ 0 -7.275957614183426e-12 2.000888343900442e-11 ];
+EarthView.CurrentUp          = [ -0.07379889050516591 0.02883684627882654 0.9968561380946088 ];
+EarthView.FOVy               = 45;
+
+Create OpenFramesView Spacecraft1View;
+
+Spacecraft1View.ViewFrame          = Spacecraft1;
+Spacecraft1View.ViewTrajectory     = Off;
+Spacecraft1View.InertialFrame      = Off;
+Spacecraft1View.SetDefaultLocation = On;
+Spacecraft1View.DefaultEye         = [ 101 -100 0 ];
+Spacecraft1View.DefaultCenter      = [ 200 -100 0 ];
+Spacecraft1View.DefaultUp          = [ 0 0 1 ];
+Spacecraft1View.SetCurrentLocation = On;
+Spacecraft1View.CurrentEye         = [ 0 -5825.9873046875 0 ];
+Spacecraft1View.CurrentCenter      = [ 0 0 0 ];
+Spacecraft1View.CurrentUp          = [ 0 0 1 ];
+Spacecraft1View.FOVy               = 44.99999999999999;
+
+Create OpenFramesView Spacecraft2View;
+
+Spacecraft2View.ViewFrame          = Spacecraft2;
+Spacecraft2View.ViewTrajectory     = Off;
+Spacecraft2View.InertialFrame      = Off;
+Spacecraft2View.SetDefaultLocation = On;
+Spacecraft2View.DefaultEye         = [ 101 -200 0 ];
+Spacecraft2View.DefaultCenter      = [ 200 -200 0 ];
+Spacecraft2View.DefaultUp          = [ 0 0 1 ];
+Spacecraft2View.SetCurrentLocation = On;
+Spacecraft2View.CurrentEye         = [ 0 -919.6425170898438 0 ];
+Spacecraft2View.CurrentCenter      = [ 0 0 0 ];
+Spacecraft2View.CurrentUp          = [ 0 0 1 ];
+Spacecraft2View.FOVy               = 44.99999999999999;
+
+Create OpenFramesView Spacecraft3View;
+
+Spacecraft3View.ViewFrame          = Spacecraft3;
+Spacecraft3View.ViewTrajectory     = Off;
+Spacecraft3View.InertialFrame      = Off;
+Spacecraft3View.SetDefaultLocation = On;
+Spacecraft3View.DefaultEye         = [ 101 0 0 ];
+Spacecraft3View.DefaultCenter      = [ 200 0 0 ];
+Spacecraft3View.DefaultUp          = [ 0 0 1 ];
+Spacecraft3View.SetCurrentLocation = On;
+Spacecraft3View.CurrentEye         = [ 101 0 0 ];
+Spacecraft3View.CurrentCenter      = [ 200 0 0 ];
+Spacecraft3View.CurrentUp          = [ 0 0 1 ];
+Spacecraft3View.FOVy               = 35;
+
+Create OpenFramesView TucsonView;
+
+TucsonView.ViewFrame          = Tucson;
+TucsonView.ViewTrajectory     = Off;
+TucsonView.InertialFrame      = Off;
+TucsonView.SetDefaultLocation = Off;
+TucsonView.SetCurrentLocation = On;
+TucsonView.CurrentEye         = [ -41425.63531906284 30946.17330283025 -35904.45561422588 ];
+TucsonView.CurrentCenter      = [ 59.15063476563955 59.15063476563228 31.69873046875 ];
+TucsonView.CurrentUp          = [ -0.2083783615605611 0.6097985374417912 0.7646726111004554 ];
+TucsonView.FOVy               = 45;
+
+
+%----------------------------------------
+%---------- User Objects
+%----------------------------------------
+
+Create OpenFramesSensorMask SC1FOV;
+
+SC1FOV.Source     = Spacecraft1;
+SC1FOV.Hardware   = Antenna1;
+SC1FOV.Label      = 'ConeFOV';
+SC1FOV.LengthType = Manual;
+SC1FOV.Length     = 5000;
+
+Create OpenFramesSensorMask SC2FOV;
+
+SC2FOV.Source     = Spacecraft2;
+SC2FOV.Hardware   = Antenna2;
+SC2FOV.Label      = 'RectFOV';
+SC2FOV.LengthType = Manual;
+SC2FOV.Length     = 5000;
+
+Create OpenFramesSensorMask SC3FOV;
+
+SC3FOV.Source     = Spacecraft3;
+SC3FOV.Hardware   = Antenna3;
+SC3FOV.Label      = 'DefaultSensorMask';
+SC3FOV.LengthType = Manual;
+SC3FOV.Length     = 5000;
+
+Create OpenFramesSensorMask GS1FOV;
+
+GS1FOV.Source     = Canberra;
+GS1FOV.Hardware   = StationAntenna1;
+GS1FOV.Label      = 'Station1';
+GS1FOV.LengthType = Manual;
+GS1FOV.Length     = 2000;
+
+Create OpenFramesSensorMask TucsonFOV;
+
+TucsonFOV.Source     = Tucson;
+TucsonFOV.Hardware   = TucsonAntenna;
+TucsonFOV.Label      = 'Tucson';
+TucsonFOV.LengthType = Manual;
+TucsonFOV.Length     = 2000;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+Propagate LowEarthProp(Spacecraft3, Spacecraft1, Spacecraft2) {Spacecraft3.ElapsedDays = 5};

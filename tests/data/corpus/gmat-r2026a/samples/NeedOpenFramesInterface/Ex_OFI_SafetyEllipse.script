@@ -1,0 +1,452 @@
+%
+%  Ex_OFI_SafetyEllipse
+%
+%  Formation Flying Demonstration
+%
+%  Released: R2020a
+%
+
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft Leader;
+
+Leader.DateFormat                   = TAIModJulian;
+Leader.Epoch                        = '21545';
+Leader.CoordinateSystem             = EarthMJ2000Eq;
+Leader.DisplayStateType             = Keplerian;
+Leader.SMA                          = 6715.500000000013;
+Leader.ECC                          = 0.000536199999998763;
+Leader.INC                          = 51.64180000000003;
+Leader.RAAN                         = 23.22380000000003;
+Leader.AOP                          = 345.5258999997542;
+Leader.TA                           = 167.2043000002454;
+Leader.DryMass                      = 850;
+Leader.Cd                           = 2.2;
+Leader.Cr                           = 1.8;
+Leader.DragArea                     = 15;
+Leader.SRPArea                      = 1;
+Leader.SPADDragScaleFactor          = 1;
+Leader.SPADSRPScaleFactor           = 1;
+Leader.NAIFId                       = -123456789;
+Leader.NAIFIdReferenceFrame         = -123456789;
+Leader.OrbitColor                   = Red;
+Leader.TargetColor                  = Teal;
+Leader.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+Leader.CdSigma                      = 1e+070;
+Leader.CrSigma                      = 1e+070;
+Leader.Id                           = 'SatId';
+Leader.Attitude                     = CoordinateSystemFixed;
+Leader.SPADSRPInterpolationMethod   = Bilinear;
+Leader.SPADSRPScaleFactorSigma      = 1e+070;
+Leader.SPADDragInterpolationMethod  = Bilinear;
+Leader.SPADDragScaleFactorSigma     = 1e+070;
+Leader.ModelFile                    = '../data/vehicle/models/aura.3ds';
+Leader.ModelOffsetX                 = 0;
+Leader.ModelOffsetY                 = 0;
+Leader.ModelOffsetZ                 = 0;
+Leader.ModelRotationX               = 0;
+Leader.ModelRotationY               = 0;
+Leader.ModelRotationZ               = 0;
+Leader.ModelScale                   = 1;
+Leader.AttitudeDisplayStateType     = 'Quaternion';
+Leader.AttitudeRateDisplayStateType = 'AngularVelocity';
+Leader.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+Leader.EulerAngleSequence           = '321';
+
+Create Spacecraft Follower;
+
+Follower.DateFormat                   = TAIModJulian;
+Follower.Epoch                        = '21545';
+Follower.CoordinateSystem             = EarthMJ2000Eq;
+Follower.DisplayStateType             = Keplerian;
+Follower.SMA                          = 6710.499999999966;
+Follower.ECC                          = 0.02534862000000019;
+Follower.INC                          = 51.54150000000005;
+Follower.RAAN                         = 25.32429999999992;
+Follower.AOP                          = 344.5258999998272;
+Follower.TA                           = 162.2043000001724;
+Follower.DryMass                      = 850;
+Follower.Cd                           = 2.2;
+Follower.Cr                           = 1.8;
+Follower.DragArea                     = 15;
+Follower.SRPArea                      = 0.5;
+Follower.SPADDragScaleFactor          = 1;
+Follower.SPADSRPScaleFactor           = 1;
+Follower.NAIFId                       = -123456789;
+Follower.NAIFIdReferenceFrame         = -123456789;
+Follower.OrbitColor                   = Green;
+Follower.TargetColor                  = LightGray;
+Follower.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+Follower.CdSigma                      = 1e+070;
+Follower.CrSigma                      = 1e+070;
+Follower.Id                           = 'SatId';
+Follower.Attitude                     = CoordinateSystemFixed;
+Follower.SPADSRPInterpolationMethod   = Bilinear;
+Follower.SPADSRPScaleFactorSigma      = 1e+070;
+Follower.SPADDragInterpolationMethod  = Bilinear;
+Follower.SPADDragScaleFactorSigma     = 1e+070;
+Follower.ModelFile                    = '../data/vehicle/models/aura.3ds';
+Follower.ModelOffsetX                 = 0;
+Follower.ModelOffsetY                 = 0;
+Follower.ModelOffsetZ                 = 0;
+Follower.ModelRotationX               = 0;
+Follower.ModelRotationY               = 0;
+Follower.ModelRotationZ               = 0;
+Follower.ModelScale                   = 0.1;
+Follower.AttitudeDisplayStateType     = 'EulerAngles';
+Follower.AttitudeRateDisplayStateType = 'AngularVelocity';
+Follower.AttitudeCoordinateSystem     = LeaderVNB;
+Follower.EulerAngleSequence           = '321';
+
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create ForceModel DefaultProp_ForceModel;
+
+DefaultProp_ForceModel.CentralBody                      = Earth;
+DefaultProp_ForceModel.PrimaryBodies                    = {Earth};
+DefaultProp_ForceModel.Drag                             = None;
+DefaultProp_ForceModel.SRP                              = Off;
+DefaultProp_ForceModel.RelativisticCorrection           = Off;
+DefaultProp_ForceModel.ErrorControl                     = RSSStep;
+DefaultProp_ForceModel.GravityField.Earth.Degree        = 4;
+DefaultProp_ForceModel.GravityField.Earth.Order         = 4;
+DefaultProp_ForceModel.GravityField.Earth.StmLimit      = 100;
+DefaultProp_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+DefaultProp_ForceModel.GravityField.Earth.TideModel     = 'None';
+
+
+Create Propagator DefaultProp;
+
+DefaultProp.FM              = DefaultProp_ForceModel;
+DefaultProp.Type            = RungeKutta89;
+DefaultProp.InitialStepSize = 60;
+DefaultProp.Accuracy        = 9.999999999999999e-012;
+DefaultProp.MinStep         = 0.001;
+DefaultProp.MaxStep         = 5;
+DefaultProp.MaxStepAttempts = 50;
+DefaultProp.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem LeaderLVLH;
+
+LeaderLVLH.Origin  = Leader;
+LeaderLVLH.Axes    = ObjectReferenced;
+LeaderLVLH.YAxis   = N;
+LeaderLVLH.ZAxis   = R;
+LeaderLVLH.Primary = Earth;
+LeaderLVLH.Secondary = Leader;
+
+Create CoordinateSystem LeaderVNB;
+
+LeaderVNB.Origin    = Leader;
+LeaderVNB.Axes      = ObjectReferenced;
+LeaderVNB.XAxis     = V;
+LeaderVNB.YAxis     = N;
+LeaderVNB.Primary   = Earth;
+LeaderVNB.Secondary = Leader;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface OFI_VbarView;
+
+OFI_VbarView.SolverIterations     = None;
+OFI_VbarView.UpperLeft            = [ 0.3305882352941176 0.4940476190476191 ];
+OFI_VbarView.Size                 = [ 0.3323529411764706 0.4976190476190476 ];
+OFI_VbarView.RelativeZOrder       = 337;
+OFI_VbarView.Maximized            = false;
+
+OFI_VbarView.Add                  = {Follower, Earth};
+OFI_VbarView.View                 = {Vbar_View};
+
+OFI_VbarView.CoordinateSystem     = LeaderVNB;
+OFI_VbarView.DrawObject           = [ true true ];
+OFI_VbarView.DrawXYPlane          = [ false false ];
+OFI_VbarView.DrawLabel            = [ true true ];
+OFI_VbarView.DrawGrid             = [ false false ];
+
+OFI_VbarView.Axes                 = On;
+OFI_VbarView.XYPlane              = Off;
+OFI_VbarView.EclipticPlane        = Off;
+OFI_VbarView.EnableStars          = On;
+OFI_VbarView.StarCount            = 40000;
+OFI_VbarView.ShowPlot             = true;
+
+Create OpenFramesView Vbar_View;
+
+Vbar_View.ViewFrame          = CoordinateSystem;
+Vbar_View.SetDefaultLocation = On;
+Vbar_View.SetCurrentLocation = Off;
+
+Vbar_View.DefaultEye         = [-2000 0 0 ];
+Vbar_View.DefaultCenter      = [ 0 0 0 ];
+Vbar_View.DefaultUp          = [ 0 0 1 ];
+
+
+Create OpenFramesInterface OFI_ViewFromAbove;
+
+OFI_ViewFromAbove.SolverIterations     = All;
+OFI_ViewFromAbove.UpperLeft            = [ 0.6635294117647059 0 ];
+OFI_ViewFromAbove.Size                 = [ 0.3323529411764706 0.4976190476190476 ];
+OFI_ViewFromAbove.RelativeZOrder       = 324;
+OFI_ViewFromAbove.Maximized            = false;
+
+OFI_ViewFromAbove.Add                  = {Follower, Earth};
+OFI_ViewFromAbove.View                 = {View_FromAbove};
+
+OFI_ViewFromAbove.CoordinateSystem     = LeaderVNB;
+OFI_ViewFromAbove.DrawObject           = [ true true ];
+OFI_ViewFromAbove.DrawXYPlane          = [ false false ];
+OFI_ViewFromAbove.DrawLabel            = [ true true ];
+OFI_ViewFromAbove.DrawGrid             = [ false false ];
+
+OFI_ViewFromAbove.Axes                 = On;
+OFI_ViewFromAbove.XYPlane              = Off;
+OFI_ViewFromAbove.EclipticPlane        = Off;
+OFI_ViewFromAbove.EnableStars          = On;
+OFI_ViewFromAbove.StarCount            = 40000;
+OFI_ViewFromAbove.ShowPlot             = true;
+
+Create OpenFramesView View_FromAbove;
+
+View_FromAbove.ViewFrame          = CoordinateSystem;
+View_FromAbove.SetDefaultLocation = On;
+View_FromAbove.SetCurrentLocation = Off;
+
+View_FromAbove.DefaultEye         = [ 0 0 2000 ];
+View_FromAbove.DefaultCenter      = [ 0 0 0 ];
+View_FromAbove.DefaultUp          = [ 1 0 0 ];
+
+
+Create OpenFramesInterface OFI_InertialView;
+
+OFI_InertialView.SolverIterations     = None;
+OFI_InertialView.UpperLeft            = [ 0.3311764705882353 0 ];
+OFI_InertialView.Size                 = [ 0.3323529411764706 0.4976190476190476 ];
+OFI_InertialView.RelativeZOrder       = 329;
+OFI_InertialView.Maximized            = false;
+
+OFI_InertialView.Add                  = {Follower, Earth};
+OFI_InertialView.View                 = {Inertial_View};
+
+OFI_InertialView.CoordinateSystem     = EarthMJ2000Eq;
+OFI_InertialView.DrawObject           = [ true true ];
+OFI_InertialView.DrawXYPlane          = [ false false ];
+OFI_InertialView.DrawLabel            = [ true true ];
+OFI_InertialView.DrawGrid             = [ false false ];
+
+OFI_InertialView.Axes                 = Off;
+OFI_InertialView.XYPlane              = Off;
+OFI_InertialView.EclipticPlane        = Off;
+OFI_InertialView.EnableStars          = On;
+OFI_InertialView.StarCount            = 40000;
+OFI_InertialView.ShowPlot             = true;
+
+Create OpenFramesView Inertial_View;
+
+Inertial_View.ViewFrame          = CoordinateSystem;
+Inertial_View.SetDefaultLocation = On;
+Inertial_View.SetCurrentLocation = Off;
+
+Inertial_View.DefaultEye         = [ 0 0 15000 ];
+Inertial_View.DefaultCenter      = [ 0 0 0 ];
+Inertial_View.DefaultUp          = [ 1 0 0 ];
+
+
+Create OpenFramesInterface OFI_SideView;
+
+OFI_SideView.SolverIterations = None;
+OFI_SideView.UpperLeft        = [ 0.6635294117647059 0.4952380952380953 ];
+OFI_SideView.Size             = [ 0.3323529411764706 0.4976190476190476 ];
+OFI_SideView.RelativeZOrder   = 319;
+OFI_SideView.Maximized        = false;
+
+OFI_SideView.Add              = {Follower, Earth};
+OFI_SideView.View             = {Side_View};
+
+OFI_SideView.CoordinateSystem = LeaderVNB;
+OFI_SideView.DrawObject       = [ true true ];
+OFI_SideView.DrawXYPlane      = [ false false ];
+OFI_SideView.DrawLabel        = [ true true ];
+OFI_SideView.DrawGrid         = [ false false ];
+
+OFI_SideView.Axes             = On;
+OFI_SideView.XYPlane          = Off;
+OFI_SideView.EclipticPlane    = Off;
+OFI_SideView.EnableStars      = On;
+OFI_SideView.StarCount        = 40000;
+OFI_SideView.ShowPlot         = true;
+
+Create OpenFramesView Side_View;
+
+Side_View.ViewFrame          = CoordinateSystem;
+Side_View.SetDefaultLocation = On;
+Side_View.SetCurrentLocation = Off;
+
+Side_View.DefaultEye         = [ 0 2000 0 ];
+Side_View.DefaultCenter      = [ 0 0 0 ];
+Side_View.DefaultUp          = [ 0 0 1 ];
+
+Create OpenFramesInterface LeaderVNBPlot;
+
+LeaderVNBPlot.SolverIterations        = Current;
+LeaderVNBPlot.UpperLeft               = [ 0 0.4952380952380953 ];
+LeaderVNBPlot.Size                    = [ 0.3311764705882353 0.4952380952380953 ];
+LeaderVNBPlot.RelativeZOrder          = 377;
+LeaderVNBPlot.Maximized               = false;
+LeaderVNBPlot.Add                     = {Follower, Earth};
+LeaderVNBPlot.View                    = {LeaderVbarView, LeaderViewFromAbove, LeaderSideView};
+LeaderVNBPlot.CoordinateSystem        = LeaderVNB;
+LeaderVNBPlot.DrawObject              = [ true true ];
+LeaderVNBPlot.DrawTrajectory          = [ true true ];
+LeaderVNBPlot.DrawAxes                = [ false false ];
+LeaderVNBPlot.DrawXYPlane             = [ false false ];
+LeaderVNBPlot.DrawLabel               = [ true true ];
+LeaderVNBPlot.DrawUsePropLabel        = [ false false ];
+LeaderVNBPlot.DrawCenterPoint         = [ false true ];
+LeaderVNBPlot.DrawEndPoints           = [ false true ];
+LeaderVNBPlot.DrawVelocity            = [ false false ];
+LeaderVNBPlot.DrawGrid                = [ false false ];
+LeaderVNBPlot.DrawLineWidth           = [ 2 2 ];
+LeaderVNBPlot.DrawMarkerSize          = [ 10 10 ];
+LeaderVNBPlot.DrawFontSize            = [ 14 14 ];
+LeaderVNBPlot.Axes                    = On;
+LeaderVNBPlot.AxesLength              = 1;
+LeaderVNBPlot.AxesLabels              = On;
+LeaderVNBPlot.FrameLabel              = Off;
+LeaderVNBPlot.XYPlane                 = Off;
+LeaderVNBPlot.EclipticPlane           = Off;
+LeaderVNBPlot.EnableStars             = On;
+LeaderVNBPlot.StarCatalog             = 'inp_StarsHYGv3.txt';
+LeaderVNBPlot.StarCount               = 40000;
+LeaderVNBPlot.MinStarMag              = -2;
+LeaderVNBPlot.MaxStarMag              = 6;
+LeaderVNBPlot.MinStarPixels           = 1;
+LeaderVNBPlot.MaxStarPixels           = 10;
+LeaderVNBPlot.MinStarDimRatio         = 0.5;
+LeaderVNBPlot.ShowPlot                = true;
+LeaderVNBPlot.ShowToolbar             = true;
+LeaderVNBPlot.SolverIterLastN         = 1;
+LeaderVNBPlot.ShowVR                  = false;
+LeaderVNBPlot.PlaybackTimeScale       = 3600;
+LeaderVNBPlot.MultisampleAntiAliasing = On;
+LeaderVNBPlot.MSAASamples             = 2;
+LeaderVNBPlot.DrawFontPosition        = {'Top-Right', 'Top-Right'};
+
+
+Create OpenFramesInterface EarthInertial;
+
+EarthInertial.SolverIterations        = Current;
+EarthInertial.UpperLeft               = [ 0 0 ];
+EarthInertial.Size                    = [ 0.3311764705882353 0.4952380952380953 ];
+EarthInertial.RelativeZOrder          = 342;
+EarthInertial.Maximized               = false;
+EarthInertial.Add                     = {Follower, Earth, Sun};
+EarthInertial.View                    = {EarthMJ2000EqView};
+EarthInertial.CoordinateSystem        = EarthMJ2000Eq;
+EarthInertial.DrawObject              = [ true true true ];
+EarthInertial.DrawTrajectory          = [ true true true ];
+EarthInertial.DrawAxes                = [ false false false ];
+EarthInertial.DrawXYPlane             = [ false false false ];
+EarthInertial.DrawLabel               = [ true true true ];
+EarthInertial.DrawUsePropLabel        = [ false false false ];
+EarthInertial.DrawCenterPoint         = [ false false true ];
+EarthInertial.DrawEndPoints           = [ false false true ];
+EarthInertial.DrawVelocity            = [ false false false ];
+EarthInertial.DrawGrid                = [ false false false ];
+EarthInertial.DrawLineWidth           = [ 2 2 2 ];
+EarthInertial.DrawMarkerSize          = [ 10 10 10 ];
+EarthInertial.DrawFontSize            = [ 14 14 14 ];
+EarthInertial.Axes                    = Off;
+EarthInertial.AxesLength              = 1;
+EarthInertial.AxesLabels              = Off;
+EarthInertial.FrameLabel              = Off;
+EarthInertial.XYPlane                 = Off;
+EarthInertial.EclipticPlane           = Off;
+EarthInertial.EnableStars             = On;
+EarthInertial.StarCatalog             = 'inp_StarsHYGv3.txt';
+EarthInertial.StarCount               = 40000;
+EarthInertial.MinStarMag              = -2;
+EarthInertial.MaxStarMag              = 6;
+EarthInertial.MinStarPixels           = 1;
+EarthInertial.MaxStarPixels           = 10;
+EarthInertial.MinStarDimRatio         = 0.5;
+EarthInertial.ShowPlot                = true;
+EarthInertial.ShowToolbar             = true;
+EarthInertial.SolverIterLastN         = 1;
+EarthInertial.ShowVR                  = false;
+EarthInertial.PlaybackTimeScale       = 3600;
+EarthInertial.MultisampleAntiAliasing = On;
+EarthInertial.MSAASamples             = 2;
+EarthInertial.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right'};
+
+%----------------------------------------
+%---------- User Objects
+%----------------------------------------
+
+Create OpenFramesView EarthMJ2000EqView;
+
+EarthMJ2000EqView.ViewFrame          = CoordinateSystem;
+EarthMJ2000EqView.ViewTrajectory     = Off;
+EarthMJ2000EqView.InertialFrame      = Off;
+EarthMJ2000EqView.SetDefaultLocation = On;
+EarthMJ2000EqView.DefaultEye         = [ -136.39310462 964.00410673 16877.8000991 ];
+EarthMJ2000EqView.DefaultCenter      = [ 0 0 0 ];
+EarthMJ2000EqView.DefaultUp          = [ 1 0 0 ];
+EarthMJ2000EqView.SetCurrentLocation = Off;
+EarthMJ2000EqView.FOVy               = 45;
+
+Create OpenFramesView LeaderVbarView;
+
+LeaderVbarView.ViewFrame          = CoordinateSystem;
+LeaderVbarView.ViewTrajectory     = Off;
+LeaderVbarView.InertialFrame      = Off;
+LeaderVbarView.SetDefaultLocation = On;
+LeaderVbarView.DefaultEye         = [ -1824.70414741 0 0 ];
+LeaderVbarView.DefaultCenter      = [ 0 0 0 ];
+LeaderVbarView.DefaultUp          = [ 0 0 1 ];
+LeaderVbarView.SetCurrentLocation = Off;
+LeaderVbarView.FOVy               = 45;
+
+Create OpenFramesView LeaderViewFromAbove;
+
+LeaderViewFromAbove.ViewFrame          = CoordinateSystem;
+LeaderViewFromAbove.ViewTrajectory     = Off;
+LeaderViewFromAbove.InertialFrame      = Off;
+LeaderViewFromAbove.SetDefaultLocation = On;
+LeaderViewFromAbove.DefaultEye         = [ 0 0 2000 ];
+LeaderViewFromAbove.DefaultCenter      = [ 0 0 0 ];
+LeaderViewFromAbove.DefaultUp          = [ 1 0 0 ];
+LeaderViewFromAbove.SetCurrentLocation = Off;
+LeaderViewFromAbove.FOVy               = 45;
+
+Create OpenFramesView LeaderSideView;
+
+LeaderSideView.ViewFrame          = CoordinateSystem;
+LeaderSideView.ViewTrajectory     = Off;
+LeaderSideView.InertialFrame      = Off;
+LeaderSideView.SetDefaultLocation = On;
+LeaderSideView.DefaultEye         = [ 0 2000 0 ];
+LeaderSideView.DefaultCenter      = [ 0 0 0 ];
+LeaderSideView.DefaultUp          = [ 0 0 1 ];
+LeaderSideView.SetCurrentLocation = Off;
+LeaderSideView.FOVy               = 45;
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+%   Propagate to until circling the leader
+Propagate 'Prop 1 Day' DefaultProp(Leader, Follower) {Follower.ElapsedDays = 1};

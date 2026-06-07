@@ -1,0 +1,652 @@
+%
+%  Ex_OFI_Yukon_MarsLaunchWindowAnalysis
+%
+%  Plane Trajectory to Mars
+%
+%  Released: R2020a
+%
+
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft satForward;
+
+satForward.DateFormat                   = TAIModJulian;
+satForward.Epoch                        = '21545';
+satForward.CoordinateSystem             = EarthSunRot;
+satForward.DisplayStateType             = Cartesian;
+satForward.X                            = -0;
+satForward.Y                            = 0;
+satForward.Z                            = 0;
+satForward.VX                           = 2;
+satForward.VY                           = 0;
+satForward.VZ                           = 0;
+satForward.DryMass                      = 850;
+satForward.Cd                           = 2.2;
+satForward.Cr                           = 1.8;
+satForward.DragArea                     = 15;
+satForward.SRPArea                      = 1;
+satForward.SPADDragScaleFactor          = 1;
+satForward.SPADSRPScaleFactor           = 1;
+satForward.NAIFId                       = -10001001;
+satForward.NAIFIdReferenceFrame         = -9001001;
+satForward.OrbitColor                   = Red;
+satForward.TargetColor                  = Teal;
+satForward.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+satForward.CdSigma                      = 1e+070;
+satForward.CrSigma                      = 1e+070;
+satForward.Id                           = 'SatId';
+satForward.Attitude                     = CoordinateSystemFixed;
+satForward.SPADSRPInterpolationMethod   = Bilinear;
+satForward.SPADSRPScaleFactorSigma      = 1e+070;
+satForward.SPADDragInterpolationMethod  = Bilinear;
+satForward.SPADDragScaleFactorSigma     = 1e+070;
+satForward.ModelFile                    = 'aura.3ds';
+satForward.ModelOffsetX                 = 0;
+satForward.ModelOffsetY                 = 0;
+satForward.ModelOffsetZ                 = 0;
+satForward.ModelRotationX               = 0;
+satForward.ModelRotationY               = 0;
+satForward.ModelRotationZ               = 0;
+satForward.ModelScale                   = 1;
+satForward.AttitudeDisplayStateType     = 'Quaternion';
+satForward.AttitudeRateDisplayStateType = 'AngularVelocity';
+satForward.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+satForward.EulerAngleSequence           = '321';
+
+
+Create Spacecraft satBackward;
+
+satBackward.DateFormat                   = TAIModJulian;
+satBackward.Epoch                        = '21545';
+satBackward.CoordinateSystem             = MarsSunRot;
+satBackward.DisplayStateType             = Cartesian;
+satBackward.X                            = 0;
+satBackward.Y                            = 0;
+satBackward.Z                            = 0;
+satBackward.VX                           = -5.000000000000001;
+satBackward.VY                           = 6.661338147750939e-016;
+satBackward.VZ                           = -1.013078509970455e-015;
+satBackward.DryMass                      = 850;
+satBackward.Cd                           = 2.2;
+satBackward.Cr                           = 1.8;
+satBackward.DragArea                     = 15;
+satBackward.SRPArea                      = 1;
+satBackward.SPADDragScaleFactor          = 1;
+satBackward.SPADSRPScaleFactor           = 1;
+satBackward.NAIFId                       = -10002001;
+satBackward.NAIFIdReferenceFrame         = -9002001;
+satBackward.OrbitColor                   = Green;
+satBackward.TargetColor                  = LightGray;
+satBackward.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+satBackward.CdSigma                      = 1e+070;
+satBackward.CrSigma                      = 1e+070;
+satBackward.Id                           = 'SatId';
+satBackward.Attitude                     = CoordinateSystemFixed;
+satBackward.SPADSRPInterpolationMethod   = Bilinear;
+satBackward.SPADSRPScaleFactorSigma      = 1e+070;
+satBackward.SPADDragInterpolationMethod  = Bilinear;
+satBackward.SPADDragScaleFactorSigma     = 1e+070;
+satBackward.ModelFile                    = 'aura.3ds';
+satBackward.ModelOffsetX                 = 0;
+satBackward.ModelOffsetY                 = 0;
+satBackward.ModelOffsetZ                 = 0;
+satBackward.ModelRotationX               = 0;
+satBackward.ModelRotationY               = 0;
+satBackward.ModelRotationZ               = 0;
+satBackward.ModelScale                   = 1;
+satBackward.AttitudeDisplayStateType     = 'Quaternion';
+satBackward.AttitudeRateDisplayStateType = 'AngularVelocity';
+satBackward.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+satBackward.EulerAngleSequence           = '321';
+
+
+% Spacecraft objects used for intermediate buffering
+Create Spacecraft satBackwardInit;
+
+satBackwardInit.DateFormat                   = TAIModJulian;
+satBackwardInit.Epoch                        = '21545';
+satBackwardInit.CoordinateSystem             = EarthMJ2000Eq;
+satBackwardInit.DisplayStateType             = Cartesian;
+satBackwardInit.X                            = 7100;
+satBackwardInit.Y                            = 0;
+satBackwardInit.Z                            = 1300;
+satBackwardInit.VX                           = 0;
+satBackwardInit.VY                           = 7.35;
+satBackwardInit.VZ                           = 1;
+satBackwardInit.DryMass                      = 850;
+satBackwardInit.Cd                           = 2.2;
+satBackwardInit.Cr                           = 1.8;
+satBackwardInit.DragArea                     = 15;
+satBackwardInit.SRPArea                      = 1;
+satBackwardInit.SPADDragScaleFactor          = 1;
+satBackwardInit.SPADSRPScaleFactor           = 1;
+satBackwardInit.NAIFId                       = -10003001;
+satBackwardInit.NAIFIdReferenceFrame         = -9003001;
+satBackwardInit.OrbitColor                   = Yellow;
+satBackwardInit.TargetColor                  = DarkGray;
+satBackwardInit.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+satBackwardInit.CdSigma                      = 1e+070;
+satBackwardInit.CrSigma                      = 1e+070;
+satBackwardInit.Id                           = 'SatId';
+satBackwardInit.Attitude                     = CoordinateSystemFixed;
+satBackwardInit.SPADSRPInterpolationMethod   = Bilinear;
+satBackwardInit.SPADSRPScaleFactorSigma      = 1e+070;
+satBackwardInit.SPADDragInterpolationMethod  = Bilinear;
+satBackwardInit.SPADDragScaleFactorSigma     = 1e+070;
+satBackwardInit.ModelFile                    = 'aura.3ds';
+satBackwardInit.ModelOffsetX                 = 0;
+satBackwardInit.ModelOffsetY                 = 0;
+satBackwardInit.ModelOffsetZ                 = 0;
+satBackwardInit.ModelRotationX               = 0;
+satBackwardInit.ModelRotationY               = 0;
+satBackwardInit.ModelRotationZ               = 0;
+satBackwardInit.ModelScale                   = 1;
+satBackwardInit.AttitudeDisplayStateType     = 'Quaternion';
+satBackwardInit.AttitudeRateDisplayStateType = 'AngularVelocity';
+satBackwardInit.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+satBackwardInit.EulerAngleSequence           = '321';
+
+
+% Spacecraft objects used for intermediate buffering
+Create Spacecraft satForwardInit;
+
+satForwardInit.DateFormat                   = TAIModJulian;
+satForwardInit.Epoch                        = '21545';
+satForwardInit.CoordinateSystem             = EarthMJ2000Eq;
+satForwardInit.DisplayStateType             = Cartesian;
+satForwardInit.X                            = 7100;
+satForwardInit.Y                            = 0;
+satForwardInit.Z                            = 1300;
+satForwardInit.VX                           = 0;
+satForwardInit.VY                           = 7.35;
+satForwardInit.VZ                           = 1;
+satForwardInit.DryMass                      = 850;
+satForwardInit.Cd                           = 2.2;
+satForwardInit.Cr                           = 1.8;
+satForwardInit.DragArea                     = 15;
+satForwardInit.SRPArea                      = 1;
+satForwardInit.SPADDragScaleFactor          = 1;
+satForwardInit.SPADSRPScaleFactor           = 1;
+satForwardInit.NAIFId                       = -10004001;
+satForwardInit.NAIFIdReferenceFrame         = -9004001;
+satForwardInit.OrbitColor                   = Blue;
+satForwardInit.TargetColor                  = DimGray;
+satForwardInit.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+satForwardInit.CdSigma                      = 1e+070;
+satForwardInit.CrSigma                      = 1e+070;
+satForwardInit.Id                           = 'SatId';
+satForwardInit.Attitude                     = CoordinateSystemFixed;
+satForwardInit.SPADSRPInterpolationMethod   = Bilinear;
+satForwardInit.SPADSRPScaleFactorSigma      = 1e+070;
+satForwardInit.SPADDragInterpolationMethod  = Bilinear;
+satForwardInit.SPADDragScaleFactorSigma     = 1e+070;
+satForwardInit.ModelFile                    = 'aura.3ds';
+satForwardInit.ModelOffsetX                 = 0;
+satForwardInit.ModelOffsetY                 = 0;
+satForwardInit.ModelOffsetZ                 = 0;
+satForwardInit.ModelRotationX               = 0;
+satForwardInit.ModelRotationY               = 0;
+satForwardInit.ModelRotationZ               = 0;
+satForwardInit.ModelScale                   = 1;
+satForwardInit.AttitudeDisplayStateType     = 'Quaternion';
+satForwardInit.AttitudeRateDisplayStateType = 'AngularVelocity';
+satForwardInit.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+satForwardInit.EulerAngleSequence           = '321';
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel sunProp_ForceModel;
+
+sunProp_ForceModel.CentralBody            = Sun;
+sunProp_ForceModel.PointMasses            = {Sun};
+sunProp_ForceModel.Drag                   = None;
+sunProp_ForceModel.SRP                    = Off;
+sunProp_ForceModel.RelativisticCorrection = Off;
+sunProp_ForceModel.ErrorControl           = RSSStep;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator sunProp;
+
+sunProp.FM                       = sunProp_ForceModel;
+sunProp.Type                     = PrinceDormand78;
+sunProp.InitialStepSize          = 60;
+sunProp.Accuracy                 = 9.999999999999999e-012;
+sunProp.MinStep                  = 0;
+sunProp.MaxStep                  = 300000;
+sunProp.MaxStepAttempts          = 50;
+sunProp.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Burns
+%----------------------------------------
+
+Create ImpulsiveBurn aDeltaV;
+
+aDeltaV.CoordinateSystem = Local;
+aDeltaV.Origin           = Earth;
+aDeltaV.Axes             = VNB;
+aDeltaV.Element1         = 0;
+aDeltaV.Element2         = 0;
+aDeltaV.Element3         = 0;
+aDeltaV.DecrementMass    = false;
+aDeltaV.Isp              = 300;
+aDeltaV.GravitationalAccel = 9.810000000000001;
+
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem EarthSunRot;
+
+EarthSunRot.Origin    = Earth;
+EarthSunRot.Axes      = ObjectReferenced;
+EarthSunRot.XAxis     = V;
+EarthSunRot.YAxis     = N;
+EarthSunRot.Primary   = Sun;
+EarthSunRot.Secondary = Earth;
+
+
+Create CoordinateSystem MarsSunRot;
+
+MarsSunRot.Origin    = Mars;
+MarsSunRot.Axes      = ObjectReferenced;
+MarsSunRot.XAxis     = V;
+MarsSunRot.YAxis     = N;
+MarsSunRot.Primary   = Sun;
+MarsSunRot.Secondary = Mars;
+
+
+Create CoordinateSystem SunMJ2000Ec;
+
+SunMJ2000Ec.Origin = Sun;
+SunMJ2000Ec.Axes   = MJ2000Ec;
+
+%----------------------------------------
+%---------- Solvers
+%----------------------------------------
+
+Create Yukon Yukon1;
+
+Yukon1.ShowProgress          = true;
+Yukon1.ReportStyle           = Normal;
+Yukon1.ReportFile            = 'MinNLPadYukon1.data';
+Yukon1.MaximumIterations     = 500;
+Yukon1.UseCentralDifferences = false;
+Yukon1.FeasibilityTolerance  = 1;
+Yukon1.HessianUpdateMethod   = SelfScaledBFGS;
+Yukon1.MaximumFunctionEvals  = 1000;
+Yukon1.OptimalityTolerance   = 0.001;
+Yukon1.FunctionTolerance     = 0.0001;
+Yukon1.MaximumElasticWeight  = 10000;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create XYPlot XYPlot1;
+
+XYPlot1.SolverIterations = All;
+XYPlot1.UpperLeft        = [ 0.01941176470588235 0.6083333333333333 ];
+XYPlot1.Size             = [ 0.46 0.3869047619047619 ];
+XYPlot1.RelativeZOrder   = 282;
+XYPlot1.Maximized        = false;
+XYPlot1.XVariable        = loopCount;
+XYPlot1.YVariables       = {cost};
+XYPlot1.ShowGrid         = true;
+XYPlot1.ShowPlot         = true;
+
+
+Create XYPlot XYPlot2;
+
+XYPlot2.SolverIterations = All;
+XYPlot2.UpperLeft        = [ 0.4988235294117647 0.6083333333333333 ];
+XYPlot2.Size             = [ 0.48 0.3869047619047619 ];
+XYPlot2.RelativeZOrder   = 277;
+XYPlot2.Maximized        = false;
+XYPlot2.XVariable        = loopCount;
+XYPlot2.YVariables       = {launchEpoch, arrivalEpoch};
+XYPlot2.ShowGrid         = true;
+XYPlot2.ShowPlot         = true;
+
+
+Create ReportFile rf;
+
+rf.SolverIterations      = Current;
+rf.UpperLeft             = [ 0 0 ];
+rf.Size                  = [ 0 0 ];
+rf.RelativeZOrder        = 0;
+rf.Maximized             = false;
+rf.Filename              = 'MarsLaunchData.txt';
+rf.Precision             = 16;
+rf.WriteHeaders          = true;
+rf.LeftJustify           = On;
+rf.ZeroFill              = Off;
+rf.FixedWidth            = true;
+rf.Delimiter             = ' ';
+rf.ColumnWidth           = 23;
+rf.WriteReport           = true;
+
+
+Create OpenFramesInterface SunInertialView;
+
+SunInertialView.SolverIterations        = Current;
+SunInertialView.UpperLeft               = [ 0.01941176470588235 0.009523809523809525 ];
+SunInertialView.Size                    = [ 0.5588235294117647 0.5892857142857143 ];
+SunInertialView.RelativeZOrder          = 288;
+SunInertialView.Maximized               = false;
+SunInertialView.Add                     = {satForward, satBackward, Earth, Mars, Sun};
+SunInertialView.View                    = {CoordinateSystemView1, EarthView1, MarsView1, SunView1, satForwardView1, satBackwardView1};
+SunInertialView.CoordinateSystem        = SunMJ2000Ec;
+SunInertialView.DrawObject              = [ true true true true true ];
+SunInertialView.DrawTrajectory          = [ true true true true true ];
+SunInertialView.DrawAxes                = [ false false false false false ];
+SunInertialView.DrawXYPlane             = [ false false false false false ];
+SunInertialView.DrawLabel               = [ true true true true true ];
+SunInertialView.DrawUsePropLabel        = [ false false false false false ];
+SunInertialView.DrawCenterPoint         = [ true true false false false ];
+SunInertialView.DrawEndPoints           = [ true true false false false ];
+SunInertialView.DrawVelocity            = [ false false false false false ];
+SunInertialView.DrawGrid                = [ false false false false false ];
+SunInertialView.DrawLineWidth           = [ 2 2 2 2 2 ];
+SunInertialView.DrawMarkerSize          = [ 10 10 10 10 10 ];
+SunInertialView.DrawFontSize            = [ 14 14 14 14 14 ];
+SunInertialView.Axes                    = Off;
+SunInertialView.AxesLength              = 1;
+SunInertialView.AxesLabels              = Off;
+SunInertialView.FrameLabel              = Off;
+SunInertialView.XYPlane                 = Off;
+SunInertialView.EclipticPlane           = Off;
+SunInertialView.EnableStars             = On;
+SunInertialView.StarCatalog             = 'inp_StarsHYGv3.txt';
+SunInertialView.StarCount               = 40000;
+SunInertialView.MinStarMag              = -2;
+SunInertialView.MaxStarMag              = 6;
+SunInertialView.MinStarPixels           = 1;
+SunInertialView.MaxStarPixels           = 10;
+SunInertialView.MinStarDimRatio         = 0.5;
+SunInertialView.ShowPlot                = true;
+SunInertialView.ShowToolbar             = true;
+SunInertialView.SolverIterLastN         = 1;
+SunInertialView.ShowVR                  = false;
+SunInertialView.PlaybackTimeScale       = 3600;
+SunInertialView.MultisampleAntiAliasing = On;
+SunInertialView.MSAASamples             = 2;
+SunInertialView.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right'};
+
+
+Create OpenFramesInterface EarthSunRotView;
+
+EarthSunRotView.SolverIterations        = Current;
+EarthSunRotView.UpperLeft               = [ 0.5988235294117648 0.009523809523809525 ];
+EarthSunRotView.Size                    = [ 0.38 0.5892857142857143 ];
+EarthSunRotView.RelativeZOrder          = 285;
+EarthSunRotView.Maximized               = false;
+EarthSunRotView.Add                     = {satForward, satBackward, Earth, Mars, Sun};
+EarthSunRotView.View                    = {CoordinateSystemView2, EarthView2, MarsView2, SunView2, satForwardView2, satBackwardView2};
+EarthSunRotView.CoordinateSystem        = EarthSunRot;
+EarthSunRotView.DrawObject              = [ true true true true true ];
+EarthSunRotView.DrawTrajectory          = [ true true true true true ];
+EarthSunRotView.DrawAxes                = [ false false false false false ];
+EarthSunRotView.DrawXYPlane             = [ false false false false false ];
+EarthSunRotView.DrawLabel               = [ true true true true true ];
+EarthSunRotView.DrawUsePropLabel        = [ false false false false false ];
+EarthSunRotView.DrawCenterPoint         = [ true true false false false ];
+EarthSunRotView.DrawEndPoints           = [ true true false false false ];
+EarthSunRotView.DrawVelocity            = [ false false false false false ];
+EarthSunRotView.DrawGrid                = [ false false false false false ];
+EarthSunRotView.DrawLineWidth           = [ 2 2 2 2 2 ];
+EarthSunRotView.DrawMarkerSize          = [ 10 10 10 10 10 ];
+EarthSunRotView.DrawFontSize            = [ 14 14 14 14 14 ];
+EarthSunRotView.Axes                    = Off;
+EarthSunRotView.AxesLength              = 1;
+EarthSunRotView.AxesLabels              = Off;
+EarthSunRotView.FrameLabel              = Off;
+EarthSunRotView.XYPlane                 = Off;
+EarthSunRotView.EclipticPlane           = Off;
+EarthSunRotView.EnableStars             = On;
+EarthSunRotView.StarCatalog             = 'inp_StarsHYGv3.txt';
+EarthSunRotView.StarCount               = 40000;
+EarthSunRotView.MinStarMag              = -2;
+EarthSunRotView.MaxStarMag              = 6;
+EarthSunRotView.MinStarPixels           = 1;
+EarthSunRotView.MaxStarPixels           = 10;
+EarthSunRotView.MinStarDimRatio         = 0.5;
+EarthSunRotView.ShowPlot                = true;
+EarthSunRotView.ShowToolbar             = true;
+EarthSunRotView.SolverIterLastN         = 1;
+EarthSunRotView.ShowVR                  = false;
+EarthSunRotView.PlaybackTimeScale       = 3600;
+EarthSunRotView.MultisampleAntiAliasing = On;
+EarthSunRotView.MSAASamples             = 2;
+EarthSunRotView.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right'};
+
+%----------------------------------------
+%---------- Arrays, Variables, Strings
+%----------------------------------------
+Create Variable launchEpoch arrivalEpoch patchEpoch cost loopCount tofConstraint tofValue I;
+
+loopCount     = 1;
+tofConstraint = 270;
+tofValue      = 1;
+
+
+%----------------------------------------
+%---------- User Objects
+%----------------------------------------
+
+Create OpenFramesView CoordinateSystemView1;
+
+CoordinateSystemView1.ViewFrame          = CoordinateSystem;
+CoordinateSystemView1.ViewTrajectory     = Off;
+CoordinateSystemView1.InertialFrame      = Off;
+CoordinateSystemView1.SetDefaultLocation = On;
+CoordinateSystemView1.DefaultEye         = [ 175924414.0461449 -68605346.9024777 836437573.0851352 ];
+CoordinateSystemView1.DefaultCenter      = [ 6e-08 1.8e-07 1.2e-07 ];
+CoordinateSystemView1.DefaultUp          = [ 1 0 0 ];
+CoordinateSystemView1.SetCurrentLocation = On;
+CoordinateSystemView1.CurrentEye         = [ 175924414.0461449 -68605346.9024777 836437573.0851352 ];
+CoordinateSystemView1.CurrentCenter      = [ 5.960464477539063e-08 1.788139343261719e-07 1.192092895507813e-07 ];
+CoordinateSystemView1.CurrentUp          = [ 0.9725737285286525 0.1282565128938855 -0.1940376496357739 ];
+CoordinateSystemView1.FOVy               = 45;
+
+Create OpenFramesView EarthView1;
+
+EarthView1.ViewFrame          = Earth;
+EarthView1.ViewTrajectory     = Off;
+EarthView1.InertialFrame      = Off;
+EarthView1.SetDefaultLocation = Off;
+EarthView1.SetCurrentLocation = Off;
+EarthView1.FOVy               = 45;
+
+Create OpenFramesView MarsView1;
+
+MarsView1.ViewFrame          = Mars;
+MarsView1.ViewTrajectory     = Off;
+MarsView1.InertialFrame      = Off;
+MarsView1.SetDefaultLocation = Off;
+MarsView1.SetCurrentLocation = Off;
+MarsView1.FOVy               = 45;
+
+Create OpenFramesView SunView1;
+
+SunView1.ViewFrame          = Sun;
+SunView1.ViewTrajectory     = Off;
+SunView1.InertialFrame      = Off;
+SunView1.SetDefaultLocation = Off;
+SunView1.SetCurrentLocation = Off;
+SunView1.FOVy               = 45;
+
+Create OpenFramesView satForwardView1;
+
+satForwardView1.ViewFrame          = satForward;
+satForwardView1.ViewTrajectory     = Off;
+satForwardView1.InertialFrame      = Off;
+satForwardView1.SetDefaultLocation = Off;
+satForwardView1.SetCurrentLocation = Off;
+satForwardView1.FOVy               = 45;
+
+Create OpenFramesView satBackwardView1;
+
+satBackwardView1.ViewFrame          = satBackward;
+satBackwardView1.ViewTrajectory     = Off;
+satBackwardView1.InertialFrame      = Off;
+satBackwardView1.SetDefaultLocation = Off;
+satBackwardView1.SetCurrentLocation = Off;
+satBackwardView1.FOVy               = 45;
+
+Create OpenFramesView CoordinateSystemView2;
+
+CoordinateSystemView2.ViewFrame          = CoordinateSystem;
+CoordinateSystemView2.ViewTrajectory     = Off;
+CoordinateSystemView2.InertialFrame      = On;
+CoordinateSystemView2.SetDefaultLocation = On;
+CoordinateSystemView2.DefaultEye         = [ -30132693.60909937 752048311.5400642 -113499124.8065184 ];
+CoordinateSystemView2.DefaultCenter      = [ 7.000000000000001e-08 -1.2e-07 -1e-08 ];
+CoordinateSystemView2.DefaultUp          = [ 1 0 0 ];
+CoordinateSystemView2.SetCurrentLocation = On;
+CoordinateSystemView2.CurrentEye         = [ -30132693.60909927 752048311.5400643 -113499124.8065187 ];
+CoordinateSystemView2.CurrentCenter      = [ 5.21540641784668e-08 0 -3.278255462646484e-07 ];
+CoordinateSystemView2.CurrentUp          = [ 0.9990360394663664 0.03630457387747088 -0.02467731271698509 ];
+CoordinateSystemView2.FOVy               = 45;
+
+Create OpenFramesView EarthView2;
+
+EarthView2.ViewFrame          = Earth;
+EarthView2.ViewTrajectory     = Off;
+EarthView2.InertialFrame      = Off;
+EarthView2.SetDefaultLocation = Off;
+EarthView2.SetCurrentLocation = Off;
+EarthView2.FOVy               = 45;
+
+Create OpenFramesView MarsView2;
+
+MarsView2.ViewFrame          = Mars;
+MarsView2.ViewTrajectory     = Off;
+MarsView2.InertialFrame      = Off;
+MarsView2.SetDefaultLocation = Off;
+MarsView2.SetCurrentLocation = Off;
+MarsView2.FOVy               = 45;
+
+Create OpenFramesView SunView2;
+
+SunView2.ViewFrame          = Sun;
+SunView2.ViewTrajectory     = Off;
+SunView2.InertialFrame      = Off;
+SunView2.SetDefaultLocation = Off;
+SunView2.SetCurrentLocation = Off;
+SunView2.FOVy               = 45;
+
+Create OpenFramesView satForwardView2;
+
+satForwardView2.ViewFrame          = satForward;
+satForwardView2.ViewTrajectory     = Off;
+satForwardView2.InertialFrame      = Off;
+satForwardView2.SetDefaultLocation = Off;
+satForwardView2.SetCurrentLocation = Off;
+satForwardView2.FOVy               = 45;
+
+Create OpenFramesView satBackwardView2;
+
+satBackwardView2.ViewFrame          = satBackward;
+satBackwardView2.ViewTrajectory     = Off;
+satBackwardView2.InertialFrame      = Off;
+satBackwardView2.SetDefaultLocation = Off;
+satBackwardView2.SetCurrentLocation = Off;
+satBackwardView2.FOVy               = 45;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+BeginScript
+   
+   satForward.DateFormat    = 'TAIModJulian';
+   satBackward.DateFormat   = 'TAIModJulian';
+   launchEpoch              = 29087;
+   arrivalEpoch             = launchEpoch +  258.9234;  % Add hohmann transfer TOF to launchEpoch
+   patchEpoch               = launchEpoch + (arrivalEpoch - launchEpoch)/2;
+   satForward.TAIModJulian  = launchEpoch;
+   satBackward.TAIModJulian = arrivalEpoch;
+   tofConstraint            = 291;
+   
+   
+   arrivalEpoch    = launchEpoch +  258.9234;  % Add hohmann transfer TOF to launchEpoch
+   patchEpoch      = launchEpoch + (arrivalEpoch - launchEpoch)/2;
+   launchEpoch     = 27357.0637387;
+   arrivalEpoch    = 27722.2678134;
+   satForward.VX   = 1.24242326859;
+   satForward.VY   = 0.857493964283;
+   satForward.VZ   = -7.31156188552;
+   satBackward.VX  = -4.24323514703;
+   satBackward.VY  = -0.238185150576;
+   satBackward.VZ  = -5.58416575838;
+   
+   satForwardInit  = satForward;
+   satBackwardInit = satBackward;
+   
+EndScript;
+
+For I = 1:1:20;
+   
+   launchEpoch = 27357.0637387 - 11 + I*2;
+   satForward  = satForwardInit;
+   satBackward = satBackwardInit;
+   
+   Optimize Yukon1 {SolveMode = Solve, ExitMode = SaveAndContinue, ShowProgressWindow = true};
+      loopCount               = loopCount + 1;
+      
+      %Vary NLP(launchEpoch    = launchEpoch, {Perturbation = 1e-4, MaxStep = 125, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+      %Vary NLP(patchEpoch     = patchEpoch, {Perturbation = 1e-4, MaxStep = 125, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+      Vary Yukon1(arrivalEpoch = arrivalEpoch, {Perturbation = 1e-4, MaxStep = 125, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+      tofValue                 = arrivalEpoch - launchEpoch;
+      
+      satForward.TAIModJulian  = launchEpoch;
+      satBackward.TAIModJulian = arrivalEpoch;
+      patchEpoch               = launchEpoch + (arrivalEpoch - launchEpoch)/2;
+      
+      Vary Yukon1(satForward.VX = satForward.EarthSunRot.VX, {Perturbation = 1e-6, MaxStep = 1, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+      Vary Yukon1(satForward.VY = satForward.EarthSunRot.VY, {Perturbation = 1e-6, MaxStep = 1, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+      Vary Yukon1(satForward.VZ = satForward.EarthSunRot.VZ, {Perturbation = 1e-6, MaxStep = 1, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+      
+      Vary Yukon1(satBackward.VX = satBackward.MarsSunRot.VX, {Perturbation = 1e-6, MaxStep = 1, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+      Vary Yukon1(satBackward.VY = satBackward.MarsSunRot.VY, {Perturbation = 1e-6, MaxStep = 1, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+      Vary Yukon1(satBackward.VZ = satBackward.MarsSunRot.VZ, {Perturbation = 1e-6, MaxStep = 1, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+      
+      PenUp SunInertialView EarthSunRotView;
+      Propagate sunProp(satForward) {satForward.ElapsedSecs = 5};
+      PenDown SunInertialView EarthSunRotView;
+      Propagate sunProp(satForward) {satForward.TAIModJulian = patchEpoch};
+      PenUp SunInertialView EarthSunRotView;
+      Propagate BackProp sunProp(satBackward) {satBackward.ElapsedSecs = -5};
+      PenDown SunInertialView EarthSunRotView;
+      Propagate BackProp sunProp(satBackward) {satBackward.TAIModJulian = patchEpoch};
+      
+      NonlinearConstraint Yukon1(satForward.SunMJ2000Ec.X=satBackward.SunMJ2000Ec.X);
+      NonlinearConstraint Yukon1(satForward.SunMJ2000Ec.Y=satBackward.SunMJ2000Ec.Y);
+      NonlinearConstraint Yukon1(satForward.SunMJ2000Ec.Z=satBackward.SunMJ2000Ec.Z);
+      NonlinearConstraint Yukon1(satForward.SunMJ2000Ec.VX=satBackward.SunMJ2000Ec.VX);
+      NonlinearConstraint Yukon1(satForward.SunMJ2000Ec.VY=satBackward.SunMJ2000Ec.VY);
+      NonlinearConstraint Yukon1(satForward.SunMJ2000Ec.VZ=satBackward.SunMJ2000Ec.VZ);
+      
+      cost = sqrt(satForward.EarthSunRot.VX^2 + satForward.EarthSunRot.VY^2 + satForward.EarthSunRot.VZ^2) + sqrt(satBackward.MarsSunRot.VX^2 + satBackward.MarsSunRot.VY^2 + satBackward.MarsSunRot.VZ^2);
+      
+      % Report rf cost satForward.EarthSunRot.VX satForward.EarthSunRot.VY satForward.EarthSunRot.VZ satBackward.MarsSunRot.VX satBackward.MarsSunRot.VY satBackward.MarsSunRot.VZ;
+      Minimize Yukon1(cost);
+   
+   
+   EndOptimize;  % For optimizer NLP
+   Report rf launchEpoch cost;
+EndFor;

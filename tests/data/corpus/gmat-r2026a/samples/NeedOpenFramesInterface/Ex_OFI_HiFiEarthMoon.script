@@ -1,0 +1,502 @@
+%
+%  Ex_OFI_HiFiEarthMoon
+%
+%  Use a high-fidelity model for the Earth and Moon using osgEarth
+%  Earth data is streamed from https://readymap.org and cached locally
+%  Moon data is streamed from http://webmap.lroc.asu.edu and cached locally
+%
+%  Released: R2022a
+%
+
+
+
+%----------------------------------------
+%---------- User-Modified Default Celestial Bodies
+%----------------------------------------
+
+Earth.3DModelFile  = '.\OFI_Earth.earth';
+Earth.3DModelScale = 0.001;
+
+Luna.3DModelFile  = '.\OFI_Moon.earth';
+Luna.3DModelScale = 0.001;
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft DefaultSC;
+
+DefaultSC.DateFormat                   = UTCGregorian;
+DefaultSC.Epoch                        = '31 Oct 2015 00:00:28.000';
+DefaultSC.CoordinateSystem             = EarthMJ2000Eq;
+DefaultSC.DisplayStateType             = Keplerian;
+DefaultSC.SMA                          = 50000.00000000007;
+DefaultSC.ECC                          = 0.024549749005981;
+DefaultSC.INC                          = 12.85008005658097;
+DefaultSC.RAAN                         = 306.6148021947984;
+DefaultSC.AOP                          = 314.1905515359949;
+DefaultSC.TA                           = 99.88774933204589;
+DefaultSC.DryMass                      = 850;
+DefaultSC.Cd                           = 2.2;
+DefaultSC.Cr                           = 1.8;
+DefaultSC.DragArea                     = 15;
+DefaultSC.SRPArea                      = 1;
+DefaultSC.SPADDragScaleFactor          = 1;
+DefaultSC.SPADSRPScaleFactor           = 1;
+DefaultSC.NAIFId                       = -10000001;
+DefaultSC.NAIFIdReferenceFrame         = -9000001;
+DefaultSC.OrbitColor                   = Red;
+DefaultSC.TargetColor                  = Teal;
+DefaultSC.OrbitErrorCovariance         = [ 1e+70 0 0 0 0 0 ; 0 1e+70 0 0 0 0 ; 0 0 1e+70 0 0 0 ; 0 0 0 1e+70 0 0 ; 0 0 0 0 1e+70 0 ; 0 0 0 0 0 1e+70 ];
+DefaultSC.CdSigma                      = 1e+70;
+DefaultSC.CrSigma                      = 1e+70;
+DefaultSC.Id                           = 'SatId';
+DefaultSC.Attitude                     = CoordinateSystemFixed;
+DefaultSC.SPADSRPInterpolationMethod   = Bilinear;
+DefaultSC.SPADSRPScaleFactorSigma      = 1e+70;
+DefaultSC.SPADDragInterpolationMethod  = Bilinear;
+DefaultSC.SPADDragScaleFactorSigma     = 1e+70;
+DefaultSC.ModelFile                    = 'aura.3ds';
+DefaultSC.ModelOffsetX                 = 0;
+DefaultSC.ModelOffsetY                 = 0;
+DefaultSC.ModelOffsetZ                 = 0;
+DefaultSC.ModelRotationX               = 0;
+DefaultSC.ModelRotationY               = 0;
+DefaultSC.ModelRotationZ               = 0;
+DefaultSC.ModelScale                   = 0.001;
+DefaultSC.AttitudeDisplayStateType     = 'Quaternion';
+DefaultSC.AttitudeRateDisplayStateType = 'AngularVelocity';
+DefaultSC.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+DefaultSC.EulerAngleSequence           = '321';
+
+%----------------------------------------
+%---------- GroundStations
+%----------------------------------------
+
+Create GroundStation Wallops;
+
+Wallops.OrbitColor            = [255 128 128];
+Wallops.TargetColor           = DarkGray;
+Wallops.CentralBody           = Earth;
+Wallops.StateType             = Spherical;
+Wallops.HorizonReference      = Ellipsoid;
+Wallops.Location1             = 37.940194;
+Wallops.Location2             = 284.533611;
+Wallops.Location3             = 0;
+Wallops.Id                    = 'WFF';
+Wallops.IonosphereModel       = 'None';
+Wallops.TroposphereModel      = 'None';
+Wallops.DataSource            = 'Constant';
+Wallops.Temperature           = 295.1;
+Wallops.Pressure              = 1013.5;
+Wallops.Humidity              = 55;
+Wallops.MinimumElevationAngle = 7;
+
+
+Create GroundStation Keck;
+
+Keck.OrbitColor            = [255 128 128];
+Keck.TargetColor           = [0 0 64];
+Keck.CentralBody           = Earth;
+Keck.StateType             = Spherical;
+Keck.HorizonReference      = Ellipsoid;
+Keck.Location1             = 19.82635999999999;
+Keck.Location2             = 204.52499;
+Keck.Location3             = 4.18;
+Keck.Id                    = 'StationId';
+Keck.IonosphereModel       = 'None';
+Keck.TroposphereModel      = 'None';
+Keck.DataSource            = 'Constant';
+Keck.Temperature           = 295.1;
+Keck.Pressure              = 1013.5;
+Keck.Humidity              = 55;
+Keck.MinimumElevationAngle = 7;
+
+Create GroundStation Tycho;
+
+Tycho.OrbitColor            = Thistle;
+Tycho.TargetColor           = DarkGray;
+Tycho.CentralBody           = Luna;
+Tycho.StateType             = Spherical;
+Tycho.HorizonReference      = Sphere;
+Tycho.Location1             = -43.31;
+Tycho.Location2             = 348.64;
+Tycho.Location3             = 0;
+Tycho.Id                    = 'StationId';
+Tycho.IonosphereModel       = 'None';
+Tycho.TroposphereModel      = 'None';
+Tycho.DataSource            = 'Constant';
+Tycho.Temperature           = 295.1;
+Tycho.Pressure              = 1013.5;
+Tycho.Humidity              = 55;
+Tycho.MinimumElevationAngle = 7;
+
+Create GroundStation Compton;
+
+Compton.OrbitColor            = Thistle;
+Compton.TargetColor           = DarkGray;
+Compton.CentralBody           = Luna;
+Compton.StateType             = Spherical;
+Compton.HorizonReference      = Sphere;
+Compton.Location1             = 55.3;
+Compton.Location2             = 103.8;
+Compton.Location3             = 10;
+Compton.Id                    = 'StationId';
+Compton.IonosphereModel       = 'None';
+Compton.TroposphereModel      = 'None';
+Compton.DataSource            = 'Constant';
+Compton.Temperature           = 295.1;
+Compton.Pressure              = 1013.5;
+Compton.Humidity              = 55;
+Compton.MinimumElevationAngle = 7;
+
+
+Create GroundStation Copernicus;
+
+Copernicus.OrbitColor            = Thistle;
+Copernicus.TargetColor           = DarkGray;
+Copernicus.CentralBody           = Luna;
+Copernicus.StateType             = Spherical;
+Copernicus.HorizonReference      = Sphere;
+Copernicus.Location1             = 9.619999999999999;
+Copernicus.Location2             = 339.92;
+Copernicus.Location3             = 0;
+Copernicus.Id                    = 'StationId';
+Copernicus.IonosphereModel       = 'None';
+Copernicus.TroposphereModel      = 'None';
+Copernicus.DataSource            = 'Constant';
+Copernicus.Temperature           = 295.1;
+Copernicus.Pressure              = 1013.5;
+Copernicus.Humidity              = 55;
+Copernicus.MinimumElevationAngle = 7;
+
+
+Create GroundStation Aitken;
+
+Aitken.OrbitColor                 = [0 0 160];
+Aitken.TargetColor                = DarkGray;
+Aitken.CentralBody                = Luna;
+Aitken.StateType                  = Spherical;
+Aitken.HorizonReference           = Sphere;
+Aitken.Location1                  = -16.8;
+Aitken.Location2                  = 173.4;
+Aitken.Location3                  = 0;
+Aitken.Id                         = 'StationId';
+Aitken.IonosphereModel            = 'None';
+Aitken.TroposphereModel           = 'None';
+Aitken.DataSource                 = 'Constant';
+Aitken.Temperature                = 295.1;
+Aitken.Pressure                   = 1013.5;
+Aitken.Humidity                   = 55;
+Aitken.MinimumElevationAngle      = 7;
+
+
+Create GroundStation Schroters_Valley;
+
+Schroters_Valley.OrbitColor            = Thistle;
+Schroters_Valley.TargetColor           = DarkGray;
+Schroters_Valley.CentralBody           = Luna;
+Schroters_Valley.StateType             = Spherical;
+Schroters_Valley.HorizonReference      = Ellipsoid;
+Schroters_Valley.Location1             = 26.2;
+Schroters_Valley.Location2             = 309.2;
+Schroters_Valley.Location3             = 0;
+Schroters_Valley.Id                    = 'StationId';
+Schroters_Valley.IonosphereModel       = 'None';
+Schroters_Valley.TroposphereModel      = 'None';
+Schroters_Valley.DataSource            = 'Constant';
+Schroters_Valley.Temperature           = 295.1;
+Schroters_Valley.Pressure              = 1013.5;
+Schroters_Valley.Humidity              = 55;
+Schroters_Valley.MinimumElevationAngle = 7;
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel DefaultProp_ForceModel;
+
+DefaultProp_ForceModel.CentralBody                      = Earth;
+DefaultProp_ForceModel.PrimaryBodies                    = {Earth};
+DefaultProp_ForceModel.Drag                             = None;
+DefaultProp_ForceModel.SRP                              = Off;
+DefaultProp_ForceModel.RelativisticCorrection           = Off;
+DefaultProp_ForceModel.ErrorControl                     = RSSStep;
+DefaultProp_ForceModel.GravityField.Earth.Degree        = 4;
+DefaultProp_ForceModel.GravityField.Earth.Order         = 4;
+DefaultProp_ForceModel.GravityField.Earth.StmLimit      = 100;
+DefaultProp_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+DefaultProp_ForceModel.GravityField.Earth.TideModel     = 'None';
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator DefaultProp;
+
+DefaultProp.FM                       = DefaultProp_ForceModel;
+DefaultProp.Type                     = PrinceDormand78;
+DefaultProp.InitialStepSize          = 60;
+DefaultProp.Accuracy                 = 9.999999999999999e-12;
+DefaultProp.MinStep                  = 0.001;
+DefaultProp.MaxStep                  = 10;
+DefaultProp.MaxStepAttempts          = 50;
+DefaultProp.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem KeckLocal;
+
+KeckLocal.Origin = Keck;
+KeckLocal.Axes   = Topocentric;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface OF_Inertial;
+
+OF_Inertial.SolverIterations        = Current;
+OF_Inertial.UpperLeft               = [ 0.1147058823529412 0 ];
+OF_Inertial.Size                    = [ 0.4094117647058824 0.9797619047619047 ];
+OF_Inertial.RelativeZOrder          = 11;
+OF_Inertial.Maximized               = false;
+OF_Inertial.Add                     = {DefaultSC, Wallops, Keck, Tycho, Compton, Copernicus, Aitken, Schroters_Valley, Earth, Sun, Luna};
+OF_Inertial.View                    = {EarthView, KeckView, WallopsView, MoonView, TychoView, ComptonView, CopernicusView, AitkenView, SchroterValleyView};
+OF_Inertial.CoordinateSystem        = EarthMJ2000Eq;
+OF_Inertial.DrawObject              = [ false true true false false false false false true true true ];
+OF_Inertial.DrawTrajectory          = [ false false false false false false false false true true true ];
+OF_Inertial.DrawAxes                = [ false false false false false false false true true false false ];
+OF_Inertial.DrawXYPlane             = [ false false false false false false false false false false false ];
+OF_Inertial.DrawLabel               = [ false true true true true true true true true true true ];
+OF_Inertial.DrawUsePropLabel        = [ false false false false false false false false false false false ];
+OF_Inertial.DrawCenterPoint         = [ false true true true true true true true true true true ];
+OF_Inertial.DrawEndPoints           = [ false false false false false false false false true true true ];
+OF_Inertial.DrawVelocity            = [ false false false false false false false false false false false ];
+OF_Inertial.DrawGrid                = [ false false false false false false false false false false false ];
+OF_Inertial.DrawLineWidth           = [ 2 2 2 2 2 2 2 2 2 2 2 ];
+OF_Inertial.DrawMarkerSize          = [ 10 10 10 10 10 10 10 10 10 10 10 ];
+OF_Inertial.DrawFontSize            = [ 14 14 14 14 14 14 14 14 14 14 14 ];
+OF_Inertial.Axes                    = Off;
+OF_Inertial.AxesLength              = 1;
+OF_Inertial.AxesLabels              = On;
+OF_Inertial.FrameLabel              = Off;
+OF_Inertial.XYPlane                 = Off;
+OF_Inertial.EclipticPlane           = Off;
+OF_Inertial.EnableStars             = On;
+OF_Inertial.StarCatalog             = 'inp_StarsHYGv3.txt';
+OF_Inertial.StarSettings            = Monitor;
+OF_Inertial.StarCount               = 40000;
+OF_Inertial.MinStarMag              = -2;
+OF_Inertial.MaxStarMag              = 6;
+OF_Inertial.MinStarPixels           = 1;
+OF_Inertial.MaxStarPixels           = 10;
+OF_Inertial.MinStarDimRatio         = 0.5;
+OF_Inertial.ShowPlot                = true;
+OF_Inertial.ShowToolbar             = true;
+OF_Inertial.SolverIterLastN         = 1;
+OF_Inertial.ShowVR                  = false;
+OF_Inertial.PlaybackTimeScale       = 3600;
+OF_Inertial.MultisampleAntiAliasing = On;
+OF_Inertial.MSAASamples             = 4;
+OF_Inertial.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right'};
+
+%----------------------------------------
+%---------- User Objects
+%----------------------------------------
+
+Create OpenFramesView EarthView;
+
+EarthView.ViewFrame          = Earth;
+EarthView.ViewTrajectory     = Off;
+EarthView.InertialFrame      = Off;
+EarthView.SetDefaultLocation = Off;
+EarthView.SetCurrentLocation = On;
+EarthView.CurrentEye         = [ 0 -116171.9609375 0 ];
+EarthView.CurrentCenter      = [ 0 0 0 ];
+EarthView.CurrentUp          = [ 0 0 1 ];
+EarthView.FOVy               = 45;
+
+
+Create OpenFramesView WallopsView;
+
+WallopsView.ViewFrame          = Wallops;
+WallopsView.ViewTrajectory     = Off;
+WallopsView.InertialFrame      = Off;
+WallopsView.LookAtFrame        = Earth;
+WallopsView.ShortestAngle      = Off;
+WallopsView.SetDefaultLocation = On;
+WallopsView.DefaultEye         = [ 4.64601496 -2.60465988 -3.83410483 ];
+WallopsView.DefaultCenter      = [ 0 0 0 ];
+WallopsView.DefaultUp          = [ -0.34376144 -0.9162139500000001 0.20586419 ];
+WallopsView.SetCurrentLocation = On;
+WallopsView.CurrentEye         = [ 0 -4691.822733104507 0 ];
+WallopsView.CurrentCenter      = [ 0 0 0 ];
+WallopsView.CurrentUp          = [ 0 0 1 ];
+WallopsView.FOVy               = 45;
+
+
+Create OpenFramesView KeckView;
+
+KeckView.ViewFrame          = Keck;
+KeckView.ViewTrajectory     = Off;
+KeckView.InertialFrame      = Off;
+KeckView.LookAtFrame        = Earth;
+KeckView.ShortestAngle      = Off;
+KeckView.SetDefaultLocation = On;
+KeckView.DefaultEye         = [ -4.16317948 -7.47326055 -20.68977757 ];
+KeckView.DefaultCenter      = [ 0 0 0 ];
+KeckView.DefaultUp          = [ 0.03260576 -0.94210388 0.33373216 ];
+KeckView.SetCurrentLocation = On;
+KeckView.CurrentEye         = [ -4.16317948 -7.473260549999999 -20.68977757 ];
+KeckView.CurrentCenter      = [ 8.881784197001252e-16 1.77635683940025e-15 3.552713678800501e-15 ];
+KeckView.CurrentUp          = [ 0.03260575958193419 -0.942103875289755 0.3337321569853747 ];
+KeckView.FOVy               = 45;
+
+
+Create OpenFramesView MoonView;
+
+MoonView.ViewFrame          = Luna;
+MoonView.ViewTrajectory     = Off;
+MoonView.InertialFrame      = On;
+MoonView.SetDefaultLocation = Off;
+MoonView.SetCurrentLocation = On;
+MoonView.CurrentEye         = [ 0 -5047.994140625 0 ];
+MoonView.CurrentCenter      = [ 0 0 0 ];
+MoonView.CurrentUp          = [ 0 0 1 ];
+MoonView.FOVy               = 45;
+
+
+Create OpenFramesVector KeckUp;
+
+KeckUp.VectorColor      = [255 0 0];
+KeckUp.SourceObject     = Keck;
+KeckUp.VectorType       = Body-Fixed;
+KeckUp.BFStartPoint     = [ 0 0 0 ];
+KeckUp.BFDirection      = [ 0 0 1 ];
+KeckUp.VectorLabel      = 'Up';
+KeckUp.VectorLengthType = 'Auto';
+
+
+Create OpenFramesView CoordinateSystemView2;
+
+CoordinateSystemView2.ViewFrame          = CoordinateSystem;
+CoordinateSystemView2.ViewTrajectory     = Off;
+CoordinateSystemView2.InertialFrame      = Off;
+CoordinateSystemView2.SetDefaultLocation = Off;
+CoordinateSystemView2.SetCurrentLocation = On;
+CoordinateSystemView2.CurrentEye         = [ 0 -200002.484375 0 ];
+CoordinateSystemView2.CurrentCenter      = [ 0 0 0 ];
+CoordinateSystemView2.CurrentUp          = [ 0 0 1 ];
+CoordinateSystemView2.FOVy               = 45;
+
+
+Create OpenFramesView KeckView1;
+
+KeckView1.ViewFrame          = Keck;
+KeckView1.ViewTrajectory     = Off;
+KeckView1.InertialFrame      = Off;
+KeckView1.SetDefaultLocation = Off;
+KeckView1.SetCurrentLocation = On;
+KeckView1.CurrentEye         = [ 1.940310985546152 3.371626899482158 2.154904907072854 ];
+KeckView1.CurrentCenter      = [ 4.440892098500626e-16 0 -8.881784197001252e-16 ];
+KeckView1.CurrentUp          = [ -0.161016973461013 -0.4640515933091209 0.8710508900200501 ];
+KeckView1.FOVy               = 45;
+
+
+Create OpenFramesView TychoView;
+
+TychoView.ViewFrame          = Tycho;
+TychoView.ViewTrajectory     = Off;
+TychoView.InertialFrame      = Off;
+TychoView.LookAtFrame        = Luna;
+TychoView.ShortestAngle      = Off;
+TychoView.SetDefaultLocation = On;
+TychoView.DefaultEye         = [ 23.02620351 -19.87772852 -81.41167264000001 ];
+TychoView.DefaultCenter      = [ 0 0 0 ];
+TychoView.DefaultUp          = [ -0.09845568 -0.97280148 0.20967538 ];
+TychoView.SetCurrentLocation = On;
+TychoView.CurrentEye         = [ 23.02620351 -19.87772852 -81.41167264000001 ];
+TychoView.CurrentCenter      = [ 0 7.105427357601002e-15 1.4210854715202e-14 ];
+TychoView.CurrentUp          = [ -0.09845567912992075 -0.9728014778989789 0.2096753772969756 ];
+TychoView.FOVy               = 45;
+
+
+Create OpenFramesView ComptonView;
+
+ComptonView.ViewFrame          = Compton;
+ComptonView.ViewTrajectory     = Off;
+ComptonView.InertialFrame      = Off;
+ComptonView.LookAtFrame        = Earth;
+ComptonView.ShortestAngle      = Off;
+ComptonView.SetDefaultLocation = On;
+ComptonView.DefaultEye         = [ -0.74993033 -47.80128277 13.8195276 ];
+ComptonView.DefaultCenter      = [ -0.77215025 -1.92740499 13.60086668 ];
+ComptonView.DefaultUp          = [ -0.17128719 0.0046131 0.98521034 ];
+ComptonView.SetCurrentLocation = On;
+ComptonView.CurrentEye         = [ -0.7499303300000001 -47.80128276999999 13.81952760000001 ];
+ComptonView.CurrentCenter      = [ -0.7721502499999995 -1.927404989999985 13.60086667999999 ];
+ComptonView.CurrentUp          = [ -0.1712871903284648 0.004613104937229218 0.9852103418520426 ];
+ComptonView.FOVy = 45;
+
+
+Create OpenFramesView CopernicusView;
+
+CopernicusView.ViewFrame          = Copernicus;
+CopernicusView.ViewTrajectory     = Off;
+CopernicusView.InertialFrame      = Off;
+CopernicusView.LookAtFrame        = Luna;
+CopernicusView.ShortestAngle      = Off;
+CopernicusView.SetDefaultLocation = On;
+CopernicusView.DefaultEye         = [ 29.53129358 -24.7429463 80.25576244 ];
+CopernicusView.DefaultCenter      = [ 0 0 0 ];
+CopernicusView.DefaultUp          = [ -0.08566994999999999 -0.96054192 -0.26461269 ];
+CopernicusView.SetCurrentLocation = On;
+CopernicusView.CurrentEye         = [ 29.53129358 -24.7429463 80.25576244000001 ];
+CopernicusView.CurrentCenter      = [ 0 3.552713678800501e-15 0 ];
+CopernicusView.CurrentUp          = [ -0.08566994835445638 -0.9605419233817782 -0.2646126855896724 ];
+CopernicusView.FOVy               = 45;
+
+
+Create OpenFramesView AitkenView;
+
+AitkenView.ViewFrame              = Aitken;
+AitkenView.ViewTrajectory         = Off;
+AitkenView.InertialFrame          = Off;
+AitkenView.LookAtFrame            = Luna;
+AitkenView.ShortestAngle          = Off;
+AitkenView.SetDefaultLocation     = On;
+AitkenView.DefaultEye             = [ 143.85360821 -130.7040853 -144.42225732 ];
+AitkenView.DefaultCenter          = [ 7.96362213 1.00654857 6.55056164 ];
+AitkenView.DefaultUp              = [ -0.1168966 -0.79810991 0.59106325 ];
+AitkenView.SetCurrentLocation     = On;
+AitkenView.CurrentEye             = [ 143.8536082100001 -130.7040853000001 -144.42225732 ];
+AitkenView.CurrentCenter          = [ 7.963622130000033 1.00654856999995 6.550561640000012 ];
+AitkenView.CurrentUp              = [ -0.1168965989180733 -0.7981099069325674 0.591063246715168 ];
+AitkenView.FOVy                   = 26;
+
+
+Create OpenFramesView SchroterValleyView;
+
+SchroterValleyView.ViewFrame          = Schroters_Valley;
+SchroterValleyView.ViewTrajectory     = Off;
+SchroterValleyView.InertialFrame      = Off;
+SchroterValleyView.LookAtFrame        = Luna;
+SchroterValleyView.ShortestAngle      = Off;
+SchroterValleyView.SetDefaultLocation = Off;
+SchroterValleyView.SetCurrentLocation = On;
+SchroterValleyView.CurrentEye         = [ 59.150634765625 -455.2442626953125 31.69873046875 ];
+SchroterValleyView.CurrentCenter      = [ 59.150634765625 59.150634765625 31.69873046875 ];
+SchroterValleyView.CurrentUp          = [ 0 0 1 ];
+SchroterValleyView.FOVy               = 45;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+Propagate DefaultProp(DefaultSC) {DefaultSC.ElapsedDays = 1};

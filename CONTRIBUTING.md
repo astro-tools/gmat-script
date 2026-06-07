@@ -30,6 +30,15 @@ npx tree-sitter test       # runs the corpus tests under test/corpus/
 CI regenerates the parser with the pinned CLI and fails if the committed `src/parser.c` is stale,
 so always commit the regenerated output alongside the grammar change.
 
+### The acceptance corpus
+
+`tests/data/corpus/gmat-r2026a/` holds the unmodified sample scripts that ship with NASA GMAT
+R2026a (162 `.script` + 9 `.gmf`) — the grammar's acceptance oracle. Every file must parse with zero
+`ERROR`/`MISSING` nodes and re-emit byte-for-byte; the `corpus-coverage` CI job enforces this on
+every OS/Python cell and `tests/check_corpus.py` logs the counts. The corpus is Apache-2.0; see that
+directory's `PROVENANCE.md` for its source, licensing, and how to refresh it from a GMAT install.
+A corpus file that does not parse signals a grammar gap, not a corpus problem.
+
 ## Branches and PRs
 
 - One issue per branch. Branch names use a short prefix for type:

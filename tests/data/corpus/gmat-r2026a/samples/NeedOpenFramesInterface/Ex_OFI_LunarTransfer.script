@@ -1,0 +1,311 @@
+%
+%  Ex_OFI_LunarTransfer
+%
+%  Script Mission - Lunar Transfer Example
+%
+%  This script demonstrates how to set up a lunar transfer mission
+%
+%  Released: R2020a
+%
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft Sat;
+
+Sat.DateFormat       = UTCGregorian;
+Sat.Epoch            = '22 Jul 2014 11:29:10.811';
+Sat.CoordinateSystem = EarthMJ2000Eq;
+Sat.DisplayStateType = Cartesian;
+Sat.X                = -137380.1984338506;
+Sat.Y                = 75679.87867537055;
+Sat.Z                = 21487.63875187856;
+Sat.VX               = -0.2324532014235503;
+Sat.VY               = -0.4462753967758019;
+Sat.VZ               = 0.08561205662877103;
+Sat.DryMass          = 1000;
+Sat.Cd               = 2.2;
+Sat.Cr               = 1.7;
+Sat.DragArea         = 15;
+Sat.SRPArea          = 1;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create ForceModel AllForces;
+
+AllForces.CentralBody                      = Earth;
+AllForces.PrimaryBodies                    = {Earth};
+AllForces.PointMasses                      = {Sun, Luna, Venus, Mars, Jupiter, Saturn, Uranus, Neptune};
+AllForces.SRP                              = On;
+AllForces.RelativisticCorrection           = Off;
+AllForces.ErrorControl                     = RSSStep;
+AllForces.GravityField.Earth.Degree        = 20;
+AllForces.GravityField.Earth.Order         = 20;
+AllForces.GravityField.Earth.PotentialFile = 'JGM2.cof';
+AllForces.GravityField.Earth.TideModel     = 'None';
+AllForces.SRP.Flux                         = 1367;
+AllForces.SRP.SRPModel                     = Spherical;
+AllForces.SRP.Nominal_Sun                  = 149597870.691;
+AllForces.Drag.AtmosphereModel             = MSISE90;
+AllForces.Drag.HistoricWeatherSource       = 'ConstantFluxAndGeoMag';
+AllForces.Drag.PredictedWeatherSource      = 'ConstantFluxAndGeoMag';
+AllForces.Drag.CSSISpaceWeatherFile        = '../samples/SupportFiles/CSSI_2004To2026.txt';
+AllForces.Drag.SchattenFile                = 'SchattenPredict.txt';
+AllForces.Drag.F107                        = 150;
+AllForces.Drag.F107A                       = 150;
+AllForces.Drag.MagneticIndex               = 3;
+AllForces.Drag.SchattenErrorModel          = 'Nominal';
+AllForces.Drag.SchattenTimingModel         = 'NominalCycle';
+
+
+Create ForceModel MoonAllForces;
+
+MoonAllForces.CentralBody                     = Luna;
+MoonAllForces.PrimaryBodies                   = {Luna};
+MoonAllForces.PointMasses                     = {Sun, Earth, Venus, Mars, Jupiter, Saturn, Uranus, Neptune};
+MoonAllForces.Drag                            = None;
+MoonAllForces.SRP                             = On;
+MoonAllForces.RelativisticCorrection          = Off;
+MoonAllForces.ErrorControl                    = RSSStep;
+MoonAllForces.GravityField.Luna.Degree        = 20;
+MoonAllForces.GravityField.Luna.Order         = 20;
+MoonAllForces.GravityField.Luna.PotentialFile = 'LP165P.cof';
+MoonAllForces.SRP.Flux                        = 1367;
+MoonAllForces.SRP.SRPModel                    = Spherical;
+MoonAllForces.SRP.Nominal_Sun                 = 149597870.691;
+
+Create Propagator EarthFull;
+
+EarthFull.FM                       = AllForces;
+EarthFull.Type                     = RungeKutta89;
+EarthFull.InitialStepSize          = 60;
+EarthFull.Accuracy                 = 9.999999999999999e-012;
+EarthFull.MinStep                  = 0.001;
+EarthFull.MaxStep                  = 45000;
+EarthFull.MaxStepAttempts          = 50;
+EarthFull.StopIfAccuracyIsViolated = true;
+
+
+Create Propagator MoonFull;
+
+MoonFull.FM                       = MoonAllForces;
+MoonFull.Type                     = RungeKutta89;
+MoonFull.InitialStepSize          = 60;
+MoonFull.Accuracy                 = 9.999999999999999e-012;
+MoonFull.MinStep                  = 0.001;
+MoonFull.MaxStep                  = 15000;
+MoonFull.MaxStepAttempts          = 50;
+MoonFull.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Burns
+%----------------------------------------
+
+Create ImpulsiveBurn TOI;
+
+TOI.CoordinateSystem = Local;
+TOI.Origin           = Earth;
+TOI.Axes             = VNB;
+TOI.Element1         = 0.14676929889;
+TOI.Element2         = 0.046042675892;
+TOI.Element3         = 0.090223244097;
+
+
+Create ImpulsiveBurn LOI;
+
+LOI.CoordinateSystem = Local;
+LOI.Origin           = Luna;
+LOI.Axes             = VNB;
+LOI.Element1         = -0.652;
+LOI.Element2         = 0;
+LOI.Element3         = 0;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem EarthSunRot;
+
+EarthSunRot.Origin    = Earth;
+EarthSunRot.Axes      = ObjectReferenced;
+EarthSunRot.XAxis     = R;
+EarthSunRot.ZAxis     = N;
+EarthSunRot.Primary   = Sun;
+EarthSunRot.Secondary = Earth;
+
+
+Create CoordinateSystem MoonMJ2000Eq;
+
+MoonMJ2000Eq.Origin = Luna;
+MoonMJ2000Eq.Axes   = MJ2000Eq;
+
+
+Create CoordinateSystem EarthMoonRot;
+
+EarthMoonRot.Origin    = Luna;
+EarthMoonRot.Axes      = ObjectReferenced;
+EarthMoonRot.XAxis     = R;
+EarthMoonRot.ZAxis     = N;
+EarthMoonRot.Primary   = Earth;
+EarthMoonRot.Secondary = Luna;
+
+%----------------------------------------
+%---------- Solvers
+%----------------------------------------
+
+Create DifferentialCorrector DC1;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface EarthInertialView;
+
+EarthInertialView.UpperLeft        = [ 0.25 0.0 ];
+EarthInertialView.Size             = [ 0.37 0.45];
+EarthInertialView.RelativeZOrder   = 716;
+EarthInertialView.Maximized        = false;
+EarthInertialView.Add              = {Sat, Earth, Luna, Sun};
+EarthInertialView.CoordinateSystem = EarthMJ2000Eq;
+EarthInertialView.View             = {CoordinateSystemView1, EarthView1, SatView1};
+
+Create OpenFramesInterface MoonInertialView;
+
+MoonInertialView.SolverIterations = Current;
+MoonInertialView.UpperLeft        = [ 0.25 0.46 ];
+MoonInertialView.Size             = [ 0.37 0.45 ];
+MoonInertialView.RelativeZOrder   = 710;
+MoonInertialView.Maximized        = false;
+MoonInertialView.Add              = {Sat, Earth, Luna, Sun};
+MoonInertialView.CoordinateSystem = MoonMJ2000Eq;
+MoonInertialView.View             = {CoordinateSystemView2, LunaView2, SatView2};
+
+
+Create XYPlot RadApoPlot;
+
+RadApoPlot.SolverIterations = None;
+RadApoPlot.UpperLeft        = [ 0.63 0.15 ];
+RadApoPlot.Size             = [ 0.36 0.45 ];
+RadApoPlot.RelativeZOrder   = 705;
+RadApoPlot.Maximized        = false;
+RadApoPlot.XVariable        = Sat.A1ModJulian;
+RadApoPlot.YVariables       = {Sat.RMAG};
+RadApoPlot.ShowGrid         = true;
+RadApoPlot.ShowPlot         = true;
+
+
+%----------------------------------------
+%---------- View Objects
+%----------------------------------------
+
+Create OpenFramesView CoordinateSystemView1;
+
+CoordinateSystemView1.ViewFrame          = CoordinateSystem;
+CoordinateSystemView1.ViewTrajectory     = Off;
+CoordinateSystemView1.InertialFrame      = Off;
+CoordinateSystemView1.SetDefaultLocation = Off;
+CoordinateSystemView1.SetCurrentLocation = On;
+CoordinateSystemView1.CurrentEye         = [ 900000 -600000 300000 ];
+CoordinateSystemView1.CurrentCenter      = [ 0 0 0 ];
+CoordinateSystemView1.CurrentUp          = [ 0 0 1 ];
+
+Create OpenFramesView EarthView1;
+
+EarthView1.ViewFrame          = Earth;
+EarthView1.ViewTrajectory     = Off;
+EarthView1.InertialFrame      = Off;
+EarthView1.SetDefaultLocation = Off;
+EarthView1.SetCurrentLocation = Off;
+
+
+Create OpenFramesView SatView1;
+
+SatView1.ViewFrame          = Sat;
+SatView1.ViewTrajectory     = Off;
+SatView1.InertialFrame      = Off;
+SatView1.SetDefaultLocation = Off;
+SatView1.SetCurrentLocation = Off;
+
+
+Create OpenFramesView CoordinateSystemView2;
+
+CoordinateSystemView2.ViewFrame          = CoordinateSystem;
+CoordinateSystemView2.ViewTrajectory     = Off;
+CoordinateSystemView2.InertialFrame      = Off;
+CoordinateSystemView2.SetDefaultLocation = Off;
+CoordinateSystemView2.SetCurrentLocation = On;
+CoordinateSystemView2.CurrentEye         = [ 5000 -10000 22000 ];
+CoordinateSystemView2.CurrentCenter      = [ 0 0 0 ];
+CoordinateSystemView2.CurrentUp          = [ 1 0 0 ];
+
+
+Create OpenFramesView LunaView2;
+
+LunaView2.ViewFrame          = Luna;
+LunaView2.ViewTrajectory     = Off;
+LunaView2.InertialFrame      = Off;
+LunaView2.SetDefaultLocation = Off;
+LunaView2.SetCurrentLocation = Off;
+
+
+Create OpenFramesView SatView2;
+
+SatView2.ViewFrame          = Sat;
+SatView2.ViewTrajectory     = Off;
+SatView2.InertialFrame      = Off;
+SatView2.SetDefaultLocation = Off;
+SatView2.SetCurrentLocation = Off;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+%------------------------------
+%  Propagate to Earth periapsis
+%------------------------------
+
+Propagate 'Prop to Perigee' EarthFull(Sat) {Sat.Periapsis};
+
+%------------------------------
+%  Target Lunar B-plane
+%------------------------------
+Target 'Target B-Plane' DC1 {SolveMode = Solve, ExitMode = DiscardAndContinue, ShowProgressWindow = true};
+   
+   Vary 'Vary TOI.V' DC1(TOI.Element1 = 0.14, {Perturbation = 1e-005, Lower = .13, Upper = .5, MaxStep = .01, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Vary 'Vary TOI.B' DC1(TOI.Element3 = 0.1,  {Perturbation = 1e-005, Lower = -.5, Upper = .5, MaxStep = .01, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   
+   Maneuver 'Apply TOI' TOI(Sat);
+   
+   Propagate 'Prop to Moon SOI' EarthFull(Sat) {Sat.Earth.RMAG = 325000, StopTolerance = 1e-005};
+   Propagate 'Prop to Periselene' MoonFull(Sat) {Sat.Luna.Periapsis, StopTolerance = 1e-005};
+   
+   Achieve 'Achieve BdotR' DC1(Sat.MoonMJ2000Eq.BdotT = 15000.4401777, {Tolerance = 3});
+   Achieve 'Achieve BdotT' DC1(Sat.MoonMJ2000Eq.BdotR = 4000.59308992, {Tolerance = 3});
+   %Achieve DC1(Sat.RMAG = 390000 , {Tolerance = 200000}); 
+   
+EndTarget;  % For targeter DC1
+
+%------------------------------
+% Target to orbit the Moon
+%------------------------------
+Target 'Target Lunar Insertion' DC1 {SolveMode = Solve, ExitMode = DiscardAndContinue, ShowProgressWindow = true};
+   
+   Vary 'Vary LOI.V' DC1(LOI.Element1 = -0.65198120104, {Perturbation = 1e-003, Lower = -3, Upper = 0, MaxStep = .3, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   
+   Maneuver 'Apply LOI' LOI(Sat);
+   
+   Achieve 'Achieve ECC = 0' DC1(Sat.Luna.ECC = 0, {Tolerance = 0.0001});
+   
+EndTarget;  % For targeter DC1
+
+
+%------------------------------
+% Propagate for a few days
+%------------------------------
+Propagate 'Prop 15 days' MoonFull(Sat) {Sat.ElapsedDays = 15};

@@ -1,0 +1,213 @@
+%
+%  Ex_OFI_VR_2017SolarEclipse
+%
+%  Observe solar eclipse in VR. Currently Windows-only.
+%  Requires SteamVR to be installed
+%  Requires a VR headset to be connected to SteamVR, preferably via Steam Link
+%
+%  Released: R2020a
+%
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft DefaultSC;
+
+DefaultSC.DateFormat                   = UTCGregorian;
+DefaultSC.Epoch                        = '21 Aug 2017 16:20:00.000';
+DefaultSC.CoordinateSystem             = EarthMJ2000Eq;
+DefaultSC.DisplayStateType             = Keplerian;
+DefaultSC.SMA                          = 7191.938817629039;
+DefaultSC.ECC                          = 0.0245497490059824;
+DefaultSC.INC                          = 40.00000000000006;
+DefaultSC.RAAN                         = 360;
+DefaultSC.AOP                          = 260.8053537307938;
+DefaultSC.TA                           = 99.8877493320455;
+DefaultSC.DryMass                      = 850;
+DefaultSC.Cd                           = 2.2;
+DefaultSC.Cr                           = 1.8;
+DefaultSC.DragArea                     = 15;
+DefaultSC.SRPArea                      = 1;
+DefaultSC.NAIFId                       = -10000001;
+DefaultSC.NAIFIdReferenceFrame         = -9000001;
+DefaultSC.OrbitColor                   = Red;
+DefaultSC.TargetColor                  = Teal;
+DefaultSC.OrbitErrorCovariance         = [ 1e+70 0 0 0 0 0 ; 0 1e+70 0 0 0 0 ; 0 0 1e+70 0 0 0 ; 0 0 0 1e+70 0 0 ; 0 0 0 0 1e+70 0 ; 0 0 0 0 0 1e+70 ];
+DefaultSC.CdSigma                      = 1e+70;
+DefaultSC.CrSigma                      = 1e+70;
+DefaultSC.Id                           = 'SatId';
+DefaultSC.Attitude                     = CoordinateSystemFixed;
+DefaultSC.SPADSRPScaleFactor           = 1;
+DefaultSC.ModelFile                    = 'aura.3ds';
+DefaultSC.ModelOffsetX                 = 0;
+DefaultSC.ModelOffsetY                 = 0;
+DefaultSC.ModelOffsetZ                 = 0;
+DefaultSC.ModelRotationX               = 0;
+DefaultSC.ModelRotationY               = 0;
+DefaultSC.ModelRotationZ               = 0;
+DefaultSC.ModelScale                   = 1;
+DefaultSC.AttitudeDisplayStateType     = 'Quaternion';
+DefaultSC.AttitudeRateDisplayStateType = 'AngularVelocity';
+DefaultSC.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+DefaultSC.EulerAngleSequence           = '321';
+
+%----------------------------------------
+%---------- GroundStations
+%----------------------------------------
+
+Create GroundStation CasperWY;
+
+CasperWY.OrbitColor            = Thistle;
+CasperWY.TargetColor           = DarkGray;
+CasperWY.CentralBody           = Earth;
+CasperWY.StateType             = Spherical;
+CasperWY.HorizonReference      = Ellipsoid;
+CasperWY.Location1             = 42.8397222;
+CasperWY.Location2             = 253.67638889;
+CasperWY.Location3             = 1.57;
+CasperWY.Id                    = 'CasperWY';
+CasperWY.IonosphereModel       = 'None';
+CasperWY.TroposphereModel      = 'None';
+CasperWY.DataSource            = 'Constant';
+CasperWY.Temperature           = 295.1;
+CasperWY.Pressure              = 1013.5;
+CasperWY.Humidity              = 55;
+CasperWY.MinimumElevationAngle = 7;
+
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel DefaultProp_ForceModel;
+
+DefaultProp_ForceModel.CentralBody                      = Earth;
+DefaultProp_ForceModel.PrimaryBodies                    = {Earth};
+DefaultProp_ForceModel.Drag                             = None;
+DefaultProp_ForceModel.SRP                              = Off;
+DefaultProp_ForceModel.RelativisticCorrection           = Off;
+DefaultProp_ForceModel.ErrorControl                     = RSSStep;
+DefaultProp_ForceModel.GravityField.Earth.Degree        = 4;
+DefaultProp_ForceModel.GravityField.Earth.Order         = 4;
+DefaultProp_ForceModel.GravityField.Earth.StmLimit      = 100;
+DefaultProp_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+DefaultProp_ForceModel.GravityField.Earth.TideModel     = 'None';
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator DefaultProp;
+
+DefaultProp.FM                       = DefaultProp_ForceModel;
+DefaultProp.Type                     = RungeKutta89;
+DefaultProp.InitialStepSize          = 60;
+DefaultProp.Accuracy                 = 9.999999999999999e-12;
+DefaultProp.MinStep                  = 0.001;
+DefaultProp.MaxStep                  = 2700;
+DefaultProp.MaxStepAttempts          = 50;
+DefaultProp.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem CasperMJ2000Eq;
+
+CasperMJ2000Eq.Origin = CasperWY;
+CasperMJ2000Eq.Axes   = Topocentric;
+
+Create CoordinateSystem MoonBodyFixed;
+
+MoonBodyFixed.Origin = Luna;
+MoonBodyFixed.Axes   = BodyFixed;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface CasperWYView;
+
+CasperWYView.SolverIterations        = Current;
+CasperWYView.UpperLeft               = [ 0.0888235294117647 0.05476190476190476 ];
+CasperWYView.Size                    = [ 0.2964705882352941 0.7261904761904762 ];
+CasperWYView.RelativeZOrder          = 18;
+CasperWYView.Maximized               = false;
+CasperWYView.Add                     = {DefaultSC, Earth, Sun, Luna};
+CasperWYView.View                    = {Casper_to_Sun, Casper_WY};
+CasperWYView.CoordinateSystem        = CasperMJ2000Eq;
+CasperWYView.DrawObject              = [ false true true true ];
+CasperWYView.DrawTrajectory          = [ true false false false ];
+CasperWYView.DrawAxes                = [ false false false false ];
+CasperWYView.DrawXYPlane             = [ false false false false ];
+CasperWYView.DrawLabel               = [ true true false false ];
+CasperWYView.DrawUsePropLabel        = [ false false false false ];
+CasperWYView.DrawCenterPoint         = [ true false false false ];
+CasperWYView.DrawEndPoints           = [ false false false false ];
+CasperWYView.DrawVelocity            = [ false false false false ];
+CasperWYView.DrawGrid                = [ false false false false ];
+CasperWYView.DrawLineWidth           = [ 2 2 2 2 ];
+CasperWYView.DrawMarkerSize          = [ 10 10 10 10 ];
+CasperWYView.Axes                    = Off;
+CasperWYView.AxesLabels              = On;
+CasperWYView.FrameLabel              = Off;
+CasperWYView.XYPlane                 = Off;
+CasperWYView.EclipticPlane           = Off;
+CasperWYView.EnableStars             = On;
+CasperWYView.StarSettings            = Virtual Reality;
+CasperWYView.StarCount               = 40000;
+CasperWYView.MinStarMag              = -2;
+CasperWYView.MaxStarMag              = 6;
+CasperWYView.MinStarPixels           = 1;
+CasperWYView.MaxStarPixels           = 10;
+CasperWYView.MinStarDimRatio         = 0.5;
+CasperWYView.ShowPlot                = true;
+CasperWYView.ShowToolbar             = true;
+CasperWYView.SolverIterLastN         = 1;
+CasperWYView.ShowVR                  = true;
+CasperWYView.PlaybackTimeScale       = 512;
+CasperWYView.MultisampleAntiAliasing = On;
+CasperWYView.MSAASamples             = 2;
+
+%----------------------------------------
+%---------- User Objects
+%----------------------------------------
+
+Create OpenFramesView Casper_WY;
+
+Casper_WY.ViewFrame          = CoordinateSystem;
+Casper_WY.ViewTrajectory     = Off;
+Casper_WY.InertialFrame      = Off;
+Casper_WY.SetDefaultLocation = On;
+Casper_WY.DefaultEye         = [ 0 -100 0 ];
+Casper_WY.DefaultCenter      = [ 0 0 0 ];
+Casper_WY.DefaultUp          = [ 0 0 1 ];
+Casper_WY.SetCurrentLocation = On;
+Casper_WY.CurrentEye         = [ -8.551898861027393 -99.62360386107699 1.415125295498195 ];
+Casper_WY.CurrentCenter      = [ 0 4.263256414560601e-14 7.549516567451064e-15 ];
+Casper_WY.CurrentUp          = [ -0.01000585709375433 0.0150613203221529 0.9998365063619017 ];
+
+Create OpenFramesView Casper_to_Sun;
+
+Casper_to_Sun.ViewFrame          = CoordinateSystem;
+Casper_to_Sun.ViewTrajectory     = Off;
+Casper_to_Sun.InertialFrame      = On;
+Casper_to_Sun.LookAtFrame        = Sun;
+Casper_to_Sun.ShortestAngle      = Off;
+Casper_to_Sun.SetDefaultLocation = Off;
+Casper_to_Sun.SetCurrentLocation = On;
+Casper_to_Sun.CurrentEye         = [ 0 -2.613126039505005 0 ];
+Casper_to_Sun.CurrentCenter      = [ 0 0 0 ];
+Casper_to_Sun.CurrentUp          = [ 0 0 1 ];
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+BeginMissionSequence;
+
+Propagate DefaultProp(DefaultSC) {DefaultSC.ElapsedSecs = 10200};
+

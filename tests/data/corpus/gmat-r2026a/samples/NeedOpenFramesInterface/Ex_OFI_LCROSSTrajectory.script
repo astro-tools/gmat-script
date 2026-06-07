@@ -1,0 +1,925 @@
+%
+%  Ex_OFI_LCROSSTrajectory
+%
+%  LCROSS mission trajectory to Lunar impact.
+%
+%  Released: R2020a
+%
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+%%-----------------------------------------------------------
+%%------------------- Define Spacecraft --------------------
+%%-----------------------------------------------------------
+Create Spacecraft LRO;
+
+LRO.DateFormat                   = UTCGregorian;
+LRO.Epoch                        = '01 Jan 2000 11:59:28.000';
+
+LRO.CoordinateSystem             = EarthMJ2000Eq;
+LRO.DisplayStateType             = Cartesian;
+LRO.X                            = 7100;
+LRO.Y                            = 0;
+LRO.Z                            = 1300;
+LRO.VX                           = 0;
+LRO.VY                           = 7.35;
+LRO.VZ                           = 1;
+LRO.DryMass                      = 850;
+LRO.Cd                           = 2.2;
+LRO.Cr                           = 1.8;
+LRO.DragArea                     = 15;
+LRO.SRPArea                      = 1;
+LRO.SPADDragScaleFactor          = 1;
+LRO.SPADSRPScaleFactor           = 1;
+LRO.NAIFId                       = -10008001;
+LRO.NAIFIdReferenceFrame         = -9008001;
+LRO.OrbitColor                   = Red;
+LRO.TargetColor                  = Teal;
+LRO.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+LRO.CdSigma                      = 1e+070;
+LRO.CrSigma                      = 1e+070;
+LRO.Id                           = 'SatId';
+LRO.Attitude                     = CoordinateSystemFixed;
+LRO.SPADSRPInterpolationMethod   = Bilinear;
+LRO.SPADSRPScaleFactorSigma      = 1e+070;
+LRO.SPADDragInterpolationMethod  = Bilinear;
+LRO.SPADDragScaleFactorSigma     = 1e+070;
+LRO.ModelFile                    = 'aura.3ds';
+LRO.ModelOffsetX                 = 0;
+LRO.ModelOffsetY                 = 0;
+LRO.ModelOffsetZ                 = 0;
+LRO.ModelRotationX               = 0;
+LRO.ModelRotationY               = 0;
+LRO.ModelRotationZ               = 0;
+LRO.ModelScale                   = 1;
+LRO.AttitudeDisplayStateType     = 'Quaternion';
+LRO.AttitudeRateDisplayStateType = 'AngularVelocity';
+LRO.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+LRO.EulerAngleSequence           = '321';
+
+Create Spacecraft ImpactSat;
+
+ImpactSat.DateFormat                   = UTCGregorian;
+ImpactSat.Epoch                        = '01 Jan 2000 11:59:28.000';
+ImpactSat.CoordinateSystem             = EarthMJ2000Eq;
+ImpactSat.DisplayStateType             = Cartesian;
+ImpactSat.X                            = 7100;
+ImpactSat.Y                            = 0;
+ImpactSat.Z                            = 1300;
+ImpactSat.VX                           = 0;
+ImpactSat.VY                           = 7.35;
+ImpactSat.VZ                           = 1;
+ImpactSat.DryMass                      = 850;
+ImpactSat.Cd                           = 2.2;
+ImpactSat.Cr                           = 1.8;
+ImpactSat.DragArea                     = 15;
+ImpactSat.SRPArea                      = 1;
+ImpactSat.SPADDragScaleFactor          = 1;
+ImpactSat.SPADSRPScaleFactor           = 1;
+ImpactSat.NAIFId                       = -10009001;
+ImpactSat.NAIFIdReferenceFrame         = -9009001;
+ImpactSat.OrbitColor                   = Green;
+ImpactSat.TargetColor                  = LightGray;
+ImpactSat.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+ImpactSat.CdSigma                      = 1e+070;
+ImpactSat.CrSigma                      = 1e+070;
+ImpactSat.Id                           = 'SatId';
+ImpactSat.Attitude                     = CoordinateSystemFixed;
+ImpactSat.SPADSRPInterpolationMethod   = Bilinear;
+ImpactSat.SPADSRPScaleFactorSigma      = 1e+070;
+ImpactSat.SPADDragInterpolationMethod  = Bilinear;
+ImpactSat.SPADDragScaleFactorSigma     = 1e+070;
+ImpactSat.ModelFile                    = 'aura.3ds';
+ImpactSat.ModelOffsetX                 = 0;
+ImpactSat.ModelOffsetY                 = 0;
+ImpactSat.ModelOffsetZ                 = 0;
+ImpactSat.ModelRotationX               = 0;
+ImpactSat.ModelRotationY               = 0;
+ImpactSat.ModelRotationZ               = 0;
+ImpactSat.ModelScale                   = 1;
+ImpactSat.AttitudeDisplayStateType     = 'Quaternion';
+ImpactSat.AttitudeRateDisplayStateType = 'AngularVelocity';
+ImpactSat.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+ImpactSat.EulerAngleSequence           = '321';
+
+Create Spacecraft ImpactSatInit;
+
+ImpactSatInit.DateFormat                   = TAIModJulian;
+ImpactSatInit.Epoch                        = '21545';
+ImpactSatInit.CoordinateSystem             = EarthMJ2000Eq;
+ImpactSatInit.DisplayStateType             = Cartesian;
+ImpactSatInit.X                            = 7100;
+ImpactSatInit.Y                            = 0;
+ImpactSatInit.Z                            = 1300;
+ImpactSatInit.VX                           = 0;
+ImpactSatInit.VY                           = 7.35;
+ImpactSatInit.VZ                           = 1;
+ImpactSatInit.DryMass                      = 850;
+ImpactSatInit.Cd                           = 2.2;
+ImpactSatInit.Cr                           = 1.8;
+ImpactSatInit.DragArea                     = 15;
+ImpactSatInit.SRPArea                      = 1;
+ImpactSatInit.SPADDragScaleFactor          = 1;
+ImpactSatInit.SPADSRPScaleFactor           = 1;
+ImpactSatInit.NAIFId                       = -10010001;
+ImpactSatInit.NAIFIdReferenceFrame         = -9010001;
+ImpactSatInit.OrbitColor                   = Yellow;
+ImpactSatInit.TargetColor                  = DarkGray;
+ImpactSatInit.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+ImpactSatInit.CdSigma                      = 1e+070;
+ImpactSatInit.CrSigma                      = 1e+070;
+ImpactSatInit.Id                           = 'SatId';
+ImpactSatInit.Attitude                     = CoordinateSystemFixed;
+ImpactSatInit.SPADSRPInterpolationMethod   = Bilinear;
+ImpactSatInit.SPADSRPScaleFactorSigma      = 1e+070;
+ImpactSatInit.SPADDragInterpolationMethod  = Bilinear;
+ImpactSatInit.SPADDragScaleFactorSigma     = 1e+070;
+ImpactSatInit.ModelFile                    = 'aura.3ds';
+ImpactSatInit.ModelOffsetX                 = 0;
+ImpactSatInit.ModelOffsetY                 = 0;
+ImpactSatInit.ModelOffsetZ                 = 0;
+ImpactSatInit.ModelRotationX               = 0;
+ImpactSatInit.ModelRotationY               = 0;
+ImpactSatInit.ModelRotationZ               = 0;
+ImpactSatInit.ModelScale                   = 1;
+ImpactSatInit.AttitudeDisplayStateType     = 'Quaternion';
+ImpactSatInit.AttitudeRateDisplayStateType = 'AngularVelocity';
+ImpactSatInit.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+ImpactSatInit.EulerAngleSequence           = '321';
+
+Create Spacecraft CanonImpactSat;
+
+CanonImpactSat.DateFormat                   = TAIModJulian;
+CanonImpactSat.Epoch                        = '21545';
+CanonImpactSat.CoordinateSystem             = EarthMJ2000Eq;
+CanonImpactSat.DisplayStateType             = Cartesian;
+CanonImpactSat.X                            = 7100;
+CanonImpactSat.Y                            = 0;
+CanonImpactSat.Z                            = 1300;
+CanonImpactSat.VX                           = 0;
+CanonImpactSat.VY                           = 7.35;
+CanonImpactSat.VZ                           = 1;
+CanonImpactSat.DryMass                      = 850;
+CanonImpactSat.Cd                           = 2.2;
+CanonImpactSat.Cr                           = 1.8;
+CanonImpactSat.DragArea                     = 15;
+CanonImpactSat.SRPArea                      = 1;
+CanonImpactSat.SPADDragScaleFactor          = 1;
+CanonImpactSat.SPADSRPScaleFactor           = 1;
+CanonImpactSat.NAIFId                       = -10011001;
+CanonImpactSat.NAIFIdReferenceFrame         = -9011001;
+CanonImpactSat.OrbitColor                   = Blue;
+CanonImpactSat.TargetColor                  = DimGray;
+CanonImpactSat.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+CanonImpactSat.CdSigma                      = 1e+070;
+CanonImpactSat.CrSigma                      = 1e+070;
+CanonImpactSat.Id                           = 'SatId';
+CanonImpactSat.Attitude                     = CoordinateSystemFixed;
+CanonImpactSat.SPADSRPInterpolationMethod   = Bilinear;
+CanonImpactSat.SPADSRPScaleFactorSigma      = 1e+070;
+CanonImpactSat.SPADDragInterpolationMethod  = Bilinear;
+CanonImpactSat.SPADDragScaleFactorSigma     = 1e+070;
+CanonImpactSat.ModelFile                    = 'aura.3ds';
+CanonImpactSat.ModelOffsetX                 = 0;
+CanonImpactSat.ModelOffsetY                 = 0;
+CanonImpactSat.ModelOffsetZ                 = 0;
+CanonImpactSat.ModelRotationX               = 0;
+CanonImpactSat.ModelRotationY               = 0;
+CanonImpactSat.ModelRotationZ               = 0;
+CanonImpactSat.ModelScale                   = 1;
+CanonImpactSat.AttitudeDisplayStateType     = 'Quaternion';
+CanonImpactSat.AttitudeRateDisplayStateType = 'AngularVelocity';
+CanonImpactSat.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+CanonImpactSat.EulerAngleSequence           = '321';
+
+Create Spacecraft ImpactSat_MoonFixed;
+
+ImpactSat_MoonFixed.DateFormat                   = UTCGregorian;
+ImpactSat_MoonFixed.Epoch                        = '01 Jan 2000 11:59:28.000';
+ImpactSat_MoonFixed.CoordinateSystem             = MoonFixed;
+ImpactSat_MoonFixed.DisplayStateType             = Cartesian;
+ImpactSat_MoonFixed.X                            = 404097.400455761;
+ImpactSat_MoonFixed.Y                            = 30873.0177733555;
+ImpactSat_MoonFixed.Z                            = -45917.57222582575;
+ImpactSat_MoonFixed.VX                           = 4.405930176834023;
+ImpactSat_MoonFixed.VY                           = 5.501716465862698;
+ImpactSat_MoonFixed.VZ                           = -2.099602413163658;
+ImpactSat_MoonFixed.DryMass                      = 850;
+ImpactSat_MoonFixed.Cd                           = 2.2;
+ImpactSat_MoonFixed.Cr                           = 1.8;
+ImpactSat_MoonFixed.DragArea                     = 15;
+ImpactSat_MoonFixed.SRPArea                      = 1;
+ImpactSat_MoonFixed.SPADDragScaleFactor          = 1;
+ImpactSat_MoonFixed.SPADSRPScaleFactor           = 1;
+ImpactSat_MoonFixed.NAIFId                       = -10012001;
+ImpactSat_MoonFixed.NAIFIdReferenceFrame         = -9012001;
+ImpactSat_MoonFixed.OrbitColor                   = Pink;
+ImpactSat_MoonFixed.TargetColor                  = DarkSlateGray;
+ImpactSat_MoonFixed.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+ImpactSat_MoonFixed.CdSigma                      = 1e+070;
+ImpactSat_MoonFixed.CrSigma                      = 1e+070;
+ImpactSat_MoonFixed.Id                           = 'SatId';
+ImpactSat_MoonFixed.Attitude                     = CoordinateSystemFixed;
+ImpactSat_MoonFixed.SPADSRPInterpolationMethod   = Bilinear;
+ImpactSat_MoonFixed.SPADSRPScaleFactorSigma      = 1e+070;
+ImpactSat_MoonFixed.SPADDragInterpolationMethod  = Bilinear;
+ImpactSat_MoonFixed.SPADDragScaleFactorSigma     = 1e+070;
+ImpactSat_MoonFixed.ModelFile                    = 'aura.3ds';
+ImpactSat_MoonFixed.ModelOffsetX                 = 0;
+ImpactSat_MoonFixed.ModelOffsetY                 = 0;
+ImpactSat_MoonFixed.ModelOffsetZ                 = 0;
+ImpactSat_MoonFixed.ModelRotationX               = 0;
+ImpactSat_MoonFixed.ModelRotationY               = 0;
+ImpactSat_MoonFixed.ModelRotationZ               = 0;
+ImpactSat_MoonFixed.ModelScale                   = 1;
+ImpactSat_MoonFixed.AttitudeDisplayStateType     = 'Quaternion';
+ImpactSat_MoonFixed.AttitudeRateDisplayStateType = 'AngularVelocity';
+ImpactSat_MoonFixed.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+ImpactSat_MoonFixed.EulerAngleSequence           = '321';
+
+%%-----------------------------------------------------------
+%%------------------- Define Spacecraft --------------------
+%%-----------------------------------------------------------
+Create Spacecraft LCROSS;
+
+LCROSS.DateFormat                   = TAIModJulian;
+LCROSS.Epoch                        = '21545';
+LCROSS.CoordinateSystem             = EarthMJ2000Eq;
+LCROSS.DisplayStateType             = Cartesian;
+LCROSS.X                            = 7100;
+LCROSS.Y                            = 0;
+LCROSS.Z                            = 1300;
+LCROSS.VX                           = 0;
+LCROSS.VY                           = 7.35;
+LCROSS.VZ                           = 1;
+LCROSS.DryMass                      = 850;
+LCROSS.Cd                           = 2.2;
+LCROSS.Cr                           = 1.8;
+LCROSS.DragArea                     = 15;
+LCROSS.SRPArea                      = 1;
+LCROSS.SPADDragScaleFactor          = 1;
+LCROSS.SPADSRPScaleFactor           = 1;
+LCROSS.NAIFId                       = -10013001;
+LCROSS.NAIFIdReferenceFrame         = -9013001;
+LCROSS.OrbitColor                   = Lime;
+LCROSS.TargetColor                  = LightGray;
+LCROSS.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+LCROSS.CdSigma                      = 1e+070;
+LCROSS.CrSigma                      = 1e+070;
+LCROSS.Id                           = 'SatId';
+LCROSS.Attitude                     = CoordinateSystemFixed;
+LCROSS.SPADSRPInterpolationMethod   = Bilinear;
+LCROSS.SPADSRPScaleFactorSigma      = 1e+070;
+LCROSS.SPADDragInterpolationMethod  = Bilinear;
+LCROSS.SPADDragScaleFactorSigma     = 1e+070;
+LCROSS.ModelFile                    = 'aura.3ds';
+LCROSS.ModelOffsetX                 = 0;
+LCROSS.ModelOffsetY                 = 0;
+LCROSS.ModelOffsetZ                 = 0;
+LCROSS.ModelRotationX               = 0;
+LCROSS.ModelRotationY               = 0;
+LCROSS.ModelRotationZ               = 0;
+LCROSS.ModelScale                   = 1;
+LCROSS.AttitudeDisplayStateType     = 'Quaternion';
+LCROSS.AttitudeRateDisplayStateType = 'AngularVelocity';
+LCROSS.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+LCROSS.EulerAngleSequence           = '321';
+
+%%-----------------------------------------------------------
+%%------------------- Define Spacecraft --------------------
+%%-----------------------------------------------------------
+Create Spacecraft LCROSSInit;
+
+LCROSSInit.DateFormat                   = TAIModJulian;
+LCROSSInit.Epoch                        = '21545';
+LCROSSInit.CoordinateSystem             = EarthMJ2000Eq;
+LCROSSInit.DisplayStateType             = Cartesian;
+LCROSSInit.X                            = 7100;
+LCROSSInit.Y                            = 0;
+LCROSSInit.Z                            = 1300;
+LCROSSInit.VX                           = 0;
+LCROSSInit.VY                           = 7.35;
+LCROSSInit.VZ                           = 1;
+LCROSSInit.DryMass                      = 850;
+LCROSSInit.Cd                           = 2.2;
+LCROSSInit.Cr                           = 1.8;
+LCROSSInit.DragArea                     = 15;
+LCROSSInit.SRPArea                      = 1;
+LCROSSInit.SPADDragScaleFactor          = 1;
+LCROSSInit.SPADSRPScaleFactor           = 1;
+LCROSSInit.NAIFId                       = -10014001;
+LCROSSInit.NAIFIdReferenceFrame         = -9014001;
+LCROSSInit.OrbitColor                   = Gold;
+LCROSSInit.TargetColor                  = DarkGray;
+LCROSSInit.OrbitErrorCovariance         = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+LCROSSInit.CdSigma                      = 1e+070;
+LCROSSInit.CrSigma                      = 1e+070;
+LCROSSInit.Id                           = 'SatId';
+LCROSSInit.Attitude                     = CoordinateSystemFixed;
+LCROSSInit.SPADSRPInterpolationMethod   = Bilinear;
+LCROSSInit.SPADSRPScaleFactorSigma      = 1e+070;
+LCROSSInit.SPADDragInterpolationMethod  = Bilinear;
+LCROSSInit.SPADDragScaleFactorSigma     = 1e+070;
+LCROSSInit.ModelFile                    = 'aura.3ds';
+LCROSSInit.ModelOffsetX                 = 0;
+LCROSSInit.ModelOffsetY                 = 0;
+LCROSSInit.ModelOffsetZ                 = 0;
+LCROSSInit.ModelRotationX               = 0;
+LCROSSInit.ModelRotationY               = 0;
+LCROSSInit.ModelRotationZ               = 0;
+LCROSSInit.ModelScale                   = 1;
+LCROSSInit.AttitudeDisplayStateType     = 'Quaternion';
+LCROSSInit.AttitudeRateDisplayStateType = 'AngularVelocity';
+LCROSSInit.AttitudeCoordinateSystem     = EarthMJ2000Eq;
+LCROSSInit.EulerAngleSequence           = '321';
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+%% Create a force model for near Lunar propagation
+Create ForceModel NearMoonProp_ForceModel;
+
+NearMoonProp_ForceModel.CentralBody            = Luna;
+NearMoonProp_ForceModel.PointMasses            = {Sun, Earth, Jupiter, Luna};
+NearMoonProp_ForceModel.Drag                   = None;
+NearMoonProp_ForceModel.SRP                    = On;
+NearMoonProp_ForceModel.RelativisticCorrection = Off;
+NearMoonProp_ForceModel.ErrorControl           = RSSStep;
+NearMoonProp_ForceModel.SRP.Flux               = 1367;
+NearMoonProp_ForceModel.SRP.SRPModel           = Spherical;
+NearMoonProp_ForceModel.SRP.Nominal_Sun        = 149597870.691;
+
+
+%% Create a force model for deep space propagation
+Create ForceModel EarthFull_ForceModel;
+
+EarthFull_ForceModel.CentralBody                      = Earth;
+EarthFull_ForceModel.PrimaryBodies                    = {Earth};
+EarthFull_ForceModel.PointMasses                      = {Sun, Luna, Jupiter};
+EarthFull_ForceModel.Drag                             = None;
+EarthFull_ForceModel.SRP                              = On;
+EarthFull_ForceModel.RelativisticCorrection           = Off;
+EarthFull_ForceModel.ErrorControl                     = RSSStep;
+EarthFull_ForceModel.GravityField.Earth.Degree        = 4;
+EarthFull_ForceModel.GravityField.Earth.Order         = 0;
+EarthFull_ForceModel.GravityField.Earth.StmLimit      = 100;
+EarthFull_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+EarthFull_ForceModel.GravityField.Earth.TideModel     = 'None';
+EarthFull_ForceModel.SRP.Flux                         = 1367;
+EarthFull_ForceModel.SRP.SRPModel                     = Spherical;
+EarthFull_ForceModel.SRP.Nominal_Sun                  = 149597870.691;
+
+
+Create ForceModel MoonTwoBody_ForceModel;
+
+MoonTwoBody_ForceModel.CentralBody            = Luna;
+MoonTwoBody_ForceModel.PointMasses            = {Luna};
+MoonTwoBody_ForceModel.Drag                   = None;
+MoonTwoBody_ForceModel.SRP                    = Off;
+MoonTwoBody_ForceModel.RelativisticCorrection = Off;
+MoonTwoBody_ForceModel.ErrorControl           = RSSStep;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator NearMoonProp;
+
+NearMoonProp.FM              = NearMoonProp_ForceModel;
+NearMoonProp.Type            = PrinceDormand78;
+NearMoonProp.InitialStepSize = 60;
+NearMoonProp.Accuracy        = 1e-009;
+NearMoonProp.MinStep         = 0.001;
+NearMoonProp.MaxStep         = 20000;
+NearMoonProp.MaxStepAttempts = 50;
+NearMoonProp.StopIfAccuracyIsViolated = true;
+
+Create Propagator EarthFull;
+
+EarthFull.FM              = EarthFull_ForceModel;
+EarthFull.Type            = RungeKutta56;
+EarthFull.InitialStepSize = 60;
+EarthFull.Accuracy        = 1e-009;
+EarthFull.MinStep         = 0.001;
+EarthFull.MaxStep         = 20000;
+EarthFull.MaxStepAttempts = 50;
+EarthFull.StopIfAccuracyIsViolated = true;
+
+Create Propagator MoonTwoBody;
+
+MoonTwoBody.FM              = MoonTwoBody_ForceModel;
+MoonTwoBody.Type            = RungeKutta89;
+MoonTwoBody.InitialStepSize = 60;
+MoonTwoBody.Accuracy        = 9.999999999999999e-012;
+MoonTwoBody.MinStep         = 0.001;
+MoonTwoBody.MaxStep         = 20000;
+MoonTwoBody.MaxStepAttempts = 50;
+MoonTwoBody.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Burns
+%----------------------------------------
+
+Create ImpulsiveBurn EDUSdv;
+
+EDUSdv.CoordinateSystem = Local;
+EDUSdv.Origin           = Earth;
+EDUSdv.Axes             = VNB;
+EDUSdv.Element1         = 0;
+EDUSdv.Element2         = 0;
+EDUSdv.Element3         = 0;
+EDUSdv.DecrementMass    = false;
+EDUSdv.Isp              = 300;
+EDUSdv.GravitationalAccel = 9.810000000000001;
+
+Create ImpulsiveBurn LROLOI;
+
+LROLOI.CoordinateSystem = Local;
+LROLOI.Origin           = Luna;
+LROLOI.Axes             = VNB;
+LROLOI.Element1         = -0.294816448336;
+LROLOI.Element2         = 0;
+LROLOI.Element3         = 0;
+LROLOI.DecrementMass    = false;
+LROLOI.Isp              = 300;
+LROLOI.GravitationalAccel = 9.810000000000001;
+
+Create ImpulsiveBurn LROTCM;
+
+LROTCM.CoordinateSystem = Local;
+LROTCM.Origin           = Luna;
+LROTCM.Axes             = VNB;
+LROTCM.Element1         = 0.00494673009567;
+LROTCM.Element2         = -0.0134520458643;
+LROTCM.Element3         = 0;
+LROTCM.DecrementMass    = false;
+LROTCM.Isp              = 300;
+LROTCM.GravitationalAccel = 9.810000000000001;
+
+
+Create ImpulsiveBurn EDUSdv_J2000;
+
+EDUSdv_J2000.CoordinateSystem = Local;
+EDUSdv_J2000.Origin           = Earth;
+EDUSdv_J2000.Axes             = MJ2000Eq;
+EDUSdv_J2000.Element1         = 0;
+EDUSdv_J2000.Element2         = 0;
+EDUSdv_J2000.Element3         = 0;
+EDUSdv_J2000.DecrementMass    = false;
+EDUSdv_J2000.Isp              = 300;
+EDUSdv_J2000.GravitationalAccel = 9.810000000000001;
+
+Create ImpulsiveBurn LCM1;
+
+LCM1.CoordinateSystem = Local;
+LCM1.Origin           = Earth;
+LCM1.Axes             = VNB;
+LCM1.Element1         = 0;
+LCM1.Element2         = 0;
+LCM1.Element3         = 0;
+LCM1.DecrementMass    = false;
+LCM1.Isp              = 300;
+LCM1.GravitationalAccel = 9.810000000000001;
+
+Create ImpulsiveBurn LCM2;
+
+LCM2.CoordinateSystem = Local;
+LCM2.Origin           = Earth;
+LCM2.Axes             = VNB;
+LCM2.Element1         = 0;
+LCM2.Element2         = 0;
+LCM2.Element3         = 0;
+LCM2.DecrementMass    = false;
+LCM2.Isp              = 300;
+LCM2.GravitationalAccel = 9.810000000000001;
+
+Create ImpulsiveBurn dVatMoon;
+
+dVatMoon.CoordinateSystem = Local;
+dVatMoon.Origin           = Luna;
+dVatMoon.Axes             = MJ2000Eq;
+dVatMoon.Element1         = 0;
+dVatMoon.Element2         = 0;
+dVatMoon.Element3         = 0;
+dVatMoon.DecrementMass    = false;
+dVatMoon.Isp              = 300;
+dVatMoon.GravitationalAccel = 9.810000000000001;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem MoonFixed;
+
+MoonFixed.Origin = Luna;
+MoonFixed.Axes   = BodyFixed;
+
+Create CoordinateSystem MoonFK5;
+
+MoonFK5.Origin = Luna;
+MoonFK5.Axes   = MJ2000Eq;
+
+Create CoordinateSystem MoonEarthRot;
+
+MoonEarthRot.Origin    = Luna;
+MoonEarthRot.Axes      = ObjectReferenced;
+MoonEarthRot.XAxis     = R;
+MoonEarthRot.ZAxis     = N;
+MoonEarthRot.Primary   = Earth;
+MoonEarthRot.Secondary = Luna;
+
+
+Create CoordinateSystem EarthMoonRot;
+
+EarthMoonRot.Origin    = Earth;
+EarthMoonRot.Axes      = ObjectReferenced;
+EarthMoonRot.XAxis     = R;
+EarthMoonRot.ZAxis     = N;
+EarthMoonRot.Primary   = Earth;
+EarthMoonRot.Secondary = Luna;
+
+
+Create CoordinateSystem LunaFixed;
+
+LunaFixed.Origin = Luna;
+LunaFixed.Axes   = BodyFixed;
+
+
+Create CoordinateSystem MoonInertial;
+
+MoonInertial.Origin = Luna;
+MoonInertial.Axes   = BodyInertial;
+
+%----------------------------------------
+%---------- Solvers
+%----------------------------------------
+
+Create DifferentialCorrector DC;
+
+DC.ShowProgress      = true;
+DC.ReportStyle       = Normal;
+DC.ReportFile        = 'DifferentialCorrectorDC.data';
+DC.MaximumIterations = 2500;
+DC.DerivativeMethod  = ForwardDifference;
+DC.Algorithm         = NewtonRaphson;
+
+Create DifferentialCorrector DC_central;
+
+DC_central.ShowProgress      = true;
+DC_central.ReportStyle       = Normal;
+DC_central.ReportFile        = 'DifferentialCorrectorDC.data';
+DC_central.MaximumIterations = 2500;
+DC_central.DerivativeMethod  = ForwardDifference;
+DC_central.Algorithm         = NewtonRaphson;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OpenFramesInterface EarthView_OpenFrames;
+
+EarthView_OpenFrames.SolverIterations        = Current;
+EarthView_OpenFrames.UpperLeft               = [ 0.4082352941176471 0 ];
+EarthView_OpenFrames.Size                    = [ 0.3976470588235294 0.4797619047619048 ];
+EarthView_OpenFrames.RelativeZOrder          = 216;
+EarthView_OpenFrames.Maximized               = false;
+EarthView_OpenFrames.Add                     = {LRO, Earth, LCROSS, Luna, Sun};
+EarthView_OpenFrames.View                    = {EarthMoonView, MoonInertialView, LCROSSView, LROView};
+EarthView_OpenFrames.CoordinateSystem        = EarthMJ2000Eq;
+EarthView_OpenFrames.DrawObject              = [ true true true true true ];
+EarthView_OpenFrames.DrawTrajectory          = [ true true true true true ];
+EarthView_OpenFrames.DrawAxes                = [ false false false false false ];
+EarthView_OpenFrames.DrawXYPlane             = [ false false false false false ];
+EarthView_OpenFrames.DrawLabel               = [ true true true true true ];
+EarthView_OpenFrames.DrawUsePropLabel        = [ false false false false false ];
+EarthView_OpenFrames.DrawCenterPoint         = [ true true false false false ];
+EarthView_OpenFrames.DrawEndPoints           = [ true true false false false ];
+EarthView_OpenFrames.DrawVelocity            = [ false false false false false ];
+EarthView_OpenFrames.DrawGrid                = [ false false false false false ];
+EarthView_OpenFrames.DrawLineWidth           = [ 2 2 2 2 2 ];
+EarthView_OpenFrames.DrawMarkerSize          = [ 10 10 10 10 10 ];
+EarthView_OpenFrames.DrawFontSize            = [ 14 14 14 14 14 ];
+EarthView_OpenFrames.Axes                    = Off;
+EarthView_OpenFrames.AxesLength              = 1;
+EarthView_OpenFrames.AxesLabels              = On;
+EarthView_OpenFrames.FrameLabel              = Off;
+EarthView_OpenFrames.XYPlane                 = Off;
+EarthView_OpenFrames.EclipticPlane           = Off;
+EarthView_OpenFrames.EnableStars             = On;
+EarthView_OpenFrames.StarCatalog             = 'inp_StarsHYGv3.txt';
+EarthView_OpenFrames.StarCount               = 40000;
+EarthView_OpenFrames.MinStarMag              = -2;
+EarthView_OpenFrames.MaxStarMag              = 6;
+EarthView_OpenFrames.MinStarPixels           = 1;
+EarthView_OpenFrames.MaxStarPixels           = 10;
+EarthView_OpenFrames.MinStarDimRatio         = 0.5;
+EarthView_OpenFrames.ShowPlot                = true;
+EarthView_OpenFrames.ShowToolbar             = true;
+EarthView_OpenFrames.SolverIterLastN         = 1;
+EarthView_OpenFrames.ShowVR                  = false;
+EarthView_OpenFrames.PlaybackTimeScale       = 3600;
+EarthView_OpenFrames.MultisampleAntiAliasing = On;
+EarthView_OpenFrames.MSAASamples             = 2;
+EarthView_OpenFrames.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right'};
+
+Create OpenFramesInterface MoonView_OpenFrames;
+
+MoonView_OpenFrames.SolverIterations        = Current;
+MoonView_OpenFrames.UpperLeft               = [ 0.4082352941176471 0.4785714285714286 ];
+MoonView_OpenFrames.Size                    = [ 0.3976470588235294 0.4785714285714286 ];
+MoonView_OpenFrames.RelativeZOrder          = 217;
+MoonView_OpenFrames.Maximized               = false;
+MoonView_OpenFrames.Add                     = {LRO, Earth, LCROSS, Luna, Sun};
+MoonView_OpenFrames.View                    = {MoonInertialView};
+MoonView_OpenFrames.CoordinateSystem        = MoonInertial;
+MoonView_OpenFrames.DrawObject              = [ true true true true false ];
+MoonView_OpenFrames.DrawTrajectory          = [ true true true true false ];
+MoonView_OpenFrames.DrawAxes                = [ false false false false false ];
+MoonView_OpenFrames.DrawXYPlane             = [ false false false false false ];
+MoonView_OpenFrames.DrawLabel               = [ true true true true false ];
+MoonView_OpenFrames.DrawUsePropLabel        = [ false false false false false ];
+MoonView_OpenFrames.DrawCenterPoint         = [ true true false false false ];
+MoonView_OpenFrames.DrawEndPoints           = [ true true false false false ];
+MoonView_OpenFrames.DrawVelocity            = [ false false false false false ];
+MoonView_OpenFrames.DrawGrid                = [ false false false false false ];
+MoonView_OpenFrames.DrawLineWidth           = [ 2 2 2 2 2 ];
+MoonView_OpenFrames.DrawMarkerSize          = [ 10 10 10 10 10 ];
+MoonView_OpenFrames.DrawFontSize            = [ 14 14 14 14 14 ];
+MoonView_OpenFrames.Axes                    = On;
+MoonView_OpenFrames.AxesLength              = 1;
+MoonView_OpenFrames.AxesLabels              = On;
+MoonView_OpenFrames.FrameLabel              = Off;
+MoonView_OpenFrames.XYPlane                 = Off;
+MoonView_OpenFrames.EclipticPlane           = Off;
+MoonView_OpenFrames.EnableStars             = On;
+MoonView_OpenFrames.StarCatalog             = 'inp_StarsHYGv3.txt';
+MoonView_OpenFrames.StarCount               = 40000;
+MoonView_OpenFrames.MinStarMag              = -2;
+MoonView_OpenFrames.MaxStarMag              = 6;
+MoonView_OpenFrames.MinStarPixels           = 1;
+MoonView_OpenFrames.MaxStarPixels           = 10;
+MoonView_OpenFrames.MinStarDimRatio         = 0.5;
+MoonView_OpenFrames.ShowPlot                = true;
+MoonView_OpenFrames.ShowToolbar             = true;
+MoonView_OpenFrames.SolverIterLastN         = 1;
+MoonView_OpenFrames.ShowVR                  = false;
+MoonView_OpenFrames.PlaybackTimeScale       = 3600;
+MoonView_OpenFrames.MultisampleAntiAliasing = On;
+MoonView_OpenFrames.MSAASamples             = 2;
+MoonView_OpenFrames.DrawFontPosition        = {'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right', 'Top-Right'};
+
+%----------------------------------------
+%---------- Arrays, Variables, Strings
+%----------------------------------------
+
+Create Array X[15,1];
+
+%----------------------------------------
+%---------- Variables, Arrays, Strings
+%----------------------------------------
+Create Variable LoopCounter PositionError VelocityError Cost LCM1Mag LCM2Mag EDUSdvMag EDMdvEpoch LCM1Epoch LCM2Epoch;
+Create Variable A1ImpactEpoch LoopCounter2 ConstraintError dx dy dz dVx dVy dVz SF_EDUSx;
+Create Variable dVatMoonMag Min_Cost UseGMAToutput_Flag RefEpoch PropEpoch ET_EDUSdV ET_LCM1 ET_LCM2 ET_Coll A1CollEpoch;
+Create Variable VXdiff VYdiff VZdiff I DeltaVx DeltaVy DeltaVz PosError VelError EDUS_J2000_DVx;
+Create Variable EDUS_J2000_DVy EDUS_J2000_DVz DV1_J2000_DVx DV1_J2000_DVy DV1_J2000_DVz DV2_J2000_DVx DV2_J2000_DVy DV2_J2000_DVz SteveReferenceEpoch Res;
+Create Variable LunarSMA DesiredSMA ConError BPlaneAngle PeriselentAlt Error1 Error2 Error3 Loop2 NumSatRevs;
+Create Variable NumMoonRevs NumCrossings DotProduct pi DesiredAOP Loop1 TargetUTCModJulian dVX dVY dVZ;
+Create Variable UTCGregorian AOP_J2000 LCM2Mag_mps;
+
+
+%----- Strings ---------
+Create String EmptyLine NewIterate PostTLI PreEDUS PostEDUS PreLCM1 PostLCM1 PreLCM2 PostLCM2 Periselene;
+Create String EDUSData BPlaneData LCM1Sol LCM2Sol PostLCM2Data ImpactSatData ImpactData;
+EmptyLine     = ' ';
+NewIterate    = '------ Begin New Iterate Data -------';
+EDUSData      = '------ EDUS Maneuver Data -------';
+BPlaneData    = '------  B-Plane  Data -------';
+LCM1Sol       = '------ LCM1 Maneuver Data -------';
+LCM2Sol       = '------ LCM2 Maneuver Data -------';
+PostLCM2Data  = '------ Post LCM2 State -------';
+ImpactSatData = '---------- Impact Sat Data --------------';
+ImpactData    = '------ Impact Data -------';
+
+
+
+
+
+%----------------------------------------
+%---------- User Objects
+%----------------------------------------
+
+Create OpenFramesView EarthMoonView;
+
+EarthMoonView.ViewFrame          = CoordinateSystem;
+EarthMoonView.ViewTrajectory     = Off;
+EarthMoonView.InertialFrame      = Off;
+EarthMoonView.SetDefaultLocation = On;
+EarthMoonView.DefaultEye         = [ 625000 625000 625000 ];
+EarthMoonView.DefaultCenter      = [ 0 0 0 ];
+EarthMoonView.DefaultUp          = [ 0 0 1 ];
+EarthMoonView.SetCurrentLocation = On;
+EarthMoonView.CurrentEye         = [ 625000 625000 624999.9999999999 ];
+EarthMoonView.CurrentCenter      = [ 1.164153218269348e-10 0 0 ];
+EarthMoonView.CurrentUp          = [ -0.408248290463863 -0.4082482904638629 0.8164965809277262 ];
+EarthMoonView.FOVy               = 45;
+
+Create OpenFramesView MoonInertialView;
+
+MoonInertialView.ViewFrame          = Luna;
+MoonInertialView.ViewTrajectory     = Off;
+MoonInertialView.InertialFrame      = On;
+MoonInertialView.SetDefaultLocation = On;
+MoonInertialView.DefaultEye         = [ 12000 12000 12000 ];
+MoonInertialView.DefaultCenter      = [ 0 0 0 ];
+MoonInertialView.DefaultUp          = [ 0 0 1 ];
+MoonInertialView.SetCurrentLocation = On;
+MoonInertialView.CurrentEye         = [ 12000 12000 12000 ];
+MoonInertialView.CurrentCenter      = [ 1.818989403545856e-12 0 0 ];
+MoonInertialView.CurrentUp          = [ -0.408248290463863 -0.4082482904638629 0.8164965809277262 ];
+MoonInertialView.FOVy               = 45;
+
+Create OpenFramesView LCROSSView;
+
+LCROSSView.ViewFrame          = LCROSS;
+LCROSSView.ViewTrajectory     = Off;
+LCROSSView.InertialFrame      = On;
+LCROSSView.SetDefaultLocation = Off;
+LCROSSView.SetCurrentLocation = On;
+LCROSSView.CurrentEye         = [ -195.042292406567 -890.6101998537824 120.4754552950096 ];
+LCROSSView.CurrentCenter      = [ 0 2.273736754432321e-13 -2.842170943040401e-14 ];
+LCROSSView.CurrentUp          = [ -0.1500891747039094 0.1647402190408728 0.9748507064505133 ];
+LCROSSView.FOVy               = 45;
+
+Create OpenFramesView LROView;
+
+LROView.ViewFrame          = LRO;
+LROView.ViewTrajectory     = Off;
+LROView.InertialFrame      = On;
+LROView.SetDefaultLocation = Off;
+LROView.SetCurrentLocation = On;
+LROView.CurrentEye         = [ 0 -919.6425170898438 0 ];
+LROView.CurrentCenter      = [ 0 0 0 ];
+LROView.CurrentUp          = [ 0 0 1 ];
+LROView.FOVy               = 45;
+
+%------------------------------------------------------------------------
+%-------------------------- Mission Sequence ----------------------------
+%------------------------------------------------------------------------
+BeginMissionSequence;
+
+%---- Initializations
+LCROSS   = LRO;
+LunarSMA = 384410.3;
+pi       = 3.14159265358979;
+
+BeginScript 'Initializations'
+   
+   %---- Define LCROSS physical properties
+   LRO.DryMass = 3256.8;
+   LRO.Cr      = 1.4;
+   LRO.SRPArea = 42.354;
+   
+   %---- Define the initial conditions for LRO
+   LRO.UTCGregorian = '19 Jun 2009 01:31:05.920 ';
+   LRO.X            = 20747.68418000;
+   LRO.Y            = 50758.29345000;
+   LRO.Z            = 8229.21836200;
+   LRO.VX           = 0.11610208;
+   LRO.VY           = 3.32267120;
+   LRO.VZ           = 1.05827656;
+   LCROSS           = LRO;
+   RefEpoch         = LRO.A1ModJulian;
+   ImpactSat        = LRO;
+   
+   LRO.UTCGregorian = '18 Jun 2009 23:58:54.680 ';
+   LRO.X            = 18997.18364;
+   LRO.Y            = 30057.69679;
+   LRO.Z            = 2054.89630;
+   LRO.VX           = 0.61569;
+   LRO.VY           = 4.29276;
+   LRO.VZ           = 1.17090;
+   
+   %---- Define the MoonFixed impact location and Epoch
+   ImpactSat_MoonFixed.UTCGregorian = '9 Oct 2009 11:30:00.000';
+   ImpactSat_MoonFixed.X            = 125.734;
+   ImpactSat_MoonFixed.Y            = -89.636;
+   ImpactSat_MoonFixed.Z            = -1730.522;
+   
+   %---- Define the initial conditions for ImpactSat
+   ImpactSat.UTCGregorian = ImpactSat_MoonFixed.UTCGregorian;
+   ImpactSat.X            = ImpactSat_MoonFixed.EarthMJ2000Eq.X;
+   ImpactSat.Y            = ImpactSat_MoonFixed.EarthMJ2000Eq.Y;
+   ImpactSat.Z            = ImpactSat_MoonFixed.EarthMJ2000Eq.Z;
+   
+   %---- Define the desired Resonance condition
+   NumSatRevs  = 3;
+   NumMoonRevs = 4;
+   Res = NumSatRevs/NumMoonRevs;
+   DesiredSMA    = 473722.2056;%((398600.4415)^(1/3)*(NumMoonRevs/NumSatRevs/2/pi*2360551.68)^(2/3))*1.00;  
+   DesiredAOP    = 35.4553172712919;
+   AOP_J2000     = 35.4553172712919;
+   BPlaneAngle   = 79.5592;
+   PeriselentAlt = 3318.092;
+   
+   %---- Define intial guess for EDUSdv  
+   ET_EDUSdV       = (0/86400);
+   EDUSdv.Element1 = 0.00001;
+   EDUSdv.Element2 = 0.00001;
+   EDUSdv.Element3 = 0.00001;
+   
+   %---- Define intial guess for LCM1 
+   ET_LCM1       = 0.905018439982086 + ET_EDUSdV;
+   LCM1.Element1 = 0.001704940;
+   LCM1.Element2 = 0.005791633;
+   LCM1.Element3 = -0.000661562;
+   
+   %---- Define intial guess for LCM2 
+   ET_LCM2       = 33.770;
+   LCM2.Element1 = 0.013391482;
+   LCM2.Element2 = -0.007895569;
+   LCM2.Element3 = 0.013918756;
+   
+   %---- Define initial guess for Collocation Elapsed Time
+   ET_Coll      = 100;
+   ImpactSat.X  = 54580.02594841291;
+   ImpactSat.Y  = 331618.2005005924;
+   ImpactSat.Z  = 162362.268059963;
+   ImpactSat.VX = -0.6416435343925693;
+   ImpactSat.VY = -0.4568696547646986;
+   ImpactSat.VZ = 2.402724393937031;
+   
+   LCM1.Element1     = 0.00306139288909;
+   LCM1.Element2     = -0.00154568531603;
+   LCM1.Element3     = 0.00308387318091;
+   ET_LCM2           = 33.8898378781;
+   LCM2.Element1     = -0.00150770654724;
+   LCM2.Element2     = 0.0229441083419;
+   LCM2.Element3     = 0.00277315503137;
+   ET_Coll           = 100.068369408;
+   dVatMoon.Element1 = -0.014073821735;
+   dVatMoon.Element2 = -0.3936966287;
+   dVatMoon.Element3 = -0.231610121973;
+   LCROSSInit        = LCROSS;
+   ImpactSat         = ImpactSatInit;
+   LCROSS            = LCROSSInit;
+   
+EndScript;
+
+%++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+%---- Prop to where EDUS performs maneuver
+%++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+%----- Propagate LCROSS to EDUS Maneuver and Perform Maneuver
+Propagate EarthFull(LRO) {LRO.A1ModJulian = LCROSS.A1ModJulian};
+PropEpoch        = RefEpoch + ET_EDUSdV;
+LRO.UTCGregorian = LCROSS.UTCGregorian;
+Propagate EarthFull(LCROSS, LRO) {LCROSS.A1ModJulian = PropEpoch};
+
+%---- Perform the maneuver
+Maneuver EDUSdv(LCROSS);
+
+%++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+%---- Prop to LCM1 and perform manevuer
+%++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+%----- Propagate LCROSS to Epoch of LCM1
+PropEpoch = RefEpoch + ET_LCM1;
+Propagate EarthFull(LCROSS, LRO) {LCROSS.A1ModJulian = PropEpoch};
+
+%---- Apply maneuver LCM1
+Maneuver LCM1(LCROSS);
+Maneuver LROTCM(LRO);
+
+
+%++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+%---- Prop to periselene
+%++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+%----- Propagate LCROSS to Periselene
+Propagate NearMoonProp(LCROSS, LRO) {LRO.Luna.Periapsis};
+Maneuver LROLOI(LRO);
+
+%----- Propagate LCROSS to Periselene
+Propagate NearMoonProp(LCROSS, LRO) {LRO.Luna.Periapsis};
+LROLOI.Element1 = -.500;
+Maneuver LROLOI(LRO);
+
+%++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+%---- Prop to LCM2 and perform manevuer
+%++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PropEpoch = RefEpoch + ET_LCM2;
+Propagate NearMoonProp(LCROSS, LRO) {LCROSS.A1ModJulian = PropEpoch};
+Maneuver LCM2(LCROSS);
+Propagate NearMoonProp(LCROSS, LRO) {LCROSS.Luna.RMAG = 1700, StopTolerance = 1e-005};
+
+
+ 
+
+
+
+
