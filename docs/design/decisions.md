@@ -35,19 +35,94 @@ header and `Global` declarations and are parsed by the same grammar (see D10).
 
 ---
 
-## D1 — grammar lives in-repo as `tree-sitter-gmat/`
+## D1 — repository directory structure (and the grammar's place in it)
 
-The tree-sitter grammar lives **in-repo** under `tree-sitter-gmat/` (a self-contained,
-npm-publishable subdirectory: `grammar.js`, the generated parser, `test/corpus/`, and `queries/`),
-not in a separate `astro-tools/tree-sitter-gmat` repo.
+The whole repository layout is fixed here so the grammar's location is a decision *within a known
+whole*, not in isolation. The scaffold (#3) creates this tree; later milestones fill in the
+directories marked for them. The single load-bearing choice is that **the tree-sitter grammar lives
+in-repo** under `tree-sitter-gmat/` (a self-contained, npm-publishable package), not in a separate
+`astro-tools/tree-sitter-gmat` repo.
 
-**Rationale.** For v0.x the grammar and the Python library evolve in lockstep — every grammar change
-needs a matching corpus / binding change — so a single repo keeps them atomic in one PR and one CI
-run, with no cross-repo version dance. The subdir is still a complete tree-sitter package with its
-own `package.json`, so it publishes to npm independently (per tree-sitter convention) and can be
-consumed by other editors without the Python library. A split to a dedicated grammar repo is
-**revisited at v1.0**, once the grammar is frozen and the npm package has external consumers whose
-release cadence diverges from the Python library's.
+```text
+gmat-script/
+├── tree-sitter-gmat/            # the grammar package — self-contained, npm-publishable      (v0.1, #3/#4/#5)
+│   ├── grammar.js               #   the hand-written grammar
+│   ├── package.json             #   npm metadata; tree-sitter-cli as a devDependency
+│   ├── src/                     #   `tree-sitter generate` output (committed)
+│   │   ├── parser.c             #     the generated parser
+│   │   ├── grammar.json
+│   │   └── node-types.json
+│   ├── bindings/python/         #   generated: exposes the compiled grammar's language() capsule
+│   │   ├── tree_sitter_gmat/__init__.py
+│   │   └── binding.c
+│   ├── queries/                 #   highlights.scm, locals.scm, tags.scm   (dir v0.1; content v0.3, #21)
+│   └── test/corpus/             #   tree-sitter corpus tests — committed expected S-expressions
+├── src/                         # src-layout Python package (per #3)
+│   └── gmat_script/             #   py.typed, fully annotated
+│       ├── __init__.py          #     re-exports parse() at v0.1; format/lint added at their milestone
+│       ├── py.typed
+│       ├── parser.py            #     parse(text) -> Tree; loads the vendored grammar             (v0.1, #6)
+│       ├── cli.py               #     the `gmat-script` console script                            (v0.1: parse; +format/lint later)
+│       ├── _grammar/            #     the VENDORED compiled grammar shipped in the wheel          (v0.1 build output; form per D2/#3)
+│       ├── ast/                 #     typed nodes + dict access + mutation API                    (v0.2, #12/#13)
+│       ├── format.py            #     canonical, idempotent formatter                             (v0.2, #14)
+│       ├── lint/                #     rule engine + rules + scope/reference resolution            (v0.3, #20)
+│       ├── catalog.py           #     catalogue loader (NO gmatpy import)                         (v0.3, #19)
+│       ├── data/fields-R2026a.json  # shipped reflection catalogue                                (v0.3, #19)
+│       ├── lsp/                 #     pygls language server                                       (v0.3, #22)
+│       └── tools/gen_catalog.py #     build-time only; the ONLY gmatpy-touching code              (v0.3, #19)
+├── tests/                       # pytest suites
+│   └── data/                    #   golden corpus fixtures (-text in .gitattributes)
+├── docs/                        # MkDocs-Material site
+│   ├── index.md
+│   └── design/decisions.md      #   this file
+├── editors/vscode/              # VS Code extension — LSP client + TextMate grammar              (v0.3, #23)
+├── .github/
+│   ├── workflows/               #   ci.yml, docs.yml, release.yml
+│   ├── ISSUE_TEMPLATE/          #   bug / feature / "does not parse" / chore
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── CODEOWNERS
+├── pyproject.toml               # PEP 621 + Hatchling; declares the `tree-sitter` dep + the grammar build hook
+├── mkdocs.yml
+├── .gitattributes               # tests/data/** -text, *.script -text, *.gmf -text (D6)
+├── .gitignore
+├── .python-version
+├── CHANGELOG.md                 # aggregated at release-cut
+├── CONTRIBUTING.md              # notes lint CI includes `ruff format --check`
+├── CITATION.cff
+├── LICENSE                      # MIT
+└── README.md
+```
+
+**The grammar → wheel bridge.** `tree-sitter-gmat/` holds the *source* grammar and the generated
+`parser.c`; the Python wheel ships a *compiled* form of it. The modern `tree-sitter` runtime loads a
+grammar via `Language(<module>.language())` — a PyCapsule from a compiled extension, not a `.so` path
+— and grammars normally ship as their own binary wheels (`tree-sitter-python`, etc.). gmat-script
+**does not** publish a separate `tree-sitter-gmat` PyPI wheel and depend on it; instead the Hatchling
+build compiles the grammar (`tree-sitter-gmat/src/parser.c` + the Python binding) and **vendors it
+into the single `gmat_script` wheel** (shown as `_grammar/`), so `parser.py` loads it with no
+node/C toolchain and no second install (D9: never GMAT either). The exact vendored form — one bundled
+extension module vs. an embedded `tree_sitter_gmat` module — is the build mechanic deferred to D2/#3;
+this decision fixes only that it is one wheel, vendored, toolchain-free.
+
+**Rationale (in-repo, and why the whole shape).** For v0.x the grammar and the Python library evolve
+in lockstep — every grammar change needs a matching corpus / binding / build change — so one repo
+keeps them atomic in a single PR and a single CI run, with no cross-repo version dance and no second
+release to coordinate. The `src/`-layout Python package (per #3) keeps import-time hygiene (tests run
+against the installed wheel, not the working tree) and gives the vendored grammar a clean home under
+`gmat_script/`. The grammar subdir is still a *complete* tree-sitter package with its own
+`package.json`, so it publishes to **npm** independently (per tree-sitter convention) for editor
+consumers that want highlighting without the Python library. `queries/` is shared by both the editor
+highlighting and the `tags` go-to-definition feature, so it lives with the grammar, not the editor.
+
+**Does the in-repo choice still hold given the full layout? Yes — more so.** The two realistic
+alternatives both get worse once the structure is explicit: (a) a split grammar repo published as a
+separate `tree-sitter-gmat` *PyPI* wheel would make it a runtime dependency of `gmat_script` with its
+own release cadence — exactly the cross-repo version dance the single wheel avoids; (b) a split repo
+pulled in as a git submodule would break the "one PR, one CI run" lockstep the grammar+corpus+binding
+need during active development. So the grammar stays in-repo for v0.x. A split to a dedicated grammar
+repo is **revisited at v1.0**, once the grammar is frozen and the npm package has external consumers
+whose cadence diverges from the Python library's.
 
 ## D2 — dependencies, version pins, and the vendoring strategy
 
@@ -89,7 +164,7 @@ This is the contract every downstream layer reads. The names below are frozen fo
 the typed-AST overlay (v0.2, #12) wraps them.
 
 **Generic over enumerated, everywhere.** Resource types and command keywords are *not* enumerated in
-the grammar. The corpus has **62 distinct `Create` types** and ~**30 distinct command keywords**, and
+the grammar. The corpus has **67 distinct `Create` types** and ~**37 distinct command keywords**, and
 GMAT plugins add more; baking the set into the grammar would force a grammar change for every new
 resource or command. So:
 
@@ -141,7 +216,7 @@ resource or command. So:
 | Node | Surface | Notes |
 |------|---------|-------|
 | `identifier` | `Sat`, `true`, `On` | case-sensitive on names; `true`/`false`/`On`/`Off` are lexically identifiers (booleanness is a catalogue/linter fact, not a node type) |
-| `member_expression` | `Sat.Earth.RMAG` | dotted reference path |
+| `member_expression` | `Sat.Earth.RMAG`, `FM.GravityField.Earth.PotentialFile` | dotted reference path of any depth (4-deep paths occur in the corpus) |
 | `call_expression` | `A(1,1)`, `sqrt(x)`, `cross(r1,v1)` | a postfix `(<args>)`. **Array indexing and function invocation are syntactically identical** — one node; which it is, is semantic (linter/AST), not syntactic |
 | `number` | `7000`, `1.25e-1`, `1e+70`, `1e+070` | integer / real / scientific; tolerates the corpus's `e+070` zero-padded exponent |
 | `string` | `'01 Jan 2025 12:00:00.000'` | single-quoted; no escapes; cannot contain `'`, newline, or `%` |
@@ -150,7 +225,7 @@ resource or command. So:
 | `binary_expression` | `a + b`, `x^2`, `Sat.TA > 90`, `a & b` | arithmetic `+ - * / ^`; relational `< <= > >= == ~=`; logical `& \|`. Relational/logical appear in `If`/`While` conditions; GMAT forbids parens there, but the grammar stays permissive and lets the linter enforce |
 | `unary_expression` | `-Element1`, `+x` | leading sign |
 | `parenthesized_expression` | `(a + b)` | grouping |
-| `command_label` | `'Raise apogee'` | a single-quoted label immediately after a command keyword (or after `GMAT` on an assignment); pervasive — `Propagate`, `Target`, `If`, `While`, etc. all take one |
+| `command_label` | `'Raise apogee'` | a single-quoted label that is the statement's first element after the optional `GMAT` keyword — it precedes the command keyword **or** an assignment LHS (e.g. `'Save RAAN' RAAN = MoonSat.RAAN`, no `GMAT`). Pervasive (576 occurrences) |
 
 **Lexical details that the layout / re-emission depends on**
 
@@ -173,11 +248,16 @@ The grammar specializes a node type **only** when it must, to parse correctly:
   function-call (one `call_expression`), boolean vs plain identifier (one `identifier`). These
   distinctions are recovered by later layers from the catalogue, not from the parse tree.
 
+A **bare no-output call** — an identifier statement with no `[…] =` LHS, e.g. `TargeterInsideFunction;`
+or `MyFunc(args);` (a GmatFunction invoked for side effects, or the `CallGmatFunction` /
+`CallMatlabFunction` engine command) — is just a generic `command`. Only the bracket-LHS form
+`[out, …] = name(args)` that *binds outputs* is a first-class `function_call_command` (D4).
+
 ## D4 — surface-coverage freeze
 
 **Covered (must parse, zero `ERROR` nodes, across the whole corpus):**
 
-- All `Create` resource declarations — every family, generically (the 62 corpus types span
+- All `Create` resource declarations — every family, generically (the 67 corpus types span
   Spacecraft / ForceModel / Propagator / burns / solvers / estimation / coordinate systems /
   subscribers / hardware / parameters / `Variable` / `Array` / `String` / `GmatFunction` …).
 - The configuration section: dotted `resource.field = value` assignments, the optional `GMAT`
@@ -194,8 +274,9 @@ The grammar specializes a node type **only** when it must, to parse correctly:
 - Control-flow and solver blocks: `If`/`Else`/`EndIf`, `For`/`EndFor`, `While`/`EndWhile`,
   `Target`/`EndTarget`, `Optimize`/`EndOptimize`, with solver-mode brace options and nested commands.
 - `BeginScript`/`EndScript` (opaque body) and `BeginFiniteBurn`/`EndFiniteBurn` (flat command pair).
-- Command labels `'…'` on any command.
-- The function-call command `[out, …] = name(args)`, including dotted names.
+- Command labels `'…'` on any command (and on a bare assignment with no `GMAT` keyword).
+- The function-call command `[out, …] = name(args)` (binds outputs), including dotted names; and the
+  **bare no-output call** `Name;` / `Name(args);` (a void GmatFunction invocation — a generic `command`).
 - The two corpus files **without** `BeginMissionSequence` (`Ex_CompareEphemeris.script`,
   `Ex_IncludeFile.script`): a configuration-only file is valid — the boundary marker is optional in
   the grammar even though it is mandatory for a runnable mission (a runnability question for
@@ -208,11 +289,14 @@ stock corpus. What the corpus actually uses is the **bracket-assignment call for
 (`[V2,Log] = Python.IODFunctions.ThreePositionIOD(…)`). So the grammar's function-call surface is the
 `function_call_command` of D3, not a `Call*Function` keyword. The `Call*Function` keywords, if they
 appear in any input, still parse as generic `command` nodes (the generic fallback), so nothing is
-lost — but the modelled, first-class form is the bracket-assignment one.
+lost — but the modelled, first-class form is the bracket-assignment one. (The GMAT help documents
+`CallGmatFunction` as the engine's official call command; the sample scripts nonetheless use the
+bracket form and the bare no-output call, so those are what is first-classed.)
 
 **Deferred / best-effort (parses via the generic fallback, but not first-classed or corpus-tested):**
 
-- Older-release (pre-R2026a) syntax. R2026a is the target; the grammar is best-effort on older files.
+- Older-release (pre-R2026a) syntax. R2026a is the target; the grammar is best-effort on older files
+  (the full version strategy is D11).
 - `ElseIf` — not present in the corpus; if encountered it should still recover, but it is not a
   first-class `if_statement` branch in v0.1.
 - `BeginScript`/`EndScript` bodies — opaque by design; the raw text round-trips but is not parsed
@@ -310,27 +394,86 @@ checking, formatting, and transforming its text does not.
 
 ## D10 — GmatFunction (`.gmf`) shares the grammar
 
-`.gmf` files parse with the **same grammar**. They are a superset of the script surface, adding only:
+`.gmf` files parse with the **same grammar**. They are a superset of the script surface, adding only a
+`function` header and `Global` declarations. The header — modelled as a `function_definition` node —
+is **wider than one form**; confirmed against all **nine** `.gmf` in an R2026a install (one in
+`samples/`, eight in `userfunctions/gmat/`) plus real-world `.gmf` on GitHub:
 
-- a `function` header — `function [out1, out2] = Name(in1, in2)` — modelled as a
-  `function_definition` node carrying the output list, the name, and the parameter list;
-- `Global <name>…` declarations (a generic `command`) to share resources with the caller;
-- otherwise the identical `Create` / `BeginMissionSequence` / command / expression surface (the stock
-  `Ex_RICdelta.gmf` is `Create Array …` + `Create Variable …` + `BeginMissionSequence` + `For` loop +
-  computed assignments — all already covered by D3).
+- **Output list is optional, and always bracketed when present** — absent (`function Name(...)`),
+  empty (`function [] = Name(...)`), single (`function [q] = Name(...)`), or multiple
+  (`function [dr, dv] = Name(...)`). There is **no** bare MATLAB single-output form (`out = name(...)`)
+  — even one output is `[out]`.
+- **Parameter list is optional** — absent entirely (`function [a,b] = Name`), empty
+  (`function Name()`), or `(p1, p2, …)`.
+- **Optional trailing `;`** on the header (`function [delta] = SatSep(Sat1, Sat2);`), and whitespace
+  may sit before `(` (`function [q] = ComposeQuaternions (qA, qB)`).
 
-The corpus has exactly **one** `.gmf` (`Navigation/Ex_RICdelta.gmf`); it is the parse oracle for the
-function-header surface. The grammar applies to both `.script` and `.gmf`; the file extension selects
-nothing in the parser.
+So `function_definition` carries an *optional* output list, the name, and an *optional* parameter
+list. (The no-parameter-list and empty-`[]` forms come from older / documentation examples and are
+best-effort — D11; every R2026a install `.gmf` uses an explicit `(...)`.)
+
+- `Global <name>…` declarations (a generic `command`) share resources with the caller.
+- Otherwise the identical `Create` / `BeginMissionSequence` / command / expression surface. The eight
+  `userfunctions/gmat/` functions exercise far more than the single `samples/` file — `Target` /
+  `EndTarget` and `Optimize` solver blocks, `If` / `EndIf`, `For`, `Vary` / `Achieve` / `Maneuver`,
+  and `Global` — all already covered by D3.
+
+A **void function** (no output list) is *called* as a bare no-output `command` statement
+(`TargeterInsideFunction;`), tying D10 to D4's bare-call form. The grammar applies to both `.script`
+and `.gmf`; the file extension selects nothing in the parser. The function-header oracle is the
+**nine** install `.gmf` (not the single `samples/` one), so the corpus harness (#8) should include the
+`userfunctions/gmat/` set.
+
+## D11 — GMAT version handling: one version-agnostic grammar, version-pinned catalogues, additive
+
+The version question splits cleanly along the grammar / catalogue boundary (D3 / D9), and the two
+halves are handled oppositely.
+
+- **The grammar is version-agnostic by construction, and there is exactly one.** The generic
+  `create_command` (any `<Type>`) and generic `command` (any keyword) of D3 mean a resource type or
+  command keyword added or removed in *any* GMAT release parses without a grammar change — the grammar
+  never enumerates the vocabulary, so it does not date. GMAT's *syntax* (`Create`, assignments,
+  `BeginMissionSequence`, control flow, the value / expression grammar) has been stable across
+  releases; the grammar targets R2026a but parses older and newer scripts because it is a permissive
+  superset. If a genuine *syntactic* divergence between versions ever appears (rare), it is added to
+  the single grammar as an accepted alternative — **never forked into a per-version grammar.** One
+  grammar covers all versions.
+- **Semantics — the field catalogue — are version-pinned, and that is the *only* version-coupled
+  artifact.** Valid field names, types, enums, defaults, and reference targets change every release,
+  so the catalogue (D9, #19) is generated per GMAT install and stamped with its GMAT version +
+  generation date in the JSON header. v0.3 ships exactly `fields-R2026a.json`.
+
+**How the library indicates "R2026a" today.** The version it speaks for is not in the grammar (which
+carries none) but in the **catalogue's provenance header** — the machine-readable declaration — and
+restated in the README. The linter / hover / completion are therefore "R2026a semantics," validated
+against the shipped R2026a catalogue. A script from another release still *parses* (the grammar is
+agnostic) but may draw false unknown-field / enum diagnostics from the linter — so static **parsing**
+is effectively version-independent while static **linting** is explicitly R2026a-scoped.
+
+**Adding versions later is additive data, not a fork — same project, same repo.** Because the only
+version-coupled artifact is catalogue data, supporting another release means: (1) generate
+`fields-<ver>.json` from that install with the existing `gen_catalog.py` (the setup-gmat CI matrix
+already spans multiple releases — and note only R2022a / R2025a / R2026a are real in that window;
+GMAT shipped no R2023a / R2024a); (2) give the catalogue loader and linter / LSP a **`target_version`
+selector**, defaulting to the newest shipped catalogue. To keep that future cheap, the v0.3 catalogue
+API and the linter are designed with the selector **from the start**, even while only one catalogue
+ships — so the later change is a data file plus a default, not a refactor. A separate per-version repo
+is explicitly rejected: it would duplicate the grammar, linter, and LSP only to vary a JSON file. The
+grammar's acceptance corpus may later gain per-version sample suites as best-effort parse oracles, but
+the formal v0.1 bar stays the R2026a stock corpus.
+
+**Scope now (unchanged from the charter).** v0.x targets R2026a; older releases are best-effort for
+parsing and unsupported for linting. This decision adds version support to no v0.x milestone; it fixes
+the *shape* of support so the v0.3 catalogue / linter design does not foreclose it.
 
 ---
 
 ## Forward notes (not v0.1 decisions)
 
 - **Catalogue & version bump (v0.3, #19).** The field catalogue is pinned to R2026a with a documented
-  regeneration process; the gmatpy-reflection generator is the only GMAT-touching code, run via
-  setup-gmat in CI. The corpus survey (62 resource types) is a useful cross-check on catalogue
-  coverage but is not the catalogue source.
+  regeneration process (the multi-version strategy is D11); the gmatpy-reflection generator is the
+  only GMAT-touching code, run via setup-gmat in CI. The corpus survey (67 resource types) is a useful
+  cross-check on catalogue coverage but is not the catalogue source.
 - **Formatter ordering (v0.2, #14).** The canonical formatter's section grouping and field ordering
   are decided at v0.2; the only v0.1 commitment is that the *unformatted* round-trip is byte-exact
   (D6), so the formatter has a faithful tree to reorder.
@@ -355,30 +498,52 @@ Recorded so #4 / #5 implement the real surface:
   which never appear in the corpus (D4).
 - The Python binding dependency is the single PyPI package **`tree-sitter`**, not
   "`tree-sitter` + `py-tree-sitter`" (D2; forward note for #3's `pyproject.toml`).
+- The **`function` header is wider than `[outs] = Name(ins)`** — the output list and the parameter
+  list are each optional (void functions, empty `[]`, no-parens), with an optional trailing `;`
+  (D10). The function-header oracle is **nine** `.gmf` in the install, not one.
 
 ---
 
 ## Appendix — corpus survey
 
-GMAT R2026a stock corpus (the `samples/` directory of a GMAT R2026a install): **162 `.script` + 1
-`.gmf`**.
+Surveyed against an **R2026a install** (the stock `samples/` directory plus the install's
+`userfunctions/gmat/`); the `samples/` set is byte/line-identical across the Linux and Windows
+installs (0 content diffs; 71 / 162 files differ only by CRLF — the install carries mixed line
+endings, which is why D6 forbids EOL normalisation and ships `-text`). Counts below were re-derived
+on the corpus by folding `...` continuations and stripping leading `GMAT` keywords and command labels
+before tokenising — this **supersedes** an earlier word-boundary `grep` that over-counted `Set` /
+`Write` / `Global` and miscategorised the `BackProp` modifier.
 
-- **`Create` types:** 62 distinct. Most frequent: Spacecraft (293), OpenFramesView (267), Propagator
-  (195), ForceModel (188), OpenFramesInterface (158), CoordinateSystem (157), Variable (154),
-  ImpulsiveBurn (116), GroundStation (67), XYPlot (66), ReportFile (62) … down to single-use types
-  (Smoother, ExtendedKalmanFilter, EclipseLocator, …). The long tail is exactly why `Create` is
+Stock corpus: **162 `.script` + 1 `.gmf`** in `samples/`; the install has **9 `.gmf`** total
+(+8 in `userfunctions/gmat/`).
+
+- **`Create` types:** **67 distinct.** Most frequent: Spacecraft (293), OpenFramesView (267),
+  Propagator (195), ForceModel (188), OpenFramesInterface (158), CoordinateSystem (157), Variable
+  (154), ImpulsiveBurn (116), GroundStation (67), XYPlot (66), ReportFile (62) … down to single-use
+  types (Smoother, ExtendedKalmanFilter, EclipseLocator, …). The long tail is exactly why `Create` is
   generic.
 - **`BeginMissionSequence`:** present in 160 / 162 files; absent in `Ex_CompareEphemeris.script` and
   `Ex_IncludeFile.script` (configuration-only / include-driven).
-- **Command keywords (occurrences):** Propagate 401, Vary 270, Report 242, NonlinearConstraint 128,
-  Maneuver 97, Achieve 81, Target/EndTarget 52, If/EndIf 69, Set 66, BackProp 51, Toggle 44, Write 29,
-  PenUp/PenDown 28 each, BeginScript/EndScript 28 each (19 files), For/EndFor 20, Optimize/EndOptimize
-  19, BeginFiniteBurn 19, Minimize 16, While/EndWhile 9, Global 7, Stop 1. `CallGmatFunction` /
-  `CallMatlabFunction` / `ElseIf` / `SkipMissionSequence`: **0**.
+- **Command keywords (leading-token occurrences, authoritative):** Propagate 401, Vary 270, Report
+  242, NonlinearConstraint 128, Maneuver 97, Achieve 81, If/EndIf 69, Target/EndTarget 52, Toggle 44,
+  BeginScript/EndScript 28 each (19 files), PenUp/PenDown 28 each, RunSimulator 23, RunEstimator 22,
+  For/EndFor 20, BeginFiniteBurn 19 / EndFiniteBurn 18, Optimize/EndOptimize 19, Else 17, Write 17,
+  Minimize 16, While/EndWhile 9, BeginFileThrust/EndFileThrust 5, UpdateDynamicData 3, Global 3,
+  CommandEcho 2, Set 1, RunSmoother 1, Stop 1. **Modifier (not a command):** `BackProp` 51
+  occurrences inside `Propagate`. **Absent (0):** `CallGmatFunction` / `CallMatlabFunction` /
+  `CallPythonFunction` / `ElseIf` / `SkipMissionSequence`.
+- **Function calls:** 24 bracket-LHS calls `[out, …] = name(args)` (incl. dotted `Python.…`);
+  2 bare no-output calls (`TargeterInsideFunction;`).
 - **`#Include`:** 2 files (`#Include '…';` and `#Include '…'` — trailing `;` optional).
 - **Line continuation `...`:** 72 occurrences across 21 files.
-- **`[…]` literals:** 1-D (`[ 0.1 0.05 ]`, `[ true false]`) and 2-D matrices with `;` row separators
-  (the 6×6 `OrbitErrorCovariance`); exponents include the zero-padded `1e+070` form.
-- **Command labels `'…'`:** on Propagate / Target / Optimize / If / While / Vary / Achieve and the
-  `GMAT 'label' x = …` assignment.
-- **`.gmf`:** one file, `Navigation/Ex_RICdelta.gmf` (`function [dr, dv] = Ex_RICdelta(rv1, rv2)`).
+- **Command labels `'…'`:** 576 occurrences — on Propagate / Target / Optimize / If / While / Vary /
+  Achieve, the `GMAT 'label' x = …` assignment, and label-first assignments (`'Save RAAN' RAAN = …`).
+- **`[…]` literals:** 1-D (`[ 0.1 0.05 ]`, `[ true false]`) and 43 two-dimensional matrices with `;`
+  row separators (the 6×6 `OrbitErrorCovariance`); exponents include the zero-padded `1e+070` form.
+- **Braces / indexing:** 124 empty `{}`, 112 nested braces, 70 LHS array-index targets `A(i,j) = …`;
+  dotted member paths up to 4 deep (`FM.GravityField.Earth.PotentialFile`, 250 occurrences).
+- **`.gmf` headers (9 files):** `[dr, dv] = Ex_RICdelta(rv1, rv2)`, `[crossProd] = cross(...)`,
+  `[q] = ComposeQuaternions (qA, qB)` (space before `(`), `TargeterInsideFunction()` and
+  `TargetLEOStationKeeping(a, b)` (no output list); plus, from real-world GitHub `.gmf`,
+  `[outs] = GetCDStates` (no parameter list), `[] = RaiseApogee(burnSize)` (empty output list), and
+  `… = SatSep(Sat1, Sat2);` (trailing `;`).
