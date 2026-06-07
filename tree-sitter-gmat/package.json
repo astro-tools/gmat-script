@@ -1,0 +1,38 @@
+{
+  "name": "tree-sitter-gmat",
+  "version": "0.1.0",
+  "description": "GMAT mission script grammar for tree-sitter",
+  "license": "MIT",
+  "keywords": [
+    "parser",
+    "lexer",
+    "tree-sitter",
+    "gmat",
+    "astrodynamics"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astro-tools/gmat-script.git"
+  },
+  "homepage": "https://github.com/astro-tools/gmat-script#readme",
+  "bugs": {
+    "url": "https://github.com/astro-tools/gmat-script/issues"
+  },
+  "scripts": {
+    "generate": "tree-sitter generate",
+    "test": "tree-sitter test"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.25.0"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.gmat",
+      "file-types": [
+        "script",
+        "gmf"
+      ],
+      "highlights": "queries/highlights.scm"
+    }
+  ]
+}

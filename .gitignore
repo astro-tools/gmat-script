@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.dylib
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+wheels/
+*.whl
+
+# Environments
+.venv/
+venv/
+env/
+.env
+
+# uv
+.uv-cache/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Docs build
+site/
+.cache/
+
+# Node / tree-sitter (the generated parser under tree-sitter-gmat/src/ IS committed)
+node_modules/
+tree-sitter-gmat/build/
+*.wasm
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+.DS_Store

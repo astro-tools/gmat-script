@@ -466,6 +466,37 @@ the formal v0.1 bar stays the R2026a stock corpus.
 parsing and unsupported for linting. This decision adds version support to no v0.x milestone; it fixes
 the *shape* of support so the v0.3 catalogue / linter design does not foreclose it.
 
+## D12 — the grammar → wheel build mechanic (resolving the D1 / D2 deferral)
+
+D1 fixed *that* the compiled grammar is vendored into one wheel; D2 fixed the *guarantee*
+(toolchain-free install) and deferred the exact mechanic to the scaffold (#3). This records the
+resolution — the contract the parser binding (#6) loads against.
+
+- **The generated parser is committed.** `tree-sitter-gmat/src/parser.c` (with `grammar.json`,
+  `node-types.json`, and `tree_sitter/*.h`) is checked in. Regenerating it needs Node + the
+  tree-sitter CLI; *compiling* it needs only a C compiler. So routine wheel builds — and the sdist
+  fallback — never touch Node.
+- **One vendored extension, compiled at wheel-build time.** A Hatchling build hook
+  (`hatch_build.py`) compiles `parser.c` + the Python binding (`bindings/python/binding.c`) into a
+  single extension module vendored at `gmat_script/_grammar/_binding`. This resolves D1's
+  "one bundled extension vs. embedded `tree_sitter_gmat` module" question as the **single bundled
+  extension** form: the library loads it via `gmat_script._grammar.language()`, which the
+  `tree-sitter` runtime wraps with `Language(...)`. `parser.py` is wired to this load path at #6;
+  the scaffold proves it end to end.
+- **Stable ABI (`abi3`, floor cp310).** The extension builds against the CPython limited API, so
+  one wheel per platform runs on every supported Python (3.10 / 3.11 / 3.12). Wheels carry the
+  `cp310-abi3-<platform>` tag.
+- **`cibuildwheel` produces the per-platform wheels + an sdist.** Release builds run cibuildwheel
+  (one cp310 build per platform → manylinux / macOS / Windows abi3 wheels) plus the sdist, which
+  carries `parser.c` so an sdist build needs a C compiler but **no Node**. PyPI ships the prebuilt
+  wheels — the D9 toolchain-free install — and the sdist is the compile-locally fallback for
+  platforms without a prebuilt wheel.
+
+The drift risk this introduces — a hand-edited `grammar.js` whose committed `parser.c` goes stale,
+or a generated ABI the pinned runtime cannot load — is caught by the grammar-build CI job (D2),
+which regenerates with the pinned CLI and runs the corpus tests, so it fails CI rather than a user's
+`import`.
+
 ---
 
 ## Forward notes (not v0.1 decisions)

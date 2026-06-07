@@ -1,0 +1,7 @@
+# Corpus fixtures under tests/data are parsed and byte-compared by the tests. Git's EOL
+# normalisation (autocrlf on Windows checks out LF as CRLF) would rewrite them and break the
+# byte-exact round-trip assertions, so pin them verbatim — identical on every platform. GMAT
+# script and GmatFunction sources are pinned the same way wherever they live.
+tests/data/** -text
+*.script -text
+*.gmf -text
