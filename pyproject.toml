@@ -146,6 +146,12 @@ files = ["src/gmat_script", "tests"]
 module = ["tree_sitter.*"]
 ignore_missing_imports = true
 
+# gmatpy is the build-time-only GMAT binding (the catalogue generator's sole import); it ships no
+# stubs and is never present at runtime. It is typed as Any in tools/gen_catalog.py.
+[[tool.mypy.overrides]]
+module = ["gmatpy", "gmatpy.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
@@ -157,6 +163,9 @@ markers = [
 [tool.coverage.run]
 source = ["src/gmat_script"]
 branch = true
+# The catalogue generator is the only GMAT-touching code; it cannot run without a GMAT install and
+# is exercised in the dedicated `catalogue` CI job, not the unit suite.
+omit = ["*/gmat_script/tools/gen_catalog.py"]
 
 [tool.coverage.report]
 show_missing = true

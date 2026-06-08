@@ -1,0 +1,46 @@
+name: catalogue
+
+# Regenerate the field catalogue from a real GMAT install and fail if it drifts from the committed
+# fields-<version>.json. This is the ONLY CI job that needs GMAT, so it is manual + scheduled rather
+# than per-PR (a GMAT install is a heavy download). The catalogue generator is the only GMAT-touching
+# code in the project (design decisions D9 / D15).
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly drift check (Mondays 06:00 UTC) — surfaces a GMAT point-release catalogue change.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    name: catalogue drift (setup-gmat)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install GMAT
+        id: gmat
+        uses: astro-tools/setup-gmat@v0
+        with:
+          version: R2026a
+          cache: true
+          python-version: '3.12'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --all-groups
+      # setup-gmat exports GMAT_ROOT (and a gmat-version output); the generator imports gmatpy from
+      # that install via sys.path — gmatpy is never pip-installed. --check regenerates in memory and
+      # exits non-zero if it differs from the committed catalogue (ignoring the generation date).
+      - name: Regenerate the catalogue and fail on drift
+        run: >-
+          uv run python -m gmat_script.tools.gen_catalog --check
+          --gmat-version "${{ steps.gmat.outputs.gmat-version }}"
