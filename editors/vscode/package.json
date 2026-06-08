@@ -112,7 +112,7 @@
     "check-types": "tsc --noEmit",
     "compile-tests": "tsc -p . --outDir out",
     "lint": "eslint src",
-    "pretest": "npm run compile-tests && npm run check-types && npm run lint",
+    "pretest": "npm run compile-tests && npm run compile && npm run check-types && npm run lint",
     "test": "vscode-test"
   },
   "dependencies": {
