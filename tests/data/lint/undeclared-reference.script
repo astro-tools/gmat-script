@@ -1,0 +1,4 @@
+Create Spacecraft Sat
+Sat.Tanks = {Ghost}
+BeginMissionSequence
+Propagate Sat

@@ -1,0 +1,4 @@
+Create Spacecraft Sat
+Create Variable spare
+BeginMissionSequence
+Propagate Sat
