@@ -33,7 +33,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, NamedTuple
 
 from .ast import Script
-from .ast.base import node_text
+from .ast.base import BLOCK_HEADER_FIELDS, node_text
 from .ast.edit import detect_newline
 from .parser import Tree, parse
 
@@ -56,9 +56,6 @@ _BLOCK_END = {
     "target_statement": "EndTarget",
     "optimize_statement": "EndOptimize",
 }
-
-# Field names a block carries in its header (everything else between header and end is the body).
-_HEADER_FIELDS = ("label", "condition", "variable", "range", "solver", "options")
 
 
 def format(source: str | Tree | Script, style: str = "canonical") -> str:
@@ -205,7 +202,7 @@ def _unit_first_row(unit: _StmtUnit | _CommentUnit) -> int:
 
 
 def _unit_last_row(unit: _StmtUnit | _CommentUnit) -> int:
-    if isinstance(unit, _CommentUnit):
+    if isinstance(unit, _CommentUnit):  # pragma: no cover - a comment run is never a predecessor
         return unit.comments[-1].end_point[0]
     return (unit.trailing if unit.trailing is not None else unit.statement).end_point[0]
 
@@ -253,7 +250,7 @@ def _emit_create(node: Node) -> str:
             chunk = node_text(child)
         elif child.type == "array_size":
             chunk += _emit_array_size(child)
-    if chunk:
+    if chunk:  # pragma: no cover - a Create always has at least one name
         parts.append(chunk)
     return " ".join(parts)
 
@@ -351,7 +348,7 @@ def _block_header(node: Node) -> tuple[str, int]:
 def _header_row(node: Node) -> int:
     """The last source row spanned by the block's header fields."""
     row = node.start_point[0]
-    for name in _HEADER_FIELDS:
+    for name in BLOCK_HEADER_FIELDS:
         field = node.child_by_field_name(name)
         if field is not None:
             row = max(row, field.end_point[0])
@@ -361,7 +358,7 @@ def _header_row(node: Node) -> int:
 def _header_end_byte(node: Node) -> int:
     """The byte offset just past the block's last header field — where its body begins."""
     header_end = node.start_byte
-    for name in _HEADER_FIELDS:
+    for name in BLOCK_HEADER_FIELDS:
         field = node.child_by_field_name(name)
         if field is not None:
             header_end = max(header_end, field.end_byte)

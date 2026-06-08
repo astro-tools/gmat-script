@@ -1,4 +1,4 @@
-"""Typed mission-sequence command nodes (issue #12).
+"""Typed mission-sequence command nodes.
 
 Each statement after ``BeginMissionSequence`` is viewed through a typed :class:`Command` selected by
 :func:`build_command` from its CST node type: the generic keyword commands (:class:`GenericCommand`
@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .base import AstNode, node_text
+from .base import BLOCK_HEADER_FIELDS, AstNode, node_text
 from .values import ObjectRef, RawValue, Value, coerce_value
 
 if TYPE_CHECKING:
@@ -33,9 +33,6 @@ __all__ = [
     "WhileStatement",
     "build_command",
 ]
-
-# Field names a block node carries that are *not* part of its nested body.
-_BLOCK_FIELDS = ("label", "condition", "variable", "range", "solver", "options")
 
 
 def _unquote_label(node: Node | None) -> str | None:
@@ -161,7 +158,9 @@ def _block_body(node: Node, *, exclude: tuple[str, ...] = ()) -> tuple[Command, 
     """The nested statements of a block — its named children minus the block's own fields and any
     *exclude*'d child types (e.g. an ``if`` statement's ``else_clause``)."""
     skip = {
-        field.id for name in _BLOCK_FIELDS if (field := node.child_by_field_name(name)) is not None
+        field.id
+        for name in BLOCK_HEADER_FIELDS
+        if (field := node.child_by_field_name(name)) is not None
     }
     return tuple(
         build_command(child)

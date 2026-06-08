@@ -137,7 +137,7 @@ def collect_reference_edits(root: Node, old: str, new: str) -> list[_Edit]:
 def _is_object_reference(node: Node) -> bool:
     """Whether an ``identifier`` whose text matched the renamed object actually *refers* to it."""
     parent = node.parent
-    if parent is not None:
+    if parent is not None:  # pragma: no cover - a tree identifier always has a parent
         if parent.type == "member_expression":
             prop = parent.child_by_field_name("property")
             if prop is not None and prop.id == node.id:

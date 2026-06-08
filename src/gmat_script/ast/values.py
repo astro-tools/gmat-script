@@ -1,7 +1,7 @@
-"""Structural coercion of CST value nodes to Python values (issue #12).
+"""Structural coercion of CST value nodes to Python values.
 
 Coercion is *structural* — inferred from a literal's shape, never from the field catalogue (that
-semantic typing is the linter's job, v0.3). It is total: every value node the grammar can place on
+semantic typing is the linter's job). It is total: every value node the grammar can place on
 the right-hand side of an assignment maps to a :data:`Value`, with :class:`RawValue` as the
 raw-text fallback for the forms that have no faithful Python reduction (computed expressions, GMAT's
 unquoted rest-of-line values).

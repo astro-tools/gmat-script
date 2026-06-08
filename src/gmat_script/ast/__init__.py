@@ -1,4 +1,4 @@
-"""Typed AST overlay over the v0.1 CST — typed nodes + dict-like access (issue #12).
+"""Typed AST overlay over the concrete syntax tree — typed nodes + dict-like access.
 
 This package layers a typed, read-only object model over the concrete syntax tree returned by
 :func:`gmat_script.parse`. The entry point is :class:`Script`; it presents a parsed script as typed

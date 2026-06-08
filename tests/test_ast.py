@@ -135,6 +135,14 @@ def test_resources_by_name_and_type() -> None:
     assert script.resources["Sat"] is script.resources_by_type["Spacecraft"]["Sat"]
 
 
+def test_duplicate_name_under_one_type_is_listed_once() -> None:
+    # Two declarations of the same name (the linter's problem, not the grammar's) collapse to one
+    # entry in the by-type index rather than appearing twice.
+    source = "Create Spacecraft Sat\nCreate Spacecraft Sat\nBeginMissionSequence\nStop\n"
+    script = Script.parse(source)
+    assert list(script.resources_by_type["Spacecraft"]) == ["Sat"]
+
+
 def test_type_sugar_attribute() -> None:
     script = Script.parse(_CONFIG)
     assert list(script.spacecraft) == ["Sat"]
