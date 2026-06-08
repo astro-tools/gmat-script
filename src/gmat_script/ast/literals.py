@@ -47,14 +47,26 @@ def emit_value(value: Value) -> str:
     if isinstance(value, str):
         return _emit_string(value)
     if isinstance(value, ObjectRef):
-        return value.name
+        return _bare_text(value.name, "object reference")
     if isinstance(value, RawValue):
-        return value.text
+        return _bare_text(value.text, "raw value")
     if isinstance(value, Array):
         return _emit_array(value)
     if isinstance(value, list):
         return _emit_list(value)
     raise TypeError(f"cannot emit a value of type {type(value).__name__!r}")
+
+
+def _bare_text(text: str, kind: str) -> str:
+    """An :class:`ObjectRef` / :class:`RawValue`'s verbatim text, rejecting the forms that corrupt
+    the script without tripping the re-parse guard: an empty / whitespace-only value (it leaves a
+    dangling ``=`` that swallows the following line as its right-hand side) or one carrying a
+    newline (it splices in extra statements that are themselves valid GMAT)."""
+    if not text.strip():
+        raise ValueError(f"cannot emit an empty {kind}")
+    if "\n" in text or "\r" in text:
+        raise ValueError(f"{kind} {text!r} cannot contain a newline")
+    return text
 
 
 def _emit_float(value: float) -> str:

@@ -31,6 +31,8 @@ from .edit import (
     declaration_name_edits,
     detect_newline,
     line_span,
+    require_field_path,
+    require_identifier,
     splice,
 )
 from .literals import emit_value
@@ -264,6 +266,7 @@ class Script:
         assignment), else appends a canonical ``<resource>.<field> = <value>`` line next to the
         resource's configuration. This backs ``script.spacecraft["Sat"]["SMA"] = 7000``.
         """
+        require_field_path(field)
         data = self._resource_data(resource)
         literal = emit_value(value)
         existing = data.fields().get(field)
@@ -299,6 +302,10 @@ class Script:
         The declaration lands just before ``BeginMissionSequence`` (or at end of file when the
         script has no marker). Raises :class:`~gmat_script.ast.edit.MutationError` if *name* exists.
         """
+        require_identifier(resource_type, "resource type")
+        require_identifier(name, "resource name")
+        for field in fields or {}:
+            require_field_path(field)
         if name in self._resource_index:
             raise MutationError(f"resource {name!r} already exists")
         lines = [f"Create {resource_type} {name}"]
