@@ -1,0 +1,7 @@
+function   [dr, dv]   =   RICdelta( rv1 ,rv2 )
+
+Create Variable magnitude
+
+BeginMissionSequence
+
+magnitude = sqrt(rv1(1)^2 + rv1(2)^2)

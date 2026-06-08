@@ -1,0 +1,20 @@
+%  A small configuration section
+
+
+Create Spacecraft Sat
+GMAT Sat.SMA   =   7000 ;
+Sat.ECC=0.001
+Sat.Tanks = {Tank1,  Tank2}
+Sat.OrbitErrorCovariance = [1 0 0;0 1 0; 0 0 1]
+
+
+
+%  the first tank
+Create ChemicalTank   Tank1
+Tank1.FuelMass=400
+Create ChemicalTank Tank2
+Tank2.FuelMass = 500;;
+
+Create Array  A[3,3]  B[2, 2]
+Create Variable x y z
+#Include  'macros.script'

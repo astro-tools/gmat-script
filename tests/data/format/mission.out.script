@@ -1,0 +1,22 @@
+Create Spacecraft Sat
+
+Create Propagator Prop
+
+BeginMissionSequence
+
+% propagate one day
+Propagate Prop(Sat) {Sat.ElapsedDays = 1}
+For 'loop' I = 1:2:10
+    Propagate Prop(Sat) {Sat.Apoapsis}
+    If Sat.TA > 90
+        Stop
+    Else
+        Maneuver Burn1(Sat)
+    EndIf
+EndFor
+
+Target 'raise' DC {SolveMode = Solve}
+    Vary 'vary TOI' DC(TOI.Element1 = 0.5, {Perturbation = 0.0001})
+    Achieve DC(Sat.RMAG = 42000, {Tolerance = 0.1})
+EndTarget; % done targeting
+[V2, Log] = Python.mod.Fn(Sat.X, 2)

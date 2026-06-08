@@ -1,0 +1,15 @@
+Create Spacecraft Sat
+
+BeginMissionSequence
+
+x = a+b*c
+y = ( a + b ) ^ 2
+z = -Element1
+w = sqrt( TOI.Element1^2 + TOI.Element2^2 )
+GMAT Cost = cross( r1 , v1 )
+Sat.X = A(1 ,1)
+path = ../data/misc/file.txt
+arr = [ 1   2   3 ]
+mat = [1 0 0;0 1 0;0 0 1]
+flags = [ true false ]
+deep = FM.GravityField.Earth.PotentialFile

@@ -11,6 +11,7 @@ decisions under ``docs/design/`` for the contract this package implements.
 from __future__ import annotations
 
 from .ast import MutationError, ObjectRef, RawValue, Script
+from .format import format
 from .parser import ErrorNode, Position, Tree, parse
 
 __all__ = [
@@ -21,6 +22,7 @@ __all__ = [
     "RawValue",
     "Script",
     "Tree",
+    "format",
     "parse",
 ]
 __version__ = "0.1.1"
