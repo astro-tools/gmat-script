@@ -297,12 +297,19 @@ def _emit_function_definition(node: Node) -> str:
 
 def _emit_block(node: Node, indent: int) -> list[str]:
     """A control-flow / solver block: header line, indented body, matched end keyword."""
-    header, header_row = _block_header(node)
     body = _body_children(node)
-    if body and body[0].type == "comment" and body[0].start_point[0] == header_row:
-        header = _with_trailing_comment(header, body[0])  # comment trailing the header line
-        body = body[1:]
-    lines = [_line(indent, header)]
+    if _header_has_comment(node):
+        # A comment buried inside a header value (a multi-line ``{…}`` options block, a ``For``
+        # range, an ``If`` condition) can't be folded onto one line without commenting out the rest
+        # of it, so the header is emitted verbatim — the same guard ``_emit_statement`` applies to a
+        # simple statement, which a block never reaches because it dispatches here first.
+        lines = _emit_verbatim_header(node, indent)
+    else:
+        header, header_row = _block_header(node)
+        if body and body[0].type == "comment" and body[0].start_point[0] == header_row:
+            header = _with_trailing_comment(header, body[0])  # comment trailing the header line
+            body = body[1:]
+        lines = [_line(indent, header)]
     lines.extend(_emit_sequence(body, indent + 1, in_config=False))
     else_clause = _find_child(node, "else_clause")
     if else_clause is not None:
@@ -351,13 +358,38 @@ def _header_row(node: Node) -> int:
     return row
 
 
-def _body_children(node: Node) -> list[Node]:
-    """The block's body statements + comments (between the header and the end / ``Else``)."""
+def _header_end_byte(node: Node) -> int:
+    """The byte offset just past the block's last header field — where its body begins."""
     header_end = node.start_byte
     for name in _HEADER_FIELDS:
         field = node.child_by_field_name(name)
         if field is not None:
             header_end = max(header_end, field.end_byte)
+    return header_end
+
+
+def _header_has_comment(node: Node) -> bool:
+    """Whether a comment sits inside the block's header span (within or between its header fields).
+
+    A comment *trailing* the header line (after the last field) starts at / past
+    :func:`_header_end_byte`, so it is not a header comment — it is picked up as a trailing comment
+    on the normal path; only a comment the header would have to fold over counts here.
+    """
+    header_end = _header_end_byte(node)
+    stack = list(node.children)
+    while stack:
+        child = stack.pop()
+        if child.start_byte >= header_end:
+            continue
+        if child.type == "comment":
+            return True
+        stack.extend(child.children)
+    return False
+
+
+def _body_children(node: Node) -> list[Node]:
+    """The block's body statements + comments (between the header and the end / ``Else``)."""
+    header_end = _header_end_byte(node)
     return [
         child
         for child in node.children
@@ -379,7 +411,22 @@ def _emit_script_block(node: Node, indent: int) -> list[str]:
 def _emit_verbatim(node: Node, indent: int) -> list[str]:
     """Re-emit a statement from its source slice (newline-normalised, trailing whitespace trimmed),
     indenting only its first line — the fallback for a statement with a comment inside a value."""
-    raw = _normalise_newlines(node_text(node)).split("\n")
+    return _verbatim_lines(node_text(node), indent)
+
+
+def _emit_verbatim_header(node: Node, indent: int) -> list[str]:
+    """Re-emit just a block's header (up to :func:`_header_end_byte`) verbatim — the fallback when a
+    comment is buried in a header value. The body and end keyword are emitted normally by the
+    caller, so only the header lines are preserved as written."""
+    raw = node.text
+    header_text = raw[: _header_end_byte(node) - node.start_byte].decode("utf-8") if raw else ""
+    return _verbatim_lines(header_text, indent)
+
+
+def _verbatim_lines(text: str, indent: int) -> list[str]:
+    """*text* as physical lines, newline-normalised and trailing-whitespace-trimmed, indenting only
+    the first line (continuation lines keep their authored column)."""
+    raw = _normalise_newlines(text).split("\n")
     return [_line(indent, raw[0].rstrip()), *(physical.rstrip() for physical in raw[1:])]
 
 

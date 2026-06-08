@@ -157,6 +157,30 @@ def test_comment_inside_a_value_keeps_statement_verbatim() -> None:
     assert format(formatted) == formatted
 
 
+@pytest.mark.parametrize(
+    ("header", "end"),
+    [
+        ("Target DC {SolveMode = Solve, % c\n ExitMode = Stop}", "EndTarget"),
+        ("Optimize VF {SolveMode = Solve, % c\n ExitMode = Stop}", "EndOptimize"),
+        ("If x == {1, % c\n 2}", "EndIf"),
+        ("While y == {1, % c\n 2}", "EndWhile"),
+        ("For i = 1: % c\n 10", "EndFor"),
+    ],
+    ids=["target", "optimize", "if", "while", "for"],
+)
+def test_comment_buried_in_block_header_keeps_header_verbatim(header: str, end: str) -> None:
+    # A comment inside a header value can't be folded onto one line without commenting out the rest
+    # of the header; the block header is emitted verbatim so it stays parseable, idempotent, and the
+    # comment is preserved (a block dispatches before the simple-statement verbatim guard, so it
+    # carries its own).
+    source = f"BeginMissionSequence\n{header}\nStop\n{end}\n"
+    assert not parse(source).has_errors
+    formatted = format(source)
+    assert not parse(formatted).has_errors
+    assert "% c" in parse(formatted).text
+    assert format(formatted) == formatted
+
+
 # -- blocks ---------------------------------------------------------------------------------------
 
 
