@@ -10,11 +10,12 @@ decisions under ``docs/design/`` for the contract this package implements.
 
 from __future__ import annotations
 
-from .ast import MutationError, ObjectRef, RawValue, Script
+from .ast import Array, MutationError, ObjectRef, RawValue, Script
 from .format import format
 from .parser import ErrorNode, Position, Tree, parse
 
 __all__ = [
+    "Array",
     "ErrorNode",
     "MutationError",
     "ObjectRef",

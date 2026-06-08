@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from gmat_script import ObjectRef, RawValue, Script, parse
+from gmat_script import Array, ObjectRef, RawValue, Script, parse
 from gmat_script.ast import (
     Assignment,
     Command,
@@ -59,9 +59,10 @@ def _coerce_rhs(rhs: str) -> Value:
         ("{Earth, Luna}", [ObjectRef("Earth"), ObjectRef("Luna")]),
         ("{}", []),
         ("{Sun, {Earth, Luna}}", [ObjectRef("Sun"), [ObjectRef("Earth"), ObjectRef("Luna")]]),
-        ("[1 2 3]", [1, 2, 3]),
-        ("[]", []),
-        ("[-1 2; 3 -4]", [[-1, 2], [3, -4]]),  # 2-D matrix with signed elements
+        ("{{1, 2}, {3, 4}}", [[1, 2], [3, 4]]),  # a brace-list of brace-lists is nested lists
+        ("[1 2 3]", Array((1, 2, 3))),  # a [...] array is an Array, distinct from a {...} list
+        ("[]", Array(())),
+        ("[-1 2; 3 -4]", Array((Array((-1, 2)), Array((3, -4))))),  # 2-D matrix, signed elements
     ],
 )
 def test_coerce_value_structural(rhs: str, expected: Value) -> None:

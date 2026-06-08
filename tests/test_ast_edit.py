@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from gmat_script import MutationError, ObjectRef, RawValue, Script, parse
+from gmat_script import Array, MutationError, ObjectRef, RawValue, Script, parse
 from gmat_script.ast import Value, coerce_value, emit_value
 from gmat_script.ast.edit import _Edit, detect_newline, line_span, splice
 
@@ -38,8 +38,11 @@ from gmat_script.ast.edit import _Edit, detect_newline, line_span, splice
         ([ObjectRef("Earth"), ObjectRef("Luna")], "{Earth, Luna}"),
         ([], "{}"),
         ([ObjectRef("Sun"), [ObjectRef("Earth")]], "{Sun, {Earth}}"),  # nested → nested braces
-        ([[1, 2], [3, 4]], "[1 2; 3 4]"),  # all-list → matrix
-        ([[1.0, 0.0], [0.0, 1.0]], "[1.0 0.0; 0.0 1.0]"),
+        ([[1, 2], [3, 4]], "{{1, 2}, {3, 4}}"),  # a list of lists is nested braces, not a matrix
+        (Array((1, 2, 3)), "[1 2 3]"),  # a 1-D Array is a square-bracket array
+        (Array(()), "[]"),
+        (Array((Array((1, 2)), Array((3, 4)))), "[1 2; 3 4]"),  # rows of Arrays → a matrix
+        (Array((Array((1.0, 0.0)), Array((0.0, 1.0)))), "[1.0 0.0; 0.0 1.0]"),
     ],
 )
 def test_emit_value(value: Value, text: str) -> None:
@@ -54,7 +57,10 @@ def test_emit_value_round_trips_through_the_parser() -> None:
         True,
         "a date",
         ObjectRef("Earth"),
-        [ObjectRef("A"), ObjectRef("B")],
+        [ObjectRef("A"), ObjectRef("B")],  # {…} brace-list stays a list
+        [[1, 2], [3, 4]],  # nested {…} stays nested lists, not a matrix
+        Array((1, 2, 3)),  # [...] array stays an Array
+        Array((Array((1, 2)), Array((3, 4)))),  # [r; r] matrix stays a matrix
     )
     for value in values:
         assignment = parse(f"v = {emit_value(value)}\n").root_node.named_children[0]

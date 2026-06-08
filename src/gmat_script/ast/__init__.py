@@ -33,9 +33,10 @@ from .edit import MutationError
 from .literals import emit_value
 from .resource import Resource, split_reference
 from .script import Script
-from .values import ObjectRef, RawValue, Value, coerce_value
+from .values import Array, ObjectRef, RawValue, Value, coerce_value
 
 __all__ = [
+    "Array",
     "Assignment",
     "Command",
     "ForStatement",
