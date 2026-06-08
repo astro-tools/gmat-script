@@ -40,6 +40,11 @@ node_modules/
 tree-sitter-gmat/build/
 *.wasm
 
+# The grammar's queries are vendored into the package by the build hook (hatch_build.py) so the
+# wheel and editable installs can load them at runtime; the canonical copies live under
+# tree-sitter-gmat/queries/.
+src/gmat_script/_grammar/queries/
+
 # IDE / editor
 .vscode/
 .idea/
