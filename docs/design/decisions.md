@@ -628,14 +628,89 @@ signature.
 **Style choices left to v0.3+.** Whether to offer a width-aware wrapping style, or a GMAT-GUI-mirror
 style that column-aligns `=`, is deferred — the `style` parameter is the seam for them.
 
+## D15 — the field catalogue: reflection generator, shipped data, and the version-bump process
+
+The v0.3 linter / hover / completion need a machine-readable description of every resource type's
+fields. This fixes how that catalogue is produced, what it contains, and how it is consumed — the
+contract `gmat_script/tools/gen_catalog.py` (the generator) and `gmat_script/catalog.py` (the loader)
+implement (#19). It is grounded in a reflection survey of the R2026a `gmatpy` API.
+
+**The boundary holds: one GMAT-touching module, GMAT-free everywhere else (D9).** `gen_catalog.py`
+is the *only* code that imports `gmatpy`, and it runs at build / CI time, never at install or runtime.
+It writes `gmat_script/data/fields-<version>.json`; the loader reads that JSON through
+`importlib.resources` and never imports `gmatpy`. v0.3 ships exactly `fields-R2026a.json`.
+
+**Enumeration is by object-type category, not the flat factory list.** GMAT's `Construct` succeeds
+for commands and math nodes too, so "does it construct" cannot separate resources from non-resources.
+The generator instead iterates a fixed set of `Gmat::ObjectType` codes (Spacecraft, Burn, PropSetup,
+ODEModel, the physical-model / coordinate / subscriber / solver / hardware / parameter / function /
+... families) and reflects `Moderator.GetListOfFactoryItems(code)` for each — which excludes commands
+by construction. `PARAMETER` is restricted to the three script-declarable forms (`Variable`,
+`String`, `Array`); the other 300+ are calculated quantities, not `Create`d resources.
+
+**Two `gmatpy` segfault guards, learned empirically (both will crash the process, not raise):**
+
+- *Never `gmat.Clear()` while iterating.* Clearing the configuration mid-enumeration segfaults the
+  next `Construct`. The generator gives each probe object a unique name and lets GMAT own them.
+- *Read a `default` only from non-read-only fields.* `GetField` on a read-only computed field (e.g.
+  `NuclearPowerSystem.TotalPowerAvailable`) triggers computation on an uninitialised object and
+  crashes. Defaults come only from settable fields.
+
+**Type normalisation is integer-code-first.** `GetParameterType` (the integer code) is authoritative;
+`GetParameterTypeString` is sometimes a per-class custom label (`Radius`, `Mu`, `EstimateMethod`)
+whose underlying code is still one of the standard ones. The catalogue stores a normalised `type`
+(`real` / `integer` / `string` / `bool` / `enum` / `object` / `object_array` / `string_array` /
+`real_array` / `matrix` / `filename` / `on_off` / `color` / `gmat_time`) plus the raw `gmat_type`
+label. A small label fallback covers the handful of codes not enumerated (e.g. `TIME_TYPE`).
+
+**Script-name aliases.** A few script type names differ from the factory class name: `Create
+Propagator` builds a `PropSetup`, and `ForceModel` / `ODEModel` are one class. The catalogue stores
+the factory name and records an `aliases` map (`Propagator -> PropSetup`, `ODEModel -> ForceModel`);
+the loader resolves either spelling, so the linter accepts what scripts actually write.
+
+**Spacecraft's orbital-element fields are dynamic and handled specially.** A Spacecraft exposes six
+element fields whose labels depend on `DisplayStateType` — reflecting a single (default, Cartesian)
+instance would yield only `X/Y/Z/VX/VY/VZ` and miss `SMA/ECC/INC/...`, the most common fields in any
+GMAT script. The generator cycles the display type through every documented R2026a state
+representation (the list is filled from the User's Guide because GMAT does not expose it via enum
+reflection) and merges the element labels. Their *defaults* are dropped: they are conversions of an
+uninitialised placeholder state, never meaningful.
+
+**Default capture is portable and deterministic.** Defaults are kept only for scalar-ish types;
+filename and array/matrix defaults are skipped (paths are non-portable and machine-dependent), any
+value carrying the install path is scrubbed, and the strings GMAT returns *in lieu of raising* on a
+failed conversion (`API exception ...`) and the `-999.999` uninitialised-state placeholder are
+rejected. Enum allowed-values and object-reference targets are captured where reflection provides
+them. Where GMAT reflection is silent (Spacecraft's own enum strings come back empty; most units are
+blank), the catalogue records the gap; the linter degrades gracefully and the gaps are filled from
+the User's Guide as needed (per the #19 assumptions).
+
+**Plugin types are a known, documented gap.** The headless API loads GMAT's default plugin set, which
+does *not* include OpenFramesInterface — so the high-frequency corpus types `OpenFramesView` /
+`OpenFramesInterface` are absent from the default-load catalogue. #19's bar is catalogue correctness,
+not corpus completeness; resolving plugin coverage so the linter sees zero false positives on the
+stock corpus is **#20's** concern, not this one.
+
+**Provenance and the drift check.** The JSON header carries `schema_version`, `gmat_version`, a
+`generated` ISO date, the generator name, and the type / field counts. Regeneration is deterministic
+(sorted keys, ASCII, trailing newline) *except* the date, so the `--check` drift comparison ignores
+`generated` and fails only on a real content change. The `catalogue` CI workflow installs GMAT via
+**setup-gmat** and runs `gen_catalog --check` on a schedule — the single GMAT-dependent CI job.
+
+**The version-bump process (the D11 selector, made concrete).** Supporting another GMAT release is
+additive data, not a code change: (1) run `gen_catalog` against that install to emit
+`fields-<ver>.json`; (2) commit it. The loader's `target_version` selector already defaults to the
+newest shipped catalogue and serves any requested one, so no loader change is needed. The catalogue
+is pinned to R2026a today; the design does not foreclose a multi-version future (D11).
+
 ---
 
 ## Forward notes (not v0.1 decisions)
 
-- **Catalogue & version bump (v0.3, #19).** The field catalogue is pinned to R2026a with a documented
-  regeneration process (the multi-version strategy is D11); the gmatpy-reflection generator is the
-  only GMAT-touching code, run via setup-gmat in CI. The corpus survey (67 resource types) is a useful
-  cross-check on catalogue coverage but is not the catalogue source.
+- **Catalogue & version bump (v0.3, #19).** Decided in **D15**: the field catalogue is pinned to
+  R2026a with a documented regeneration + version-bump process (the multi-version strategy is D11);
+  the gmatpy-reflection generator is the only GMAT-touching code, run via setup-gmat in CI. The corpus
+  survey (67 resource types) is a useful cross-check on catalogue coverage but is not the source.
 - **Formatter ordering (v0.2, #14).** Decided in **D14**: the formatter re-lays-out in source order
   (per-resource grouping, field order = source order) rather than regrouping by type, so
   `parse(format(x))` stays structurally equal to `parse(x)`. The v0.1 byte-exact round-trip (D6) is

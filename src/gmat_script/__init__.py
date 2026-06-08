@@ -11,19 +11,24 @@ decisions under ``docs/design/`` for the contract this package implements.
 from __future__ import annotations
 
 from .ast import Array, MutationError, ObjectRef, RawValue, Script
+from .catalog import Catalog, FieldSpec, TypeSpec, load_catalog
 from .format import format
 from .parser import ErrorNode, Position, Tree, parse
 
 __all__ = [
     "Array",
+    "Catalog",
     "ErrorNode",
+    "FieldSpec",
     "MutationError",
     "ObjectRef",
     "Position",
     "RawValue",
     "Script",
     "Tree",
+    "TypeSpec",
     "format",
+    "load_catalog",
     "parse",
 ]
 __version__ = "0.2.0"
