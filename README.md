@@ -4,9 +4,9 @@ Parse, format, lint, and edit [GMAT](https://gmat.gsfc.nasa.gov/) `.script` miss
 Python — built on a [tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar. The whole
 stack operates on script **text**; nothing here requires a GMAT install.
 
-Today it ships the parser and the `gmat-script parse` command-line tool. The typed AST and mutation
-API, the canonical formatter, the linter, and the editor tooling build on top of the same tree as
-they land.
+It ships the parser, a typed AST with a mutation API, and a canonical formatter, plus a
+`gmat-script` command-line tool over the same engine. The linter and editor tooling build on top of
+the same tree as they land.
 
 ## Install
 
@@ -19,6 +19,9 @@ install needs no C or Node toolchain — and never GMAT.
 
 ## Quick start
 
+**Parse** a script — `parse` never raises on malformed input: it returns a tree carrying `ERROR` /
+`MISSING` nodes localised to the broken construct, surfaced through `tree.errors`.
+
 ```python
 from gmat_script import parse
 
@@ -28,13 +31,48 @@ tree.has_errors      # False — the script is well-formed
 tree.to_source()     # round-trips byte-for-byte to the input
 ```
 
-`parse` never raises on malformed input: it returns a tree carrying `ERROR` / `MISSING` nodes
-localised to the broken construct, surfaced through `tree.errors`. The same engine drives the CLI,
-a fast, install-free syntax gate for CI:
+**Edit** it through the typed AST — typed resources with dict-like field access. Each edit splices
+the source and re-parses, so untouched bytes are never disturbed and a corrupting edit is refused.
+
+```python
+from gmat_script import Script
+
+script = Script.parse("Create Spacecraft Sat\nSat.SMA = 7000\n")
+
+script.spacecraft["Sat"]["SMA"]         # 7000 — read a field
+script.spacecraft["Sat"]["SMA"] = 8000  # set it
+script.rename_resource("Sat", "MainSat")  # rename, rewriting references
+script.to_source()                      # the edited source
+```
+
+**Format** it — a deterministic, idempotent pretty-printer that re-lays-out without reordering.
+
+```python
+from gmat_script import format
+
+format("GMAT Sat.SMA=7000;\n")   # 'Sat.SMA = 7000\n'
+```
+
+## Command line
+
+The same engine drives the `gmat-script` command-line tool — a fast, install-free gate for CI:
 
 ```console
-$ gmat-script parse mission.script        # prints the syntax tree; exits non-zero on a syntax error
-$ gmat-script parse --json mission.script  # machine-readable {file, ok, errors} report
+$ gmat-script parse mission.script     # print the syntax tree; exit non-zero on a syntax error
+$ gmat-script format --check *.script   # fail if any file is not in canonical form
+```
+
+`format` rewrites files in place by default, or checks / diffs them with `ruff`-style exit codes. It
+also ships [pre-commit](https://pre-commit.com/) hooks, so scripts are formatted on every commit —
+add the repo to your `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: https://github.com/astro-tools/gmat-script
+    rev: v0.2.0
+    hooks:
+      - id: gmat-script-format        # auto-format on commit
+      # - id: gmat-script-format-check  # or: check only, never write (CI)
 ```
 
 ## The grammar surface
@@ -73,8 +111,8 @@ to R2026a.
 
 ## Documentation
 
-Full documentation — getting started, the grammar surface, the `parse` CLI, the error-reporting
-model, and the API reference — is at
+Full documentation — getting started, the grammar surface, the typed AST and editing guides, the
+formatter, the command-line tool, the error-reporting model, and the API reference — is at
 **[astro-tools.github.io/gmat-script](https://astro-tools.github.io/gmat-script/)**.
 
 ## License

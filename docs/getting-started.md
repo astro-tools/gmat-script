@@ -43,7 +43,7 @@ form of the parse:
 `parse` reads UTF-8 text and preserves the original line endings exactly — it never normalises
 CRLF↔LF. Concatenating the tree's leaf tokens with their interstitial layout (whitespace, comments,
 the `...` continuation, the optional `;`) reproduces the input byte-for-byte; that round-trip
-guarantee is what later layers — the formatter and the editing API — build on.
+guarantee is what the layers above it — the formatter and the editing API — build on.
 
 ## Malformed input never raises
 
@@ -95,6 +95,9 @@ and transforming its text does not.
 ## Next steps
 
 - [Grammar surface](grammar-surface.md) — what the parser understands, node by node.
-- [`parse` CLI](cli.md) — the command-line syntax gate in detail.
+- [Typed AST](typed-ast.md) — typed resources and dict-like field access over the tree.
+- [Editing](editing.md) — set a field, rename a resource, splice a command.
+- [Formatter](formatting.md) — canonical, idempotent re-emission.
+- [CLI](cli.md) — the `parse` syntax gate and the `format` command.
 - [Error reporting](errors.md) — `ERROR` / `MISSING` nodes, positions, and exit codes.
 - [API reference](api.md) — the public Python surface.
