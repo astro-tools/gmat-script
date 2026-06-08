@@ -12,6 +12,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from tree_sitter import Node
 
+# The grammar field names a control-flow / solver block node carries in its header; everything else
+# between the header and the matched end keyword is its nested body. Shared by the AST overlay (to
+# find a block's body, :mod:`gmat_script.ast.commands`) and the formatter (to find its header,
+# :mod:`gmat_script.format`) so a grammar change to a block header is made in one place.
+BLOCK_HEADER_FIELDS = ("label", "condition", "variable", "range", "solver", "options")
+
 
 def node_text(node: Node) -> str:
     """The exact source slice of *node*, decoded as UTF-8 (byte-for-byte; D6).

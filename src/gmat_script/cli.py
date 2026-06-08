@@ -120,11 +120,14 @@ def build_parser() -> argparse.ArgumentParser:
 def _read_source(path: str) -> str:
     """Read *path* as UTF-8 text, or read stdin when *path* is ``-``.
 
-    Files are opened with newline translation disabled so the parser sees the bytes verbatim and the
-    library performs no EOL normalisation (D6).
+    Both paths read the raw bytes with newline translation disabled so the parser sees the source
+    verbatim and the library performs no EOL normalisation (D6). Stdin is read through its binary
+    ``buffer``; a bare ``sys.stdin.read()`` would inherit the interpreter's universal-newline
+    translation (the Windows default) and collapse CRLF to LF, so ``format -`` would not match the
+    library ``format()`` on the same bytes.
     """
     if path == "-":
-        return sys.stdin.read()
+        return sys.stdin.buffer.read().decode("utf-8")
     with open(path, encoding="utf-8", newline="") as handle:
         return handle.read()
 

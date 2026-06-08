@@ -40,6 +40,12 @@ def _write(tmp_path: Path, name: str, content: str) -> str:
     return str(path)
 
 
+def _stdin(text: str) -> io.TextIOWrapper:
+    """A stand-in for ``sys.stdin`` whose ``.buffer`` yields *text* as raw UTF-8 bytes — the CLI
+    reads the binary buffer so no universal-newline translation reaches the source (D6)."""
+    return io.TextIOWrapper(io.BytesIO(text.encode("utf-8")), encoding="utf-8", newline="")
+
+
 # --- default (S-expression) mode -------------------------------------------------------------
 
 
@@ -185,7 +191,7 @@ def test_multiple_files_json_is_an_array(
 
 
 def test_stdin_clean(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
-    monkeypatch.setattr("sys.stdin", io.StringIO(_CLEAN))
+    monkeypatch.setattr("sys.stdin", _stdin(_CLEAN))
 
     code = cli.main(["parse", "-"])
 
@@ -197,7 +203,7 @@ def test_stdin_clean(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixt
 def test_stdin_malformed_diagnostic_uses_stdin_name(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr("sys.stdin", io.StringIO(_MALFORMED))
+    monkeypatch.setattr("sys.stdin", _stdin(_MALFORMED))
 
     code = cli.main(["parse", "--quiet", "-"])
 
@@ -392,7 +398,7 @@ def test_format_diff_clean_is_silent_and_exits_zero(
 def test_format_stdin_writes_canonical_to_stdout(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr("sys.stdin", io.StringIO(_DIRTY))
+    monkeypatch.setattr("sys.stdin", _stdin(_DIRTY))
 
     code = cli.main(["format", "-"])
 
@@ -401,10 +407,27 @@ def test_format_stdin_writes_canonical_to_stdout(
     assert captured.out == _CANONICAL
 
 
+def test_format_stdin_preserves_crlf(
+    monkeypatch: pytest.MonkeyPatch, capsysbinary: pytest.CaptureFixture[bytes]
+) -> None:
+    # Reading stdin through its binary buffer keeps CRLF; a text-mode `sys.stdin.read()` would
+    # collapse it to LF under universal-newline translation, so `format -` would diverge from the
+    # library format() on the same bytes (D6 — no EOL normalisation; D8 — CLI == format()).
+    crlf = _DIRTY.replace("\n", "\r\n")
+    monkeypatch.setattr("sys.stdin", _stdin(crlf))
+
+    code = cli.main(["format", "-"])
+
+    captured = capsysbinary.readouterr()
+    assert code == 0
+    assert captured.out == format(crlf).encode("utf-8")
+    assert b"\r\n" in captured.out
+
+
 def test_format_stdin_check_dirty_exits_one_silently(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr("sys.stdin", io.StringIO(_DIRTY))
+    monkeypatch.setattr("sys.stdin", _stdin(_DIRTY))
 
     code = cli.main(["format", "--check", "-"])
 
@@ -417,7 +440,7 @@ def test_format_stdin_check_dirty_exits_one_silently(
 def test_format_stdin_diff_uses_stdin_name(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr("sys.stdin", io.StringIO(_DIRTY))
+    monkeypatch.setattr("sys.stdin", _stdin(_DIRTY))
 
     code = cli.main(["format", "--diff", "-"])
 

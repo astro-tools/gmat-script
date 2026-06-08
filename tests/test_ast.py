@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from gmat_script import ObjectRef, RawValue, Script, parse
+from gmat_script import Array, ObjectRef, RawValue, Script, parse
 from gmat_script.ast import (
     Assignment,
     Command,
@@ -59,9 +59,10 @@ def _coerce_rhs(rhs: str) -> Value:
         ("{Earth, Luna}", [ObjectRef("Earth"), ObjectRef("Luna")]),
         ("{}", []),
         ("{Sun, {Earth, Luna}}", [ObjectRef("Sun"), [ObjectRef("Earth"), ObjectRef("Luna")]]),
-        ("[1 2 3]", [1, 2, 3]),
-        ("[]", []),
-        ("[-1 2; 3 -4]", [[-1, 2], [3, -4]]),  # 2-D matrix with signed elements
+        ("{{1, 2}, {3, 4}}", [[1, 2], [3, 4]]),  # a brace-list of brace-lists is nested lists
+        ("[1 2 3]", Array((1, 2, 3))),  # a [...] array is an Array, distinct from a {...} list
+        ("[]", Array(())),
+        ("[-1 2; 3 -4]", Array((Array((-1, 2)), Array((3, -4))))),  # 2-D matrix, signed elements
     ],
 )
 def test_coerce_value_structural(rhs: str, expected: Value) -> None:
@@ -132,6 +133,14 @@ def test_resources_by_name_and_type() -> None:
     assert set(script.resources) == {"Sat", "FM", "x", "y", "z", "A"}
     assert set(script.resources_by_type) == {"Spacecraft", "ForceModel", "Variable", "Array"}
     assert script.resources["Sat"] is script.resources_by_type["Spacecraft"]["Sat"]
+
+
+def test_duplicate_name_under_one_type_is_listed_once() -> None:
+    # Two declarations of the same name (the linter's problem, not the grammar's) collapse to one
+    # entry in the by-type index rather than appearing twice.
+    source = "Create Spacecraft Sat\nCreate Spacecraft Sat\nBeginMissionSequence\nStop\n"
+    script = Script.parse(source)
+    assert list(script.resources_by_type["Spacecraft"]) == ["Sat"]
 
 
 def test_type_sugar_attribute() -> None:

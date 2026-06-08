@@ -40,12 +40,12 @@ def split_reference(node: Node) -> tuple[str, list[str]]:
     if node.type == "member_expression":
         obj = node.child_by_field_name("object")
         prop = node.child_by_field_name("property")
-        if obj is not None and prop is not None:
+        if obj is not None and prop is not None:  # pragma: no cover - a member_expression has both
             root, segments = split_reference(obj)
             return root, [*segments, node_text(prop)]
     if node.type == "call_expression":
         function = node.child_by_field_name("function")
-        if function is not None:
+        if function is not None:  # pragma: no cover - a call_expression always has a function
             return split_reference(function)
     return node_text(node), []
 
@@ -77,7 +77,7 @@ class _ResourceData:
                 if left is None or right is None or left.type != "member_expression":
                     continue  # bare-name / array-index targets are not fields
                 _, segments = split_reference(left)
-                if segments:
+                if segments:  # pragma: no cover - a member_expression yields >=1 segment
                     fields[".".join(segments)] = right  # last write wins (source order)
             self._field_cache = fields
         return self._field_cache

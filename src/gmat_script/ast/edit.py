@@ -15,6 +15,7 @@ the ``Create`` type, or text inside an opaque ``BeginScript`` body.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from itertools import pairwise
 from typing import TYPE_CHECKING
@@ -26,10 +27,37 @@ if TYPE_CHECKING:
 
 __all__ = ["MutationError", "detect_newline"]
 
+# A bare GMAT identifier (a resource name or type): a letter / underscore start, then word chars.
+_IDENTIFIER = re.compile(r"[A-Za-z_]\w*", re.ASCII)
+# A field path: dotted identifier segments. A property segment may lead with a digit (D13, e.g.
+# ``Earth.3DModelFile``), so a segment is the looser ``\w+``.
+_FIELD_PATH = re.compile(r"\w+(?:\.\w+)*", re.ASCII)
+
 
 class MutationError(Exception):
-    """A mutation was refused: it targets a script with syntax errors, would produce one, or its
-    edits overlap. The source is left unchanged when this is raised."""
+    """A mutation was refused: it targets a script with syntax errors, would produce one, its edits
+    overlap, or it was given a malformed name / field. The source is left unchanged when raised."""
+
+
+def require_identifier(value: str, role: str) -> None:
+    """Reject a resource *value* (a name or type) that is not a single bare GMAT identifier.
+
+    A name carrying whitespace or a newline would splice extra ``Create`` names / statements into
+    the configuration that re-parse cleanly (``Create Spacecraft "Bad Name"`` declares *two*
+    objects), so the re-parse guard cannot catch it — validate the identifier up front instead.
+    """
+    if not _IDENTIFIER.fullmatch(value):
+        raise MutationError(f"{role} {value!r} is not a valid GMAT identifier")
+
+
+def require_field_path(value: str) -> None:
+    """Reject a field path that is not dotted identifier segments.
+
+    A field carrying a newline (or an embedded ``=``) would smuggle a second, independently-valid
+    statement past the re-parse guard, so the field reference is validated before it is spliced.
+    """
+    if not _FIELD_PATH.fullmatch(value):
+        raise MutationError(f"field {value!r} is not a valid field reference")
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,7 +137,7 @@ def collect_reference_edits(root: Node, old: str, new: str) -> list[_Edit]:
 def _is_object_reference(node: Node) -> bool:
     """Whether an ``identifier`` whose text matched the renamed object actually *refers* to it."""
     parent = node.parent
-    if parent is not None:
+    if parent is not None:  # pragma: no cover - a tree identifier always has a parent
         if parent.type == "member_expression":
             prop = parent.child_by_field_name("property")
             if prop is not None and prop.id == node.id:

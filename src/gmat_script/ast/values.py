@@ -1,7 +1,7 @@
-"""Structural coercion of CST value nodes to Python values (issue #12).
+"""Structural coercion of CST value nodes to Python values.
 
 Coercion is *structural* — inferred from a literal's shape, never from the field catalogue (that
-semantic typing is the linter's job, v0.3). It is total: every value node the grammar can place on
+semantic typing is the linter's job). It is total: every value node the grammar can place on
 the right-hand side of an assignment maps to a :data:`Value`, with :class:`RawValue` as the
 raw-text fallback for the forms that have no faithful Python reduction (computed expressions, GMAT's
 unquoted rest-of-line values).
@@ -18,9 +18,14 @@ CST node                     Python value
 ``member_expression``        :class:`ObjectRef` (the dotted path)
 ``unary_expression`` of a number  signed :class:`int` / :class:`float`
 ``list`` (``{…}``)           :class:`list` of coerced elements
-``array_literal`` (``[…]``)  :class:`list` (1-D) or list of rows (2-D matrix)
+``array_literal`` (``[…]``)  :class:`Array` (1-D elements, or :class:`Array` rows for a 2-D matrix)
 everything else              :class:`RawValue` (raw source text)
 ===========================  ==========================================================
+
+The brace-list ``{…}`` and the square-bracket array ``[…]`` are kept as distinct Python types — a
+plain :class:`list` and an :class:`Array` — even though both hold coerced elements, because GMAT
+emits them differently (``{a, b}`` vs ``[a b]``): collapsing them to one type would lose the form on
+a read-modify-write round-trip.
 """
 
 from __future__ import annotations
@@ -33,7 +38,7 @@ from .base import node_text
 if TYPE_CHECKING:
     from tree_sitter import Node
 
-__all__ = ["ObjectRef", "RawValue", "Value", "coerce_value"]
+__all__ = ["Array", "ObjectRef", "RawValue", "Value", "coerce_value"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,15 +60,29 @@ class RawValue:
     Carries GMAT's unquoted rest-of-line values (multi-word enums, unquoted paths / dates, the
     doubled-quote artifact) and computed right-hand sides (arithmetic, function calls, indexed or
     parenthesised expressions). The text is the exact source slice (D6); interpreting it further is
-    left to the consumer (or the v0.3 linter / catalogue).
+    left to the consumer (or the linter / catalogue).
     """
 
     text: str
 
 
-# A coerced GMAT value. Recursive: lists nest. ``Union`` (not ``|``) is required because the alias
-# is evaluated at runtime and carries a forward reference to itself.
-Value: TypeAlias = Union[bool, int, float, str, ObjectRef, RawValue, "list[Value]"]
+@dataclass(frozen=True, slots=True)
+class Array:
+    """A square-bracket value — a 1-D array ``[a b c]`` or a 2-D matrix ``[r1; r2]`` (D13).
+
+    Distinguishes GMAT's whitespace-separated ``[…]`` array / matrix from the comma-separated
+    ``{…}`` brace-list (a plain :class:`list`): both coerce element-wise, but they emit to different
+    GMAT forms, so the type must be preserved for a lossless round-trip. A 2-D matrix is an
+    :class:`Array` whose every element is itself an :class:`Array` row. ``elements`` is a tuple so
+    the value stays immutable and hashable, like the other value types.
+    """
+
+    elements: tuple[Value, ...]
+
+
+# A coerced GMAT value. Recursive: brace-lists and arrays nest. ``Union`` (not ``|``) is required
+# because the alias is evaluated at runtime and carries a forward reference to itself.
+Value: TypeAlias = Union[bool, int, float, str, ObjectRef, RawValue, Array, "list[Value]"]
 
 _BOOLEAN_LITERALS = frozenset({"true", "false"})
 
@@ -121,20 +140,21 @@ def _coerce_unary(node: Node) -> Value:
     return -inner if negate else inner
 
 
-def _coerce_array(node: Node) -> Value:
-    """A 1-D ``[…]`` literal → a flat list; a 2-D matrix (``;`` row separators) → a list of rows."""
+def _coerce_array(node: Node) -> Array:
+    """A 1-D ``[…]`` literal → a flat :class:`Array`; a 2-D matrix (``;`` row separators) → an
+    :class:`Array` whose elements are each a row :class:`Array`."""
     current: list[Value] = []
-    rows: list[Value] = []  # each appended row is itself a list[Value], which is a Value
+    rows: list[Array] = []
     is_matrix = False
     for child in node.children:
         if not child.is_named:
             if node_text(child) == ";":
                 is_matrix = True
-                rows.append(current)
+                rows.append(Array(tuple(current)))
                 current = []
             continue
         current.append(coerce_value(child))
     if not is_matrix:
-        return current
-    rows.append(current)
-    return rows
+        return Array(tuple(current))
+    rows.append(Array(tuple(current)))
+    return Array(tuple(rows))

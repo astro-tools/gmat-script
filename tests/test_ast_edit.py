@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from gmat_script import MutationError, ObjectRef, RawValue, Script, parse
+from gmat_script import Array, MutationError, ObjectRef, RawValue, Script, parse
 from gmat_script.ast import Value, coerce_value, emit_value
 from gmat_script.ast.edit import _Edit, detect_newline, line_span, splice
 
@@ -38,8 +38,11 @@ from gmat_script.ast.edit import _Edit, detect_newline, line_span, splice
         ([ObjectRef("Earth"), ObjectRef("Luna")], "{Earth, Luna}"),
         ([], "{}"),
         ([ObjectRef("Sun"), [ObjectRef("Earth")]], "{Sun, {Earth}}"),  # nested → nested braces
-        ([[1, 2], [3, 4]], "[1 2; 3 4]"),  # all-list → matrix
-        ([[1.0, 0.0], [0.0, 1.0]], "[1.0 0.0; 0.0 1.0]"),
+        ([[1, 2], [3, 4]], "{{1, 2}, {3, 4}}"),  # a list of lists is nested braces, not a matrix
+        (Array((1, 2, 3)), "[1 2 3]"),  # a 1-D Array is a square-bracket array
+        (Array(()), "[]"),
+        (Array((Array((1, 2)), Array((3, 4)))), "[1 2; 3 4]"),  # rows of Arrays → a matrix
+        (Array((Array((1.0, 0.0)), Array((0.0, 1.0)))), "[1.0 0.0; 0.0 1.0]"),
     ],
 )
 def test_emit_value(value: Value, text: str) -> None:
@@ -54,7 +57,10 @@ def test_emit_value_round_trips_through_the_parser() -> None:
         True,
         "a date",
         ObjectRef("Earth"),
-        [ObjectRef("A"), ObjectRef("B")],
+        [ObjectRef("A"), ObjectRef("B")],  # {…} brace-list stays a list
+        [[1, 2], [3, 4]],  # nested {…} stays nested lists, not a matrix
+        Array((1, 2, 3)),  # [...] array stays an Array
+        Array((Array((1, 2)), Array((3, 4)))),  # [r; r] matrix stays a matrix
     )
     for value in values:
         assignment = parse(f"v = {emit_value(value)}\n").root_node.named_children[0]
@@ -78,6 +84,24 @@ def test_emit_value_rejects_unrepresentable_strings(value: str) -> None:
 def test_emit_value_rejects_unknown_type() -> None:
     with pytest.raises(TypeError, match="cannot emit"):
         emit_value({"not": "a value"})  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("value", [ObjectRef(""), RawValue(""), RawValue("   ")])
+def test_emit_value_rejects_empty_bare_value(value: Value) -> None:
+    # An empty / whitespace-only bare value emits "x = " with no RHS, which on re-parse swallows the
+    # next line as its right-hand side — it must be refused (the str "" → '' empty-string is fine).
+    with pytest.raises(ValueError, match="empty"):
+        emit_value(value)
+
+
+@pytest.mark.parametrize(
+    "value", [ObjectRef("a\nGMAT b = 1"), RawValue("a\nStop"), RawValue("a\rb")]
+)
+def test_emit_value_rejects_newline_in_bare_value(value: Value) -> None:
+    # A newline would splice in extra statements that are themselves valid GMAT, so the re-parse
+    # guard cannot catch them — reject at emission.
+    with pytest.raises(ValueError, match="newline"):
+        emit_value(value)
 
 
 # --- the splice engine ----------------------------------------------------------------------------
@@ -453,6 +477,39 @@ def test_corrupting_insert_raises() -> None:
     script = Script.parse(_MISSION)
     with pytest.raises(MutationError, match="unparseable"):
         script.insert_command(0, "If x > 1")  # opens a block that is never closed
+
+
+def test_empty_value_does_not_swallow_the_next_line() -> None:
+    # An empty RHS re-parses cleanly but consumes BeginMissionSequence as its value, silently
+    # deleting the mission sequence — the re-parse guard can't see it, so emission must reject it.
+    script = Script.parse(_CONFIG)
+    before = script.to_source()
+    with pytest.raises(ValueError, match="empty"):
+        script.set_field("Sat", "SMA", ObjectRef(""))
+    assert script.to_source() == before
+    assert len(script.mission_sequence) == 1
+
+
+def test_set_field_rejects_a_field_that_would_smuggle_a_statement() -> None:
+    script = Script.parse(_CONFIG)
+    before = script.to_source()
+    with pytest.raises(MutationError, match="not a valid field reference"):
+        script.set_field("Sat", "SMA = 1\nGMAT Sat.ECC", 5)  # a newline-bearing field
+    assert script.to_source() == before
+
+
+@pytest.mark.parametrize(
+    ("resource_type", "name"),
+    [("Spacecraft", "Bad Name"), ("Spacecraft", "X\nStop"), ("Bad Type", "Z")],
+)
+def test_add_resource_rejects_a_malformed_name_or_type(resource_type: str, name: str) -> None:
+    # `Create Spacecraft Bad Name` is valid GMAT (it declares two objects), so the re-parse guard
+    # passes — the identifier must be validated before splicing.
+    script = Script.parse(_CONFIG)
+    before = script.to_source()
+    with pytest.raises(MutationError, match="not a valid GMAT identifier"):
+        script.add_resource(resource_type, name)
+    assert script.to_source() == before
 
 
 def test_editing_a_script_with_syntax_errors_raises() -> None:
