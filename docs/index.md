@@ -12,9 +12,9 @@ tree.has_errors      # False
 tree.to_source()     # round-trips byte-for-byte to the input
 ```
 
-Today gmat-script ships the parser and the `gmat-script parse` command-line tool. The typed AST and
-mutation API, the canonical formatter, the linter, and the editor tooling build on top of the same
-tree as they land.
+gmat-script ships the parser, a typed AST with a mutation API, and a canonical formatter, with a
+`gmat-script` command-line tool over the same engine. The linter and editor tooling build on top of
+the same tree as they land.
 
 ## What it is
 
@@ -22,8 +22,8 @@ tree as they land.
   full R2026a sample corpus and re-emits it byte-for-byte.
 - A Python library that loads that grammar from a **vendored, precompiled** binding — so
   `pip install gmat-script` needs no C or Node toolchain, and never GMAT.
-- A `gmat-script` command-line tool for parsing scripts from the shell or CI (with formatting and
-  linting to follow as later milestones land).
+- A `gmat-script` command-line tool that parses and formats scripts from the shell or CI (with
+  linting to follow as it lands).
 
 ## What it is not
 
@@ -38,7 +38,10 @@ tree as they land.
 
 - **[Getting started](getting-started.md)** — install and run your first parse.
 - **[Grammar surface](grammar-surface.md)** — the node taxonomy and what is covered / deferred.
-- **[`parse` CLI](cli.md)** — the command-line syntax gate.
+- **[Typed AST](typed-ast.md)** — typed resources and dict-like field access over the tree.
+- **[Editing](editing.md)** — set fields, rename resources, and splice commands.
+- **[Formatter](formatting.md)** — canonical, idempotent re-emission.
+- **[CLI](cli.md)** — the `parse` syntax gate and the `format` command.
 - **[Error reporting](errors.md)** — how malformed input is surfaced.
 - **[API reference](api.md)** — the public Python surface.
 - **[Design decisions](design/decisions.md)** — the grammar scope, CST node taxonomy, and the

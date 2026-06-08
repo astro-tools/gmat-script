@@ -36,6 +36,9 @@ nav:
   - Home: index.md
   - Getting started: getting-started.md
   - Grammar surface: grammar-surface.md
+  - Typed AST: typed-ast.md
+  - Editing: editing.md
+  - Formatter: formatting.md
   - CLI: cli.md
   - Error reporting: errors.md
   - API reference: api.md
