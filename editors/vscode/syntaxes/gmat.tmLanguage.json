@@ -1,0 +1,80 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "GMAT Script",
+  "scopeName": "source.gmat",
+  "comment": "Portable TextMate highlighting for GMAT mission scripts. Mirrors the tree-sitter highlights.scm token taxonomy (docs/design/decisions.md, D3) so highlighting works without the language server. Semantic refinement (the LSP) is supplementary.",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#create" },
+    { "include": "#keywords" },
+    { "include": "#numbers" },
+    { "include": "#member" },
+    { "include": "#operators" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "comments": {
+      "comment": "Line comment: % to end of line.",
+      "match": "%.*$",
+      "name": "comment.line.percentage.gmat"
+    },
+    "strings": {
+      "comment": "Single-quoted string / command label. The grammar forbids embedded newlines and quotes.",
+      "name": "string.quoted.single.gmat",
+      "begin": "'",
+      "end": "'|(?=$)",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.gmat" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.gmat" }
+      }
+    },
+    "create": {
+      "comment": "`Create <Type> <name>` — colour the resource type distinctly from the Create keyword.",
+      "match": "\\b(Create)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "keyword.control.gmat" },
+        "2": { "name": "entity.name.type.gmat" }
+      }
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "comment": "Structural keywords: configuration/sequence boundaries, control flow, solver blocks, the function header. Resource types and command heads are generic (D3) and intentionally not keywords.",
+          "match": "\\b(BeginMissionSequence|BeginScript|EndScript|Create|GMAT|If|Else|EndIf|For|EndFor|While|EndWhile|Target|EndTarget|Optimize|EndOptimize|function)\\b",
+          "name": "keyword.control.gmat"
+        },
+        {
+          "comment": "The include directive.",
+          "match": "#Include\\b",
+          "name": "keyword.control.include.gmat"
+        }
+      ]
+    },
+    "numbers": {
+      "comment": "Integer, decimal, and scientific-notation literals.",
+      "match": "(?<![\\w.])(\\d+\\.\\d*|\\.\\d+|\\d+)([eE][+-]?\\d+)?",
+      "name": "constant.numeric.gmat"
+    },
+    "member": {
+      "comment": "A dotted field / property access — the trailing name of `Sat.SMA`, `FM.GravityField.Earth`.",
+      "match": "(\\.)([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "punctuation.delimiter.gmat" },
+        "2": { "name": "variable.other.property.gmat" }
+      }
+    },
+    "operators": {
+      "match": "==|~=|<=|>=|[-+*/^=<>&|]",
+      "name": "keyword.operator.gmat"
+    },
+    "punctuation": {
+      "patterns": [
+        { "match": "[()\\[\\]{}]", "name": "punctuation.bracket.gmat" },
+        { "match": "[,;:.]", "name": "punctuation.delimiter.gmat" }
+      ]
+    }
+  }
+}

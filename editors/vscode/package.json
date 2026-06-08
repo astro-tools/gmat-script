@@ -1,0 +1,135 @@
+{
+  "name": "gmat-script",
+  "displayName": "GMAT Script",
+  "description": "Highlighting, hover docs, diagnostics, go-to-definition, completion, and format-on-save for GMAT mission scripts (.script / .gmf).",
+  "version": "0.2.0",
+  "publisher": "astro-tools",
+  "license": "MIT",
+  "icon": "icons/gmat-script.png",
+  "homepage": "https://astro-tools.github.io/gmat-script/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/astro-tools/gmat-script.git",
+    "directory": "editors/vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/astro-tools/gmat-script/issues"
+  },
+  "qna": "https://github.com/astro-tools/gmat-script/issues",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Formatters"
+  ],
+  "keywords": [
+    "gmat",
+    "astrodynamics",
+    "mission-analysis",
+    "tree-sitter",
+    "orbital-mechanics"
+  ],
+  "galleryBanner": {
+    "color": "#311B92",
+    "theme": "dark"
+  },
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "gmat",
+        "aliases": [
+          "GMAT Script",
+          "gmat"
+        ],
+        "extensions": [
+          ".script",
+          ".gmf"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/gmat-file.svg",
+          "dark": "./icons/gmat-file.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "gmat",
+        "scopeName": "source.gmat",
+        "path": "./syntaxes/gmat.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "GMAT Script",
+      "properties": {
+        "gmatScript.server.path": {
+          "type": "string",
+          "default": "gmat-script-lsp",
+          "markdownDescription": "Command used to launch the language server. Defaults to the `gmat-script-lsp` console script provided by `pip install \"gmat-script[lsp]\"`. Set an absolute path if it is not on your `PATH`. Ignored when `#gmatScript.server.pythonPath#` is set."
+        },
+        "gmatScript.server.pythonPath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Path to a Python interpreter that has `gmat-script[lsp]` installed. When set, the server is launched as `<pythonPath> -m gmat_script.lsp`, taking precedence over `#gmatScript.server.path#`. Useful for pointing at a virtual environment."
+        },
+        "gmatScript.server.args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra command-line arguments passed to the language server on launch."
+        },
+        "gmatScript.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Trace the JSON-RPC traffic between VS Code and the language server in the output channel."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[gmat]": {
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  "activationEvents": [
+    "onLanguage:gmat"
+  ],
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "node esbuild.js",
+    "package": "node esbuild.js --production",
+    "watch": "node esbuild.js --watch",
+    "check-types": "tsc --noEmit",
+    "compile-tests": "tsc -p . --outDir out",
+    "lint": "eslint src",
+    "pretest": "npm run compile-tests && npm run check-types && npm run lint",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.2.0",
+    "esbuild": "^0.23.0",
+    "eslint": "^9.9.0",
+    "ovsx": "^0.9.5",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

@@ -1,0 +1,15 @@
+# Everything is excluded except the bundled extension and the static contributions
+# it references (grammar, language config, icons). Source, tests, and tooling stay out
+# of the .vsix.
+.vscode-test/
+.vscode-test.mjs
+out/**
+src/**
+node_modules/**
+esbuild.js
+eslint.config.mjs
+tsconfig.json
+**/*.map
+**/*.ts
+.gitignore
+.eslintrc*
