@@ -563,6 +563,71 @@ scripts. The only pre-`BeginMissionSequence` lines that do not parse are bare me
 statements (`Obj.SetModelParameter(…)`, 9 OptimalControl / EMTG scripts) — a generic `command` (the
 bare no-output call, D3 / D4), which the mission-sequence grammar implements, not #4.
 
+## D14 — the canonical formatter's form: layout-only, order-preserving
+
+The v0.2 formatter (`format.py`) is a deterministic pretty-printer meant to run on every save and as
+a pre-commit hook. This fixes its canonical form — the contract its idempotence and
+semantic-preservation guarantees are stated against — resolving the "formatter ordering" forward
+note below.
+
+**It re-lays-out; it never reorders.** Resources, fields, and commands are emitted in source order:
+the formatter touches *layout*, not *sequence*. This is the deliberate, conservative reading of the
+charter's "resources grouped by type" — a resource is one grouped block (its `Create` glued to its
+own assignments), and the blocks keep their authored order — rather than globally regrouping
+declarations by type. The payoff is a strong, verifiable invariant: `parse(format(x))` is
+**structurally equal** to `parse(x)` for every corpus file (no resource, field, or command added,
+dropped, reordered, or altered), so the formatter is safe to run unattended and produces minimal
+diffs. (A reorder-by-type formatter — the looser reading the forward note left open — was rejected:
+it forces large diffs on every save, complicates comment reattachment, and trades the literal
+structural-equality invariant for a weaker meaning-preserving one. The faithful, byte-exact tree of
+D6 is re-laid-out, not reorganised.)
+
+**Field order is source order** (the choice D14 was asked to make explicit): the last-write-wins
+GMAT semantics are preserved exactly, and no field is moved.
+
+**The canonical layout.**
+
+- One statement per line — `...` continuations are folded away. A single space around `=` and
+  binary operators; `.` and unary signs are tight; `{a, b}` brace-lists, `[1, 1]` index/call
+  argument lists, and `[r1; r2]` matrices follow the same structural conventions as `emit_value`
+  (#13), so the formatter and the mutation layer emit identically. Colon ranges are tight
+  (`1:2:10`).
+- **Per-resource grouping, structural blank lines.** In the configuration section each `Create` is
+  glued to its assignments with no blank line between them, and exactly one blank line precedes each
+  new `Create` / `#Include` group and the `BeginMissionSequence` marker. In the mission sequence the
+  author's blank lines are preserved (collapsed to at most one), keeping their grouping intent.
+- **Indentation** is four spaces per nesting level inside `If` / `For` / `While` / `Target` /
+  `Optimize` blocks (and `Else` branches). A `BeginScript … EndScript` body is **opaque** (D4): it is
+  preserved verbatim — only the `BeginScript` line is re-indented and only the file's newline style is
+  applied; trailing-whitespace removal does not reach inside it.
+- **The only auto-fixes** are dropping the redundant leading `GMAT` keyword on assignments, dropping
+  the optional trailing `;`, and removing trailing whitespace. Literal spellings — numbers, strings,
+  identifiers — are preserved **verbatim**: formatting is pure layout and never rewrites a value
+  (`1.0e-11` is not normalised to `1e-11`), which keeps "no semantic change" trivially true and the
+  behaviour unsurprising.
+
+**Comment reattachment heuristic.** An own-line comment attaches to the *following* statement and is
+glued directly above it; a same-line comment stays trailing. Blank gaps *within* a run of own-line
+comments are preserved (collapsed to at most one), so a file header stays visually separated from a
+section banner while the banner hugs its `Create`. Two edge cases are recorded:
+
+- A trailing comment is re-emitted **with a `;`** terminating the statement (`EndTarget; % …`). This
+  is required, not cosmetic: a comment between a statement's last token and the newline is dropped on
+  re-parse unless an explicit `;` terminates the statement first (the newline-as-terminator otherwise
+  swallows it), so without the `;` the comment would be lost on the next format pass. (Conversely, a
+  trailing comment that the *input* lacks a `;` for never reaches the tree at all — there is nothing
+  for the formatter to preserve.)
+- A comment buried inside a value (e.g. a brace-list spanning lines) cannot be folded onto one line
+  without eating it, so the statement that holds it is re-emitted **verbatim** rather than folded.
+
+**The `format(source, style="canonical")` surface.** `source` is the script text, a parsed `Tree`,
+or a `Script`; a script with syntax errors raises `ValueError` rather than risk corrupting it.
+`style="canonical"` is the only v0.2 style; the parameter exists so future styles do not change the
+signature.
+
+**Style choices left to v0.3+.** Whether to offer a width-aware wrapping style, or a GMAT-GUI-mirror
+style that column-aligns `=`, is deferred — the `style` parameter is the seam for them.
+
 ---
 
 ## Forward notes (not v0.1 decisions)
@@ -571,9 +636,10 @@ bare no-output call, D3 / D4), which the mission-sequence grammar implements, no
   regeneration process (the multi-version strategy is D11); the gmatpy-reflection generator is the
   only GMAT-touching code, run via setup-gmat in CI. The corpus survey (67 resource types) is a useful
   cross-check on catalogue coverage but is not the catalogue source.
-- **Formatter ordering (v0.2, #14).** The canonical formatter's section grouping and field ordering
-  are decided at v0.2; the only v0.1 commitment is that the *unformatted* round-trip is byte-exact
-  (D6), so the formatter has a faithful tree to reorder.
+- **Formatter ordering (v0.2, #14).** Decided in **D14**: the formatter re-lays-out in source order
+  (per-resource grouping, field order = source order) rather than regrouping by type, so
+  `parse(format(x))` stays structurally equal to `parse(x)`. The v0.1 byte-exact round-trip (D6) is
+  what gives it a faithful tree to re-lay-out.
 - **typed-AST shape (v0.2, #12).** The typed overlay's exact class surface is a v0.2 decision; D3 only
   guarantees the CST it wraps and that the `Tree` wrapper is forward-compatible.
 
