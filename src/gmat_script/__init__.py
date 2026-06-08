@@ -13,11 +13,13 @@ from __future__ import annotations
 from .ast import Array, MutationError, ObjectRef, RawValue, Script
 from .catalog import Catalog, FieldSpec, TypeSpec, load_catalog
 from .format import format
+from .lint import Diagnostic, Severity, lint
 from .parser import ErrorNode, Position, Tree, parse
 
 __all__ = [
     "Array",
     "Catalog",
+    "Diagnostic",
     "ErrorNode",
     "FieldSpec",
     "MutationError",
@@ -25,9 +27,11 @@ __all__ = [
     "Position",
     "RawValue",
     "Script",
+    "Severity",
     "Tree",
     "TypeSpec",
     "format",
+    "lint",
     "load_catalog",
     "parse",
 ]

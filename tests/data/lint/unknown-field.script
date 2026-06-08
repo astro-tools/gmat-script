@@ -1,0 +1,4 @@
+Create Spacecraft Sat
+Sat.Knack = 5
+BeginMissionSequence
+Propagate Sat

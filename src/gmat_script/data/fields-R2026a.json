@@ -3,7 +3,7 @@
     "ODEModel": "ForceModel",
     "Propagator": "PropSetup"
   },
-  "field_count": 2535,
+  "field_count": 2614,
   "generated": "2026-06-08",
   "generator": "gmat_script.tools.gen_catalog",
   "gmat_version": "R2026a",
@@ -3130,11 +3130,71 @@
     "CoordinateSystem": {
       "category": "CoordinateSystem",
       "fields": {
+        "AlignmentVectorX": {
+          "default": "1",
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "AlignmentVectorY": {
+          "default": "0",
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "AlignmentVectorZ": {
+          "default": "0",
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
         "Axes": {
           "gmat_type": "Object",
           "read_only": false,
           "ref_target": "AxisSystem",
           "type": "object"
+        },
+        "ConstraintCoordinateSystem": {
+          "default": "EarthMJ2000Eq",
+          "gmat_type": "Object",
+          "read_only": false,
+          "type": "object"
+        },
+        "ConstraintReferenceVectorX": {
+          "default": "0",
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "ConstraintReferenceVectorY": {
+          "default": "0",
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "ConstraintReferenceVectorZ": {
+          "default": "1",
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "ConstraintVectorX": {
+          "default": "0",
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "ConstraintVectorY": {
+          "default": "0",
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "ConstraintVectorZ": {
+          "default": "1",
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
         },
         "Covariance": {
           "gmat_type": "Rmatrix",
@@ -3162,6 +3222,22 @@
           "read_only": true,
           "type": "bool"
         },
+        "Primary": {
+          "gmat_type": "Object",
+          "read_only": true,
+          "type": "object"
+        },
+        "ReferenceObject": {
+          "default": "Luna",
+          "gmat_type": "Object",
+          "read_only": false,
+          "type": "object"
+        },
+        "Secondary": {
+          "gmat_type": "Object",
+          "read_only": true,
+          "type": "object"
+        },
         "SpiceFrameId": {
           "default": "",
           "gmat_type": "String",
@@ -3172,6 +3248,21 @@
           "gmat_type": "Real",
           "read_only": true,
           "type": "real"
+        },
+        "XAxis": {
+          "gmat_type": "Enumeration",
+          "read_only": true,
+          "type": "enum"
+        },
+        "YAxis": {
+          "gmat_type": "Enumeration",
+          "read_only": true,
+          "type": "enum"
+        },
+        "ZAxis": {
+          "gmat_type": "Enumeration",
+          "read_only": true,
+          "type": "enum"
         }
       }
     },
@@ -5508,6 +5599,11 @@
           "read_only": true,
           "type": "integer"
         },
+        "DerivativesFunction": {
+          "gmat_type": "String",
+          "read_only": false,
+          "type": "string"
+        },
         "Drag": {
           "default": "None",
           "gmat_type": "Object",
@@ -5561,6 +5657,16 @@
           "gmat_type": "OnOff",
           "read_only": false,
           "type": "on_off"
+        },
+        "SRPModel": {
+          "allowed": [
+            "Spherical",
+            "SPADFile",
+            "NPlate"
+          ],
+          "gmat_type": "Enumeration",
+          "read_only": false,
+          "type": "enum"
         },
         "ShapeFileName": {
           "gmat_type": "Filename",
@@ -6237,6 +6343,12 @@
           "read_only": false,
           "type": "object_array"
         },
+        "Altitude": {
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real",
+          "unit": "km"
+        },
         "AttitudeSpiceKernelName": {
           "gmat_type": "StringArray",
           "read_only": false,
@@ -6333,6 +6445,12 @@
           "read_only": true,
           "type": "string"
         },
+        "Latitude": {
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real",
+          "unit": "deg"
+        },
         "Location1": {
           "default": "6378.1363",
           "gmat_type": "Real",
@@ -6350,6 +6468,12 @@
           "gmat_type": "Real",
           "read_only": false,
           "type": "real"
+        },
+        "Longitude": {
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real",
+          "unit": "deg"
         },
         "MinimumElevationAngle": {
           "default": "7",
@@ -10967,6 +11091,21 @@
           "read_only": false,
           "type": "real"
         },
+        "AngularVelocityX": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "AngularVelocityY": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "AngularVelocityZ": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
         "AnomalyType": {
           "default": "TA",
           "gmat_type": "Enumeration",
@@ -10996,10 +11135,95 @@
           "read_only": false,
           "type": "object"
         },
+        "AttitudeConstraintType": {
+          "gmat_type": "String",
+          "read_only": true,
+          "type": "string"
+        },
+        "AttitudeCoordinateSystem": {
+          "gmat_type": "Object",
+          "read_only": true,
+          "ref_target": "CoordinateSystem",
+          "type": "object"
+        },
+        "AttitudeDisplayStateType": {
+          "default": "Quaternion",
+          "gmat_type": "String",
+          "read_only": false,
+          "type": "string"
+        },
+        "AttitudeFileName": {
+          "default": "",
+          "gmat_type": "String",
+          "read_only": false,
+          "type": "string"
+        },
+        "AttitudeKernelName": {
+          "gmat_type": "StringArray",
+          "read_only": false,
+          "type": "string_array"
+        },
+        "AttitudeRateDisplayStateType": {
+          "default": "AngularVelocity",
+          "gmat_type": "String",
+          "read_only": false,
+          "type": "string"
+        },
+        "AttitudeReferenceBody": {
+          "gmat_type": "Object",
+          "read_only": true,
+          "ref_target": "CelestialBody",
+          "type": "object"
+        },
         "AttitudeSpiceKernelName": {
           "gmat_type": "StringArray",
           "read_only": false,
           "type": "string_array"
+        },
+        "BodyAlignmentVectorX": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "BodyAlignmentVectorY": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "BodyAlignmentVectorZ": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "BodyConstraintVectorX": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "BodyConstraintVectorY": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "BodyConstraintVectorZ": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "BodySpinAxisX": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "BodySpinAxisY": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "BodySpinAxisZ": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
         },
         "BrouwerLongAOP": {
           "gmat_type": "Real",
@@ -11153,6 +11377,51 @@
           "type": "real"
         },
         "Cr_Epsilon": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "DCM11": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "DCM12": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "DCM13": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "DCM21": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "DCM22": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "DCM23": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "DCM31": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "DCM32": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "DCM33": {
           "gmat_type": "Real",
           "read_only": true,
           "type": "real"
@@ -11337,6 +11606,42 @@
           "read_only": true,
           "type": "string"
         },
+        "EulerAngle1": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "EulerAngle2": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "EulerAngle3": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "EulerAngleRate1": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "EulerAngleRate2": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "EulerAngleRate3": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "EulerAngleSequence": {
+          "default": "321",
+          "gmat_type": "String",
+          "read_only": false,
+          "type": "string"
+        },
         "ExtendedMassPropertiesModel": {
           "default": "None",
           "gmat_type": "String",
@@ -11352,6 +11657,11 @@
           "gmat_type": "Real",
           "read_only": false,
           "type": "real"
+        },
+        "FrameKernelName": {
+          "gmat_type": "StringArray",
+          "read_only": false,
+          "type": "string_array"
         },
         "FrameSpiceKernelName": {
           "gmat_type": "StringArray",
@@ -11409,6 +11719,16 @@
           "read_only": false,
           "type": "real"
         },
+        "InitialPrecessionAngle": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "InitialSpinAngle": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
         "J2000BodyName": {
           "gmat_type": "String",
           "read_only": true,
@@ -11417,6 +11737,21 @@
         "MLONG": {
           "gmat_type": "Real",
           "read_only": false,
+          "type": "real"
+        },
+        "MRP1": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "MRP2": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "MRP3": {
+          "gmat_type": "Real",
+          "read_only": true,
           "type": "real"
         },
         "MassFlow": {
@@ -11428,6 +11763,26 @@
           "gmat_type": "String",
           "read_only": true,
           "type": "string"
+        },
+        "ModEquinoctialF": {
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "ModEquinoctialG": {
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "ModEquinoctialH": {
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "ModEquinoctialK": {
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
         },
         "ModelFile": {
           "gmat_type": "Filename",
@@ -11538,6 +11893,26 @@
           "read_only": false,
           "type": "string_array"
         },
+        "NutationAngle": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "NutationReferenceVectorX": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "NutationReferenceVectorY": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "NutationReferenceVectorZ": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
         "OrbitAMatrix": {
           "gmat_type": "Rmatrix",
           "read_only": true,
@@ -11626,11 +12001,36 @@
           "ref_target": "PowerSystem",
           "type": "object"
         },
+        "PrecessionRate": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
         "ProcessNoiseModel": {
           "default": "",
           "gmat_type": "Object",
           "read_only": false,
           "type": "object"
+        },
+        "Q1": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "Q2": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "Q3": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
+        },
+        "Q4": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
         },
         "RA": {
           "gmat_type": "Real",
@@ -11661,6 +12061,11 @@
           "gmat_type": "Real",
           "read_only": false,
           "type": "real"
+        },
+        "SCClockKernelName": {
+          "gmat_type": "StringArray",
+          "read_only": false,
+          "type": "string_array"
         },
         "SCClockSpiceKernelName": {
           "gmat_type": "StringArray",
@@ -11742,6 +12147,11 @@
           "read_only": false,
           "type": "real"
         },
+        "SemilatusRectum": {
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
         "SolveFors": {
           "gmat_type": "StringArray",
           "read_only": false,
@@ -11752,6 +12162,11 @@
           "gmat_type": "String",
           "read_only": false,
           "type": "string"
+        },
+        "SpinRate": {
+          "gmat_type": "Real",
+          "read_only": true,
+          "type": "real"
         },
         "StateType": {
           "default": "Cartesian",
@@ -11810,6 +12225,11 @@
           "type": "real"
         },
         "TA": {
+          "gmat_type": "Real",
+          "read_only": false,
+          "type": "real"
+        },
+        "TLONG": {
           "gmat_type": "Real",
           "read_only": false,
           "type": "real"

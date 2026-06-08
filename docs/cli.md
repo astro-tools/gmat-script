@@ -1,11 +1,14 @@
 # The command-line interface
 
-Installing gmat-script puts a `gmat-script` console script on your `PATH` with two subcommands:
+Installing gmat-script puts a `gmat-script` console script on your `PATH` with three subcommands:
 
 - **`parse`** — a fast, install-free syntax gate that parses `.script` / `.gmf` files and reports
   their syntax trees, exiting non-zero on a syntax error.
 - **`format`** — re-emit scripts in canonical form, in place or as a check / diff, with exit codes
   that mirror `ruff format` for CI and [pre-commit](#pre-commit-hook) use.
+- **`lint`** — statically check scripts against the field catalogue (unknown types and fields, type /
+  enum / reference-target mismatches, duplicate names, unused or undeclared references), exiting
+  non-zero on an error-severity finding.
 
 Both are built on the library and need no GMAT, C, or Node toolchain at runtime.
 
@@ -202,6 +205,100 @@ A file with a syntax error cannot be safely formatted: `format` reports the erro
 [`parse`](#parse-the-syntax-gate) (`FILE:line:col: <message>`), leaves the file untouched, and exits
 `2`.
 
+## `lint` — static checks
+
+`lint` checks each file for structural problems against the bundled field catalogue and reports them
+as diagnostics, exiting non-zero when any file has an error-severity finding. The rules, their
+severities, and inline suppression are covered in [Linting](lint.md); this section is the CLI surface.
+
+```console
+$ gmat-script lint --help
+usage: gmat-script lint [-h] [--json] [--select RULES] [--ignore RULES]
+                        FILE [FILE ...]
+
+Lint each FILE (or '-' for stdin) for structural problems — unknown
+types and fields, type / enum / reference-target mismatches, duplicate
+names, unused or undeclared references. Exits non-zero if any file has
+an error-severity diagnostic.
+
+positional arguments:
+  FILE            Path to a .script or .gmf file, or '-' to read from
+                  stdin.
+
+options:
+  -h, --help      show this help message and exit
+  --json          Emit a machine-readable JSON report instead of text
+                  diagnostics.
+  --select RULES  Run only these comma-separated rule codes (an allow-
+                  list).
+  --ignore RULES  Skip these comma-separated rule codes (a deny-list).
+```
+
+### Default output — one line per finding
+
+Each diagnostic is printed to stdout as `FILE:line:col: severity rule: message` (positions
+1-indexed):
+
+```console
+$ gmat-script lint mission.script
+mission.script:3:11: warning type-mismatch: field 'SMA' expects a number, got a quoted string
+mission.script:5:8: error unknown-resource-type: unknown resource type 'Spacecaft'
+```
+
+A clean file prints nothing and exits 0. Read from stdin with `-`.
+
+### `--select` / `--ignore` — choosing rules
+
+Run only some rules, or drop some, by comma-separated code:
+
+```console
+$ gmat-script lint --select unknown-field,type-mismatch mission.script
+$ gmat-script lint --ignore unused-resource mission.script
+```
+
+An unknown rule code is an error (exit `2`), so a typo in a flag fails loudly.
+
+### `--json` — a machine-readable report
+
+`--json` emits a `{file, ok, diagnostics}` report. `ok` is `true` when the file has no
+*error*-severity diagnostic (a warning or info leaves it `true`). Positions are 1-indexed.
+
+```console
+$ printf 'Create Spacecaft Sat\nBeginMissionSequence\nPropagate Sat\n' | gmat-script lint --json -
+{
+  "file": "<stdin>",
+  "ok": false,
+  "diagnostics": [
+    {
+      "rule": "unknown-resource-type",
+      "severity": "error",
+      "message": "unknown resource type 'Spacecaft'",
+      "start": {
+        "line": 1,
+        "column": 8
+      },
+      "end": {
+        "line": 1,
+        "column": 16
+      }
+    }
+  ]
+}
+```
+
+For a single file the report is one JSON object; for several files it is a JSON array of reports.
+
+### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0`  | no file had an error-severity diagnostic (warnings and info do not fail the run) |
+| `1`  | at least one file had an `error`-severity diagnostic |
+| `2`  | a file could not be read, or a `--select` / `--ignore` rule code is unknown |
+
+The `1` / `0` split is the CI contract: only error-severity findings break the build, so warnings and
+the informational `unused-resource` can accumulate without blocking a merge.
+
 ## Pre-commit hook
 
 gmat-script ships [pre-commit](https://pre-commit.com/) hooks so scripts are formatted (or checked)
@@ -241,6 +338,7 @@ $ pre-commit run --all-files # or format the whole tree now
 the CI-relevant modes (in place and `--check`) silent on stdout, and writes the only content-bearing
 output — a `--diff` body or a `-` stdin reformat — as UTF-8, so a non-ASCII script (a comment, a
 date) round-trips intact and never chokes a Windows console under a legacy code page. Messages stay
-on stderr.
+on stderr. `lint` keeps stdout ASCII too (text diagnostics escape any non-ASCII identifier; JSON uses
+`ensure_ascii`).
 
 For the structure of `parse`'s error records, see [Error reporting](errors.md).

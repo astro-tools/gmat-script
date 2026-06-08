@@ -4,9 +4,9 @@ Parse, format, lint, and edit [GMAT](https://gmat.gsfc.nasa.gov/) `.script` miss
 Python — built on a [tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar. The whole
 stack operates on script **text**; nothing here requires a GMAT install.
 
-It ships the parser, a typed AST with a mutation API, and a canonical formatter, plus a
-`gmat-script` command-line tool over the same engine. The linter and editor tooling build on top of
-the same tree as they land.
+It ships the parser, a typed AST with a mutation API, a canonical formatter, and a static linter,
+plus a `gmat-script` command-line tool over the same engine. Editor tooling builds on top of the same
+tree as it lands.
 
 ## Install
 
@@ -53,6 +53,16 @@ from gmat_script import format
 format("GMAT Sat.SMA=7000;\n")   # 'Sat.SMA = 7000\n'
 ```
 
+**Lint** it — structural checks against the bundled field catalogue: unknown types and fields,
+type / enum / reference-target mismatches, duplicate names, unused or undeclared references.
+
+```python
+from gmat_script import lint
+
+for d in lint("Create Spcecraft Sat\n"):
+    print(d.rule, d.message)   # unknown-resource-type unknown resource type 'Spcecraft'
+```
+
 ## Command line
 
 The same engine drives the `gmat-script` command-line tool — a fast, install-free gate for CI:
@@ -60,6 +70,7 @@ The same engine drives the `gmat-script` command-line tool — a fast, install-f
 ```console
 $ gmat-script parse mission.script     # print the syntax tree; exit non-zero on a syntax error
 $ gmat-script format --check *.script   # fail if any file is not in canonical form
+$ gmat-script lint mission.script       # report structural problems; exit non-zero on an error
 ```
 
 `format` rewrites files in place by default, or checks / diffs them with `ruff`-style exit codes. It
@@ -92,13 +103,13 @@ the node taxonomy and the covered / deferred constructs.
 Reading, checking, formatting, and transforming a script needs only this package — never a GMAT
 install. `pip install gmat-script` never pulls in, requires, or looks for GMAT or `gmatpy`; the only
 runtime dependency is `tree-sitter`. (GMAT is used at build time only, to generate the field
-catalogue that later semantic tooling will check against.)
+catalogue the linter checks against.)
 
 ## GMAT version
 
 The grammar targets **GMAT R2026a**. Because it never enumerates resource types or command keywords,
 parsing is effectively version-independent — scripts from other releases parse too. Semantics that
-*do* vary by release (valid field names, enums, defaults) belong to the later linter and are scoped
+*do* vary by release (valid field names, enums, defaults) belong to the linter and are scoped
 to R2026a.
 
 ## What gmat-script is not
@@ -112,7 +123,7 @@ to R2026a.
 ## Documentation
 
 Full documentation — getting started, the grammar surface, the typed AST and editing guides, the
-formatter, the command-line tool, the error-reporting model, and the API reference — is at
+formatter, the linter, the command-line tool, the error-reporting model, and the API reference — is at
 **[astro-tools.github.io/gmat-script](https://astro-tools.github.io/gmat-script/)**.
 
 ## License

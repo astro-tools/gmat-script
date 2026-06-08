@@ -79,6 +79,46 @@ _FUNCTION_RESOURCES: frozenset[str] = frozenset({"GmatFunction", "MatlabFunction
 # alias (script) spelling; values are the canonical factory name actually reflected.
 _SCRIPT_ALIASES: dict[str, str] = {"Propagator": "PropSetup", "ODEModel": "ForceModel"}
 
+# Some resource types forward script fields to an owned sub-object whose own type is reflected
+# separately: a Spacecraft accepts any attitude-model field (``Sat.EulerAngleSequence``,
+# ``Sat.Q1``...), forwarding it to its owned Attitude; a CoordinateSystem accepts any axis field
+# (``Cs.Primary``, ``Cs.XAxis``...), forwarding it to its owned Axes. Reflection lists only a type's
+# *own* parameters, so those forwarded fields never appear on the parent. We merge them in from the
+# reflected sub-object types — keyed by the sub-object's object-type category — so the catalogue
+# mirrors what the parser and linter see as ``parent.field`` (D15). The parent's own fields win on a
+# name clash; sub-types are merged in sorted order for a deterministic, first-seen spec.
+_FORWARDED_FIELDS: dict[str, str] = {
+    "Spacecraft": "Attitude",
+    "CoordinateSystem": "AxisSystem",
+}
+
+# A handful of real, script-settable fields GMAT does not expose through reflection on a default
+# object. A GroundStation relabels its ``Location1/2/3`` slots to ``Latitude/Longitude/Altitude``
+# under the Spherical ``StateType`` through custom field handling — not a relabelled parameter slot
+# the way a Spacecraft's six elements are — so the labels never surface in ``GetParameterText``. A
+# ForceModel's ``DerivativesFunction`` (a user derivative-function name) only materialises once such
+# a force is added. They are supplied verbatim so the catalogue covers the stock corpus; drop an
+# entry here if a future GMAT release reflects it (the loader would then carry it twice — harmless,
+# but stale). The parent's reflected field wins, so this never shadows a real reflection.
+_SUPPLEMENT: dict[str, dict[str, dict[str, Any]]] = {
+    "GroundStation": {
+        "Latitude": {"type": "real", "gmat_type": "Real", "read_only": False, "unit": "deg"},
+        "Longitude": {"type": "real", "gmat_type": "Real", "read_only": False, "unit": "deg"},
+        "Altitude": {"type": "real", "gmat_type": "Real", "read_only": False, "unit": "km"},
+    },
+    "ForceModel": {
+        "DerivativesFunction": {"type": "string", "gmat_type": "String", "read_only": False},
+        # The SRP model selector, forwarded flat to the owned SolarRadiationPressure (most scripts
+        # spell it nested, ``FM.SRP.SRPModel``); reflected only on the sub-object, not the parent.
+        "SRPModel": {
+            "type": "enum",
+            "gmat_type": "Enumeration",
+            "read_only": False,
+            "allowed": ["Spherical", "SPADFile", "NPlate"],
+        },
+    },
+}
+
 # Normalised value types we capture a ``default`` for. Filenames are skipped (their defaults can be
 # absolute install paths — both non-portable and non-deterministic across machines); arrays/matrices
 # are skipped as their string form is noisy and rarely a useful default (D15).
@@ -99,6 +139,7 @@ _SPACECRAFT_STATE_TYPES: tuple[str, ...] = (
     "SphericalAZFPA",
     "SphericalRADEC",
     "Equinoctial",
+    "ModifiedEquinoctial",
     "AlternateEquinoctial",
     "Delaunay",
     "Planetodetic",
@@ -330,6 +371,36 @@ def _reflect_resource(
     return fields
 
 
+def _merge_forwarded_fields(types: dict[str, dict[str, Any]]) -> None:
+    """Merge sub-object fields into the parents that forward to them (see ``_FORWARDED_FIELDS``).
+
+    For each ``parent -> sub-category`` pairing, the union of every reflected sub-type's fields is
+    folded into the parent. The parent's own reflected field wins on a name clash; sub-types are
+    visited in sorted order so a field present on several sub-types takes a deterministic spec.
+    """
+    for parent, category in _FORWARDED_FIELDS.items():
+        parent_entry = types.get(parent)
+        if parent_entry is None:
+            continue
+        own = parent_entry["fields"]
+        for tname in sorted(types):
+            entry = types[tname]
+            if tname == parent or entry["category"] != category:
+                continue
+            for fname, spec in entry["fields"].items():
+                own.setdefault(fname, spec)
+
+
+def _apply_supplement(types: dict[str, dict[str, Any]]) -> None:
+    """Add the curated, reflection-invisible fields (see ``_SUPPLEMENT``); reflected fields win."""
+    for tname, extra in _SUPPLEMENT.items():
+        entry = types.get(tname)
+        if entry is None:
+            continue
+        for fname, spec in extra.items():
+            entry["fields"].setdefault(fname, spec)
+
+
 def build_catalog(gmat: Any, gmat_version: str, generated: str) -> dict[str, Any]:
     """Walk the resource factories and reflect every type into the catalogue dict."""
     mod = gmat.Moderator.Instance()
@@ -364,6 +435,9 @@ def build_catalog(gmat: Any, gmat_version: str, generated: str) -> dict[str, Any
                 category = cat
             fields = _reflect_resource(obj, name, gmat, type_map)
             types[name] = {"category": category, "fields": fields}
+
+    _merge_forwarded_fields(types)
+    _apply_supplement(types)
 
     aliases = {alias: canon for alias, canon in _SCRIPT_ALIASES.items() if canon in types}
     field_count = sum(len(t["fields"]) for t in types.values())

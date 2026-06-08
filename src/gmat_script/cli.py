@@ -1,6 +1,6 @@
 """Command-line interface for gmat-script — the ``gmat-script`` console script.
 
-Two subcommands, both built on the library and needing no GMAT, C, or Node toolchain at runtime:
+Three subcommands, all built on the library and needing no GMAT, C, or Node toolchain at runtime:
 
 * **``parse``** — syntax-checks scripts and inspects their trees (built on
   :func:`gmat_script.parse`). A fast, install-free CI gate: it exits non-zero when any input has a
@@ -8,6 +8,12 @@ Two subcommands, both built on the library and needing no GMAT, C, or Node toolc
 * **``format``** — re-emits scripts in canonical form (built on :func:`gmat_script.format`). It
   formats in place by default, with ``--check`` / ``--diff`` modes whose exit codes mirror
   ``ruff format`` for CI and pre-commit use.
+* **``lint``** — statically checks scripts against the field catalogue (built on
+  :func:`gmat_script.lint`). Default output is one ``FILE:line:col: severity rule: message`` per
+  finding on stdout; ``--json`` emits a ``{"file", "ok", "diagnostics"}`` report; ``--select`` /
+  ``--ignore`` toggle rule codes. It exits ``1`` if any file has an error-severity diagnostic, ``2``
+  on an IO error or an unknown rule code, ``0`` otherwise (warnings and info do not fail). stdout is
+  ASCII (text diagnostics are escaped; JSON uses ``ensure_ascii``).
 
 The ``parse`` output contract follows the design decisions (D7 / D8):
 
@@ -42,11 +48,14 @@ import sys
 from typing import TYPE_CHECKING
 
 from .format import format as format_source
+from .lint import lint as lint_source
+from .lint.diagnostics import Severity
 from .parser import parse
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from .lint.diagnostics import Diagnostic
     from .parser import ErrorNode, Tree
 
 _STDIN_NAME = "<stdin>"
@@ -112,6 +121,37 @@ def build_parser() -> argparse.ArgumentParser:
         "--diff",
         action="store_true",
         help="Do not write; print a unified diff of the changes to stdout.",
+    )
+
+    lint_cmd = subparsers.add_parser(
+        "lint",
+        help="Statically check .script / .gmf files against the field catalogue.",
+        description=(
+            "Lint each FILE (or '-' for stdin) for structural problems — unknown types and fields, "
+            "type / enum / reference-target mismatches, duplicate names, unused or undeclared "
+            "references. Exits non-zero if any file has an error-severity diagnostic."
+        ),
+    )
+    lint_cmd.add_argument(
+        "files",
+        metavar="FILE",
+        nargs="+",
+        help="Path to a .script or .gmf file, or '-' to read from stdin.",
+    )
+    lint_cmd.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit a machine-readable JSON report instead of text diagnostics.",
+    )
+    lint_cmd.add_argument(
+        "--select",
+        metavar="RULES",
+        help="Run only these comma-separated rule codes (an allow-list).",
+    )
+    lint_cmd.add_argument(
+        "--ignore",
+        metavar="RULES",
+        help="Skip these comma-separated rule codes (a deny-list).",
     )
 
     return parser
@@ -296,6 +336,93 @@ def _run_format(args: argparse.Namespace) -> int:
     return exit_code
 
 
+def _split_codes(value: str | None) -> list[str] | None:
+    """Split a comma-separated ``--select`` / ``--ignore`` value into codes (``None`` if unset)."""
+    if value is None:
+        return None
+    return [code.strip() for code in value.split(",") if code.strip()]
+
+
+def _lint_report(name: str, diagnostics: list[Diagnostic]) -> dict[str, object]:
+    """Build the ``{file, ok, diagnostics}`` JSON report for one linted file.
+
+    ``ok`` is true when the file has no *error-severity* diagnostic (mirroring the exit code); a
+    warning or info finding still leaves it ``true``.
+    """
+    return {
+        "file": name,
+        "ok": not any(d.severity is Severity.ERROR for d in diagnostics),
+        "diagnostics": [
+            {
+                "rule": d.rule,
+                "severity": d.severity.value,
+                "message": d.message,
+                "start": {"line": d.start.line, "column": d.start.column},
+                "end": {"line": d.end.line, "column": d.end.column},
+            }
+            for d in diagnostics
+        ],
+    }
+
+
+def _emit_lint_json(results: list[tuple[str, list[Diagnostic]]]) -> None:
+    """Emit the JSON report(s) on stdout: a single object for one file, an array otherwise.
+
+    ``json.dumps`` defaults to ``ensure_ascii=True``, so non-ASCII identifiers never reach stdout.
+    """
+    reports = [_lint_report(name, diagnostics) for name, diagnostics in results]
+    payload: object = reports[0] if len(reports) == 1 else reports
+    print(json.dumps(payload, indent=2))
+
+
+def _emit_lint_text(results: list[tuple[str, list[Diagnostic]]]) -> None:
+    """Print each diagnostic as ``FILE:line:col: severity rule: message`` (ASCII-safe) on stdout."""
+    for name, diagnostics in results:
+        for diagnostic in diagnostics:
+            line = (
+                f"{name}:{diagnostic.start.line}:{diagnostic.start.column}: "
+                f"{diagnostic.severity.value} {diagnostic.rule}: {diagnostic.message}"
+            )
+            # Keep stdout ASCII on a legacy Windows code page even if a name has a non-ASCII byte.
+            print(line.encode("ascii", "backslashreplace").decode("ascii"))
+
+
+def _run_lint(args: argparse.Namespace) -> int:
+    """Read and lint each file; return the process exit code.
+
+    ``2`` if a file could not be read or a rule selection is invalid, else ``1`` if any file has an
+    ``error``-severity diagnostic, else ``0`` (warnings and info do not fail the run).
+    """
+    select = _split_codes(args.select)
+    ignore = _split_codes(args.ignore)
+    results: list[tuple[str, list[Diagnostic]]] = []
+    io_error = False
+    for raw in args.files:
+        name = _STDIN_NAME if raw == "-" else raw
+        try:
+            source = _read_source(raw)
+        except OSError as exc:
+            print(f"{name}: {exc.strerror or exc}", file=sys.stderr)
+            io_error = True
+            continue
+        try:
+            diagnostics = lint_source(source, select=select, ignore=ignore)
+        except ValueError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        results.append((name, diagnostics))
+
+    if args.json:
+        _emit_lint_json(results)
+    else:
+        _emit_lint_text(results)
+
+    if io_error:
+        return 2
+    has_error = any(d.severity is Severity.ERROR for _, diagnostics in results for d in diagnostics)
+    return 1 if has_error else 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the CLI. Returns the process exit code."""
     parser = build_parser()
@@ -305,6 +432,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _run_parse(args)
     if args.command == "format":
         return _run_format(args)
+    if args.command == "lint":
+        return _run_lint(args)
 
     parser.error(f"unknown command: {args.command}")  # pragma: no cover
     return 2  # pragma: no cover

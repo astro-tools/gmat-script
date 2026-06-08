@@ -1,0 +1,5 @@
+Create Spacecraft Sat
+Create ChemicalThruster Th
+Sat.Tanks = {Th}
+BeginMissionSequence
+Propagate Sat

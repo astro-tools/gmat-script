@@ -1,0 +1,4 @@
+Create Spacecraft Sat
+Sat.SMA = 'high'
+BeginMissionSequence
+Propagate Sat

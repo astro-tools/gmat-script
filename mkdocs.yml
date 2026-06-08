@@ -39,6 +39,7 @@ nav:
   - Typed AST: typed-ast.md
   - Editing: editing.md
   - Formatter: formatting.md
+  - Linter: lint.md
   - CLI: cli.md
   - Error reporting: errors.md
   - API reference: api.md
