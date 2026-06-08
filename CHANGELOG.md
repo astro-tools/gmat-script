@@ -7,6 +7,51 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-06-08
+
+A typed AST overlay over the v0.1 parse tree, a lossless mutation API, a canonical formatter, and a
+`format` CLI with a pre-commit hook — every layer operating on script text alone, still with no GMAT,
+C, or Node toolchain required and the byte-for-byte round-trip preserved for untouched input.
+
+### Added
+
+- **Typed AST overlay (`gmat_script.ast`)** — a typed view over the v0.1 CST: a `Script` root that
+  splits configuration from the mission sequence at `BeginMissionSequence`, typed `Resource`s with
+  dict-like dotted field access (`script.spacecraft["Sat"]["SMA"]`), an ordered, typed mission
+  sequence (`GenericCommand`, `Assignment`, `FunctionCall`, `If` / `For` / `While`, `Target` /
+  `Optimize` solver blocks, opaque `ScriptBlock`), and total, structural value coercion — numbers,
+  strings, booleans, `ObjectRef` references, brace-lists, 1-D / 2-D arrays, and colon ranges — with a
+  `RawValue` raw-text fallback. The overlay holds only references into the wrapped tree, so it
+  re-emits byte-for-byte (#12).
+- **Mutation API** — the overlay is now mutable while every untouched byte is preserved. `Resource`
+  is a `MutableMapping` (`script.spacecraft["Sat"]["SMA"] = 7000`, `del`, plus `update` / `pop` /
+  `clear`); `Script` gains `add_resource` / `remove_resource` / `rename_resource` (rewriting every
+  textual reference form, or declaration-only) and `insert_command` / `remove_command` /
+  `move_command` / `replace_command`. Each edit splices byte-ranges and re-parses, so only edited
+  spans change and the result re-parses with zero `ERROR` nodes; a corrupting edit raises
+  `MutationError` and leaves the source untouched (#13).
+- **Canonical formatter** — `gmat_script.format(source, style="canonical")`, a deterministic,
+  idempotent pretty-printer that re-lays-out in source order and never reorders, so
+  `parse(format(x))` is structurally equal to `parse(x)` — safe on every save or as a pre-commit
+  hook. Canonical form: single spacing around `=` / operators, one statement per line, per-resource
+  grouping, four-space block indentation, and verbatim `BeginScript` bodies; auto-fixes are limited
+  to dropping a redundant `GMAT` prefix and optional `;` and stripping trailing whitespace. The
+  canonical-form contract is recorded as design decision D14 (#14).
+- **`gmat-script format` CLI and pre-commit hook** — a `format` subcommand that rewrites files in
+  place (`-` formats stdin), with read-only `--check` and `--diff` modes whose exit codes mirror
+  `ruff format`. A shipped `.pre-commit-hooks.yaml` exposes `gmat-script-format` (in place) and
+  `gmat-script-format-check` (check-only) for `.script` / `.gmf` files, needing no GMAT, C, or Node
+  toolchain (#15).
+- **Documentation** — new Typed AST, Editing, and Formatter guide pages; a refreshed README
+  quick-start with mutate and format examples and a command-line section; and three runnable
+  `examples/` scripts (programmatic field edit, resource rename, format-in-place) (#17).
+
+### Changed
+
+- `gmat-script` (PyPI) and `tree-sitter-gmat` (npm) continue to release in version lockstep. The
+  grammar is unchanged since 0.1.1; this release carries it forward to 0.2.0 to keep the two packages
+  at one version.
+
 ## [0.1.1] — 2026-06-07
 
 ### Added
