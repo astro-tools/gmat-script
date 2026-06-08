@@ -33,7 +33,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - name: Install project
-        run: uv sync --all-groups
+        run: uv sync --all-groups --all-extras
       - name: Run pytest
         run: uv run pytest -m "not corpus" --cov --cov-report=term-missing
 
@@ -50,7 +50,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - run: uv sync --all-groups
+      - run: uv sync --all-groups --all-extras
       - run: uv run ruff check
       - run: uv run ruff format --check
 
@@ -67,7 +67,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - run: uv sync --all-groups
+      - run: uv sync --all-groups --all-extras
       - run: uv run mypy
 
   # Smoke-check that `pip install .` builds the wheel (committed parser.c + a C compiler — no Node),
@@ -82,15 +82,24 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install .
-      - name: import + load grammar on a clean install
+      - name: import + load grammar + queries on a clean install
         run: |
           python - <<'PY'
+          from importlib import resources
+
           import gmat_script
           from gmat_script._grammar import language
-          from tree_sitter import Language, Parser
+          from tree_sitter import Language, Parser, Query
 
-          tree = Parser(Language(language())).parse(b"Create Spacecraft Sat;")
+          grammar = Language(language())
+          tree = Parser(grammar).parse(b"Create Spacecraft Sat;")
           assert tree.root_node.type == "source_file" and not tree.root_node.has_error
+
+          # The vendored queries must travel in the wheel (the language server loads them) and stay
+          # compatible with the grammar — compiling them here is an install-time drift guard.
+          queries = resources.files("gmat_script._grammar") / "queries"
+          for name in ("locals.scm", "tags.scm", "highlights.scm"):
+              Query(grammar, (queries / name).read_text(encoding="utf-8"))
           print("minimal install OK", gmat_script.__version__)
           PY
 
@@ -141,7 +150,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - run: uv sync --all-groups
+      - run: uv sync --all-groups --all-extras
       - name: Validate corpus and log file/error counts
         run: uv run python tests/check_corpus.py
       - name: Per-file corpus tests

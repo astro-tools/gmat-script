@@ -13,6 +13,7 @@ One abi3 wheel per platform covers every supported Python, so the wheel is tagge
 
 from __future__ import annotations
 
+import shutil
 import sysconfig
 from pathlib import Path
 from typing import Any
@@ -29,8 +30,10 @@ _PARSER_C = _GRAMMAR / "src" / "parser.c"
 _SCANNER_C = _GRAMMAR / "src" / "scanner.c"
 _BINDING_C = _GRAMMAR / "bindings" / "python" / "binding.c"
 _PARSER_INCLUDE = _GRAMMAR / "src"
+_QUERIES_SRC = _GRAMMAR / "queries"
 
 _GRAMMAR_PKG_DIR = _ROOT / "src" / "gmat_script" / "_grammar"
+_QUERIES_PKG_DIR = _GRAMMAR_PKG_DIR / "queries"
 _EXT_FULLNAME = "gmat_script._grammar._binding"
 
 
@@ -70,6 +73,25 @@ def _compile_extension() -> Path:
     return built
 
 
+def _vendor_queries() -> list[Path]:
+    """Copy the grammar's tree-sitter queries into the package; return the vendored paths.
+
+    The ``.scm`` queries live canonically with the grammar (``tree-sitter-gmat/queries/``, D1) and
+    ship in the sdist, but the wheel packages only ``src/gmat_script``. The language server loads
+    ``locals.scm`` / ``tags.scm`` at runtime, so they must travel in the wheel. This mirrors the
+    compiled-binding vendoring: copy them into ``gmat_script/_grammar/queries/`` (git-ignored, the
+    canonical source stays single) so editable installs find them in the source tree, and
+    force-include them so they land in the built wheel.
+    """
+    _QUERIES_PKG_DIR.mkdir(parents=True, exist_ok=True)
+    vendored: list[Path] = []
+    for query in sorted(_QUERIES_SRC.glob("*.scm")):
+        dest = _QUERIES_PKG_DIR / query.name
+        shutil.copyfile(query, dest)
+        vendored.append(dest)
+    return vendored
+
+
 class TreeSitterGrammarBuildHook(BuildHookInterface):
     """Compile the vendored grammar extension and mark the wheel platform-specific (abi3)."""
 
@@ -77,9 +99,12 @@ class TreeSitterGrammarBuildHook(BuildHookInterface):
 
     def initialize(self, version: str, build_data: dict[str, Any]) -> None:
         built = _compile_extension()
+        queries = _vendor_queries()
 
         build_data["pure_python"] = False
         build_data["infer_tag"] = False
         build_data["tag"] = f"{_ABI3_PYTHON_TAG}-abi3-{_platform_tag()}"
-        # Ship the compiled extension even though it is git-ignored.
+        # Ship the compiled extension and the vendored queries even though they are git-ignored.
         build_data["force_include"][str(built)] = str(built.relative_to(_ROOT / "src"))
+        for query in queries:
+            build_data["force_include"][str(query)] = str(query.relative_to(_ROOT / "src"))

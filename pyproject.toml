@@ -42,8 +42,16 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.optional-dependencies]
+# The language server. Kept out of the base install so `pip install gmat-script` stays at its single
+# `tree-sitter` runtime dependency (D9); editors install `gmat-script[lsp]`.
+lsp = [
+  "pygls>=2,<3",
+]
+
 [project.scripts]
 gmat-script = "gmat_script.cli:main"
+gmat-script-lsp = "gmat_script.lsp:main"
 
 [project.urls]
 Homepage = "https://github.com/astro-tools/gmat-script"
@@ -163,9 +171,14 @@ markers = [
 [tool.coverage.run]
 source = ["src/gmat_script"]
 branch = true
-# The catalogue generator is the only GMAT-touching code; it cannot run without a GMAT install and
-# is exercised in the dedicated `catalogue` CI job, not the unit suite.
-omit = ["*/gmat_script/tools/gen_catalog.py"]
+omit = [
+  # The catalogue generator is the only GMAT-touching code; it cannot run without a GMAT install
+  # and is exercised in the dedicated `catalogue` CI job, not the unit suite.
+  "*/gmat_script/tools/gen_catalog.py",
+  # The language-server stdio entry point: a one-line `python -m` shim exercised by the stdio smoke
+  # test, which runs the server in a subprocess and so is not measured in-process.
+  "*/gmat_script/lsp/__main__.py",
+]
 
 [tool.coverage.report]
 show_missing = true
