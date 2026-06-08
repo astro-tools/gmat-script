@@ -36,7 +36,7 @@ nav:
   - Home: index.md
   - Getting started: getting-started.md
   - Grammar surface: grammar-surface.md
-  - parse CLI: cli.md
+  - CLI: cli.md
   - Error reporting: errors.md
   - API reference: api.md
   - Design:

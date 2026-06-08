@@ -1,10 +1,15 @@
 """Command-line interface for gmat-script — the ``gmat-script`` console script.
 
-The ``parse`` subcommand syntax-checks GMAT scripts and inspects their trees with no GMAT, C, or
-Node toolchain at runtime (it is built on :func:`gmat_script.parse`). It is a fast, install-free CI
-gate: the process exits non-zero when any input has a syntax error and zero otherwise.
+Two subcommands, both built on the library and needing no GMAT, C, or Node toolchain at runtime:
 
-The output contract follows the design decisions (D7 / D8):
+* **``parse``** — syntax-checks scripts and inspects their trees (built on
+  :func:`gmat_script.parse`). A fast, install-free CI gate: it exits non-zero when any input has a
+  syntax error and zero otherwise.
+* **``format``** — re-emits scripts in canonical form (built on :func:`gmat_script.format`). It
+  formats in place by default, with ``--check`` / ``--diff`` modes whose exit codes mirror
+  ``ruff format`` for CI and pre-commit use.
+
+The ``parse`` output contract follows the design decisions (D7 / D8):
 
 * **default** — the tree-sitter S-expression of each file on stdout; every ``ERROR`` / ``MISSING``
   node as ``FILE:line:col: <message>`` on stderr.
@@ -12,17 +17,31 @@ The output contract follows the design decisions (D7 / D8):
 * **``--json``** — a ``{"file", "ok", "errors"}`` report on stdout (a single object for one file, a
   JSON array for several), with 1-indexed positions, instead of the S-expression.
 
-Stdout stays ASCII — S-expressions are node-type names and JSON is emitted with ``ensure_ascii`` —
-so a Windows console under a legacy code page cannot choke on it.
+The ``format`` exit-code contract (D8 conventions, matching ``ruff format``):
+
+* **in place** (the default) — rewrite each changed file; ``-`` writes the formatted source to
+  stdout. Exit ``0`` (``2`` on a syntax or IO error).
+* **``--check``** — write nothing; exit ``1`` if any file is not already canonical, ``0`` if all
+  are, ``2`` on error.
+* **``--diff``** — print a unified diff and write nothing; exit ``1`` if any file would change,
+  ``0`` otherwise, ``2`` on error.
+
+``parse`` keeps stdout ASCII (S-expression node-type names; JSON with ``ensure_ascii``). ``format``
+keeps the CI-relevant modes (in place, ``--check``) silent on stdout, and writes the only
+content-bearing output — a ``--diff`` body or a ``-`` stdin reformat — as UTF-8 bytes, so a
+non-ASCII script neither crashes nor mangles on a Windows console under a legacy code page; its
+messages stay ASCII on stderr.
 """
 
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import sys
 from typing import TYPE_CHECKING
 
+from .format import format as format_source
 from .parser import parse
 
 if TYPE_CHECKING:
@@ -65,6 +84,34 @@ def build_parser() -> argparse.ArgumentParser:
         "--json",
         action="store_true",
         help="Emit a machine-readable JSON report instead of the S-expression.",
+    )
+
+    format_cmd = subparsers.add_parser(
+        "format",
+        help="Re-emit .script / .gmf files in canonical form.",
+        description=(
+            "Format each FILE (or '-' for stdin) in canonical form. By default files are rewritten "
+            "in place and '-' writes the result to stdout; --check and --diff write nothing. Exits "
+            "non-zero under --check / --diff if any file is not already canonical, or on a syntax "
+            "or IO error."
+        ),
+    )
+    format_cmd.add_argument(
+        "files",
+        metavar="FILE",
+        nargs="+",
+        help="Path to a .script or .gmf file, or '-' to read from stdin (writes to stdout).",
+    )
+    mode = format_cmd.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--check",
+        action="store_true",
+        help="Do not write; exit non-zero if any file is not already canonically formatted.",
+    )
+    mode.add_argument(
+        "--diff",
+        action="store_true",
+        help="Do not write; print a unified diff of the changes to stdout.",
     )
 
     return parser
@@ -161,6 +208,91 @@ def _run_parse(args: argparse.Namespace) -> int:
     return 1 if any(tree.has_errors for _, tree in parsed) else 0
 
 
+def _write_source(path: str, text: str) -> None:
+    """Write *text* to *path* as UTF-8 with newline translation disabled.
+
+    ``format`` already terminates the source with the file's own newline (D6), so writing it back
+    verbatim — no ``\\n``→``\\r\\n`` rewrite — keeps the file's line-ending style intact.
+    """
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        handle.write(text)
+
+
+def _emit_stdout(text: str) -> None:
+    """Write *text* to stdout as UTF-8 bytes, bypassing the console's locale codec.
+
+    The only content-bearing ``format`` output — a ``--diff`` body or a ``-`` stdin reformat — may
+    hold non-ASCII source (a comment, a date), which ``print`` would crash on under a legacy Windows
+    code page. Writing the bytes directly keeps it correct and console-safe; a stdout without a
+    binary ``buffer`` (a test capture) falls back to a text write.
+    """
+    buffer = getattr(sys.stdout, "buffer", None)
+    if buffer is not None:
+        buffer.write(text.encode("utf-8"))
+        buffer.flush()
+    else:  # pragma: no cover - real stdout always has a binary buffer
+        sys.stdout.write(text)
+
+
+def _unified_diff(name: str, before: str, after: str) -> str:
+    """A ``git``-style unified diff turning *before* into *after* for *name*."""
+    return "".join(
+        difflib.unified_diff(
+            before.splitlines(keepends=True),
+            after.splitlines(keepends=True),
+            fromfile=f"a/{name}",
+            tofile=f"b/{name}",
+        )
+    )
+
+
+def _run_format(args: argparse.Namespace) -> int:
+    """Format each file in place (or check / diff it); return the process exit code.
+
+    ``2`` if any file could not be read or has a syntax error (an operational error — a broken tree
+    is never formatted), else ``1`` under ``--check`` / ``--diff`` if any file is not already
+    canonical, else ``0``. In the default in-place mode a rewrite is not a failure, so a clean run
+    that reformats still exits ``0`` (the ``ruff format`` contract).
+    """
+    exit_code = 0
+    for raw in args.files:
+        name = _STDIN_NAME if raw == "-" else raw
+        try:
+            source = _read_source(raw)
+        except OSError as exc:
+            print(f"{name}: {exc.strerror or exc}", file=sys.stderr)
+            exit_code = max(exit_code, 2)
+            continue
+
+        tree = parse(source)
+        if tree.has_errors:
+            # A script with syntax errors cannot be safely formatted (format() would raise); report
+            # the errors like `parse` does and skip the file.
+            _emit_diagnostics(name, tree.errors)
+            print(f"{name}: not formatted (syntax error)", file=sys.stderr)
+            exit_code = max(exit_code, 2)
+            continue
+
+        formatted = format_source(tree)
+        changed = formatted != source
+
+        if args.diff:
+            if changed:
+                _emit_stdout(_unified_diff(name, source, formatted))
+                exit_code = max(exit_code, 1)
+        elif args.check:
+            if changed:
+                print(f"{name}: would reformat", file=sys.stderr)
+                exit_code = max(exit_code, 1)
+        elif raw == "-":
+            _emit_stdout(formatted)
+        elif changed:
+            _write_source(raw, formatted)
+            print(f"{name}: reformatted", file=sys.stderr)
+
+    return exit_code
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the CLI. Returns the process exit code."""
     parser = build_parser()
@@ -168,6 +300,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.command == "parse":
         return _run_parse(args)
+    if args.command == "format":
+        return _run_format(args)
 
     parser.error(f"unknown command: {args.command}")  # pragma: no cover
     return 2  # pragma: no cover

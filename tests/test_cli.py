@@ -1,4 +1,5 @@
-"""The ``gmat-script parse`` CLI: S-expression / JSON output, diagnostics, exit codes (D7 / D8)."""
+"""The ``gmat-script`` CLI: the ``parse`` and ``format`` subcommands — output, diagnostics, and exit
+codes (D7 / D8)."""
 
 from __future__ import annotations
 
@@ -10,7 +11,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gmat_script import cli
+from gmat_script import cli, format
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -23,6 +24,13 @@ _MALFORMED = "BeginMissionSequence\nManeuver Burn(Sat);\nIf Sat.TA > 90\n   Prop
 
 # Non-ASCII only in a comment and value; the S-expression and JSON must stay ASCII on stdout.
 _NON_ASCII = "% café au lait ☕\nCreate Spacecraft Sat\n"
+
+# A valid but non-canonical script (redundant GMAT prefix + trailing ;) and its canonical form.
+_DIRTY = "Create Spacecraft Sat\nGMAT Sat.SMA = 7000;\n"
+_CANONICAL = "Create Spacecraft Sat\nSat.SMA = 7000\n"
+
+# A non-canonical script whose non-ASCII lives in a comment — exercises content-bearing stdout.
+_DIRTY_NON_ASCII = "% café au lait ☕\nCreate Spacecraft Sat\nGMAT Sat.SMA = 7000;\n"
 
 
 def _write(tmp_path: Path, name: str, content: str) -> str:
@@ -273,6 +281,242 @@ def test_json_stdout_is_ascii_on_non_ascii_source(
     assert captured.out.isascii()
 
 
+# =============================================================================================
+# format subcommand
+# =============================================================================================
+
+# --- in-place (default) -----------------------------------------------------------------------
+
+
+def test_format_in_place_rewrites_changed_file(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = _write(tmp_path, "dirty.script", _DIRTY)
+
+    code = cli.main(["format", path])
+
+    captured = capsys.readouterr()
+    assert code == 0  # a rewrite is not a failure (the `ruff format` contract)
+    assert (tmp_path / "dirty.script").read_text(encoding="utf-8") == _CANONICAL == format(_DIRTY)
+    assert captured.out == ""  # in-place mode emits nothing to stdout
+    assert f"{path}: reformatted" in captured.err
+
+
+def test_format_in_place_leaves_canonical_file_untouched(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = _write(tmp_path, "clean.script", _CANONICAL)
+
+    code = cli.main(["format", path])
+
+    captured = capsys.readouterr()
+    assert code == 0
+    assert (tmp_path / "clean.script").read_text(encoding="utf-8") == _CANONICAL
+    assert captured.out == ""
+    assert captured.err == ""  # an unchanged file is not reported (and not rewritten)
+
+
+def test_format_preserves_crlf_line_endings(tmp_path: Path) -> None:
+    path = _write(tmp_path, "crlf.script", _DIRTY.replace("\n", "\r\n"))
+
+    code = cli.main(["format", path])
+
+    assert code == 0
+    # The file's own newline style survives the rewrite (D6 — no LF/CRLF translation).
+    assert (tmp_path / "crlf.script").read_bytes() == _CANONICAL.replace("\n", "\r\n").encode()
+
+
+# --- --check ----------------------------------------------------------------------------------
+
+
+def test_format_check_dirty_exits_one_without_writing(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = _write(tmp_path, "dirty.script", _DIRTY)
+
+    code = cli.main(["format", "--check", path])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert (tmp_path / "dirty.script").read_text(encoding="utf-8") == _DIRTY  # not written
+    assert captured.out == ""
+    assert f"{path}: would reformat" in captured.err
+
+
+def test_format_check_clean_exits_zero(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    path = _write(tmp_path, "clean.script", _CANONICAL)
+
+    code = cli.main(["format", "--check", path])
+
+    captured = capsys.readouterr()
+    assert code == 0
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+# --- --diff -----------------------------------------------------------------------------------
+
+
+def test_format_diff_dirty_prints_unified_diff_without_writing(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = _write(tmp_path, "dirty.script", _DIRTY)
+
+    code = cli.main(["format", "--diff", path])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert (tmp_path / "dirty.script").read_text(encoding="utf-8") == _DIRTY  # not written
+    assert f"--- a/{path}" in captured.out
+    assert f"+++ b/{path}" in captured.out
+    assert "-GMAT Sat.SMA = 7000;" in captured.out
+    assert "+Sat.SMA = 7000" in captured.out
+    assert captured.err == ""
+
+
+def test_format_diff_clean_is_silent_and_exits_zero(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = _write(tmp_path, "clean.script", _CANONICAL)
+
+    code = cli.main(["format", "--diff", path])
+
+    captured = capsys.readouterr()
+    assert code == 0
+    assert captured.out == ""
+
+
+# --- stdin ------------------------------------------------------------------------------------
+
+
+def test_format_stdin_writes_canonical_to_stdout(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr("sys.stdin", io.StringIO(_DIRTY))
+
+    code = cli.main(["format", "-"])
+
+    captured = capsys.readouterr()
+    assert code == 0
+    assert captured.out == _CANONICAL
+
+
+def test_format_stdin_check_dirty_exits_one_silently(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr("sys.stdin", io.StringIO(_DIRTY))
+
+    code = cli.main(["format", "--check", "-"])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert captured.out == ""
+    assert "<stdin>: would reformat" in captured.err
+
+
+def test_format_stdin_diff_uses_stdin_name(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr("sys.stdin", io.StringIO(_DIRTY))
+
+    code = cli.main(["format", "--diff", "-"])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "--- a/<stdin>" in captured.out
+    assert "+++ b/<stdin>" in captured.out
+
+
+# --- syntax / IO errors -----------------------------------------------------------------------
+
+
+def test_format_syntax_error_exits_two_without_writing(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = _write(tmp_path, "bad.script", _MALFORMED)
+
+    code = cli.main(["format", path])
+
+    captured = capsys.readouterr()
+    assert code == 2  # a broken tree is never formatted
+    assert (tmp_path / "bad.script").read_text(encoding="utf-8") == _MALFORMED  # untouched
+    # The syntax error is surfaced as FILE:line:col like `parse`, plus a clear skip message.
+    assert re.search(rf"^{re.escape(path)}:\d+:\d+: .+$", captured.err, re.MULTILINE)
+    assert f"{path}: not formatted (syntax error)" in captured.err
+
+
+def test_format_missing_file_exits_two(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    missing = str(tmp_path / "nope.script")
+
+    code = cli.main(["format", missing])
+
+    captured = capsys.readouterr()
+    assert code == 2
+    assert missing in captured.err
+
+
+# --- multiple files / exit-code precedence ----------------------------------------------------
+
+
+def test_format_check_multiple_files_worst_exit_wins(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    clean = _write(tmp_path, "clean.script", _CANONICAL)
+    dirty = _write(tmp_path, "dirty.script", _DIRTY)
+
+    code = cli.main(["format", "--check", clean, dirty])
+
+    captured = capsys.readouterr()
+    assert code == 1  # one would-reformat raises a clean run to 1
+    assert f"{dirty}: would reformat" in captured.err
+    assert clean not in captured.err
+
+
+def test_format_check_syntax_error_outranks_would_reformat(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    dirty = _write(tmp_path, "dirty.script", _DIRTY)
+    bad = _write(tmp_path, "bad.script", _MALFORMED)
+
+    code = cli.main(["format", "--check", dirty, bad])
+
+    captured = capsys.readouterr()
+    assert code == 2  # the error (2) outranks a would-reformat (1)
+    assert f"{dirty}: would reformat" in captured.err
+    assert f"{bad}: not formatted (syntax error)" in captured.err
+
+
+# --- console-safe stdout ----------------------------------------------------------------------
+
+
+def test_format_check_stdout_empty_on_non_ascii_source(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # The CI-relevant modes (in place, --check) never write content to stdout, so it stays ASCII
+    # regardless of the source — a Windows console under a legacy code page cannot choke on it.
+    path = _write(tmp_path, "unicode.script", _DIRTY_NON_ASCII)
+
+    code = cli.main(["format", "--check", path])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert captured.out == ""
+
+
+def test_format_diff_passes_non_ascii_through_as_utf8(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # The only content-bearing stdout (--diff / stdin) carries the source verbatim as UTF-8 bytes —
+    # it neither raises nor mangles the non-ASCII characters.
+    path = _write(tmp_path, "unicode.script", _DIRTY_NON_ASCII)
+
+    code = cli.main(["format", "--diff", path])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "café au lait ☕" in captured.out
+
+
 # --- argparse plumbing ------------------------------------------------------------------------
 
 
@@ -280,6 +524,18 @@ def test_parse_help_exits_zero() -> None:
     with pytest.raises(SystemExit) as exc:
         cli.main(["parse", "--help"])
     assert exc.value.code == 0
+
+
+def test_format_help_exits_zero() -> None:
+    with pytest.raises(SystemExit) as exc:
+        cli.main(["format", "--help"])
+    assert exc.value.code == 0
+
+
+def test_format_check_and_diff_are_mutually_exclusive() -> None:
+    with pytest.raises(SystemExit) as exc:
+        cli.main(["format", "--check", "--diff", "-"])
+    assert exc.value.code == 2
 
 
 def test_no_command_errors() -> None:

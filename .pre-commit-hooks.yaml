@@ -1,0 +1,24 @@
+# pre-commit hooks for GMAT scripts. Add the repo to a consumer's .pre-commit-config.yaml:
+#
+#   - repo: https://github.com/astro-tools/gmat-script
+#     rev: v0.2.0
+#     hooks:
+#       - id: gmat-script-format        # auto-format on commit
+#       # - id: gmat-script-format-check  # or: check only, never write (CI)
+#
+# Both hooks run the bundled `gmat-script format` and need no GMAT, C, or Node toolchain.
+- id: gmat-script-format
+  name: gmat-script format
+  description: Format GMAT .script / .gmf files in canonical form (in place).
+  entry: gmat-script format
+  language: python
+  files: \.(script|gmf)$
+  types: [file]
+- id: gmat-script-format-check
+  name: gmat-script format (check)
+  description: Check that GMAT .script / .gmf files are canonically formatted (no writes).
+  entry: gmat-script format
+  args: [--check]
+  language: python
+  files: \.(script|gmf)$
+  types: [file]
