@@ -99,6 +99,53 @@ jobs:
             npm publish
           fi
 
+  # Publish the VS Code extension (editors/vscode/) to the VS Code Marketplace and Open VSX. Auth is
+  # user-provided tokens stored as the VSCE_PAT and OVSX_PAT repository secrets (the Marketplace
+  # publisher and the Open VSX namespace must be created once, like the PyPI pending publisher). Each
+  # publish step is skipped when its token is absent and is idempotent: it checks the registry for the
+  # current version first, so a tag whose extension version is already published is a no-op.
+  publish-vscode:
+    name: publish VS Code extension
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
+    defaults:
+      run:
+        working-directory: editors/vscode
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+      - run: npm ci
+      - name: Package the .vsix
+        run: npx @vscode/vsce package --out gmat-script.vsix
+      - name: Publish to the VS Code Marketplace
+        if: env.VSCE_PAT != ''
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          id="$(node -p "require('./package.json').publisher + '.' + require('./package.json').name")"
+          if npx @vscode/vsce show "${id}" --json > /tmp/ext.json 2>/dev/null \
+             && node -e "process.exit((JSON.parse(require('fs').readFileSync('/tmp/ext.json','utf8')).versions||[]).some(v => v.version === '${version}') ? 0 : 1)"; then
+            echo "${id}@${version} is already on the Marketplace — skipping."
+          else
+            npx @vscode/vsce publish --packagePath gmat-script.vsix
+          fi
+      - name: Publish to Open VSX
+        if: env.OVSX_PAT != ''
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          id="$(node -p "require('./package.json').publisher + '.' + require('./package.json').name")"
+          if npx ovsx get "${id}" -t "${version}" -o /tmp/ovsx.vsix > /dev/null 2>&1; then
+            echo "${id}@${version} is already on Open VSX — skipping."
+          else
+            npx ovsx publish gmat-script.vsix
+          fi
+
   github-release:
     name: github release
     needs: publish-pypi
