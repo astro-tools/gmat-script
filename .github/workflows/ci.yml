@@ -168,3 +168,31 @@ jobs:
           python-version: '3.12'
       - run: pip install cffconvert==2.0.0
       - run: cffconvert --validate -i CITATION.cff
+
+  # Build and smoke-test the VS Code extension (editors/vscode/): lint, type-check, bundle, run the
+  # activation test in a headless VS Code (xvfb), and package the .vsix so a broken manifest fails
+  # here, not at release. Node-only, mirroring the grammar-build job's toolchain.
+  vscode:
+    name: vscode extension
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: editors/vscode
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+      - run: npm ci
+      - name: Lint, type-check, and run the activation smoke test (headless)
+        run: xvfb-run -a npm test
+      - name: Package the .vsix
+        run: npx @vscode/vsce package --out gmat-script.vsix
+      - uses: actions/upload-artifact@v7
+        with:
+          name: vscode-extension-vsix
+          path: editors/vscode/gmat-script.vsix
+          if-no-files-found: error
