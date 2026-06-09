@@ -4,8 +4,7 @@ Language support for [GMAT](https://gmat.atlassian.net/wiki/spaces/GW/overview) 
 `.script` and `.gmf` files — built on the [`gmat-script`](https://github.com/astro-tools/gmat-script)
 tree-sitter grammar and language server.
 
-<!-- A short highlighting + diagnostics demo lands here for the release.
-     ![GMAT Script in VS Code](images/demo.gif) -->
+![GMAT Script in VS Code](images/demo.gif)
 
 ## Features
 
