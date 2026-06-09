@@ -312,6 +312,14 @@ def test_context_indexes_declarations_fields_and_script_blocks() -> None:
     assert any("y = 2" in text for text in context.script_block_texts)
 
 
+def test_value_references_are_computed_once_and_cached() -> None:
+    source = "Create Spacecraft Sat\nSat.SMA = 7000\nBeginMissionSequence\nPropagate Sat\n"
+    context = LintContext(Script.parse(source), parse(source), load_catalog())
+    first = context.value_references()
+    # A second call returns the cached mapping, not a freshly recomputed one.
+    assert context.value_references() is first
+
+
 def test_config_only_script_has_no_mission_sequence() -> None:
     context = LintContext(
         Script.parse("Create Spacecraft Sat\n"),

@@ -22,7 +22,7 @@ from __future__ import annotations
 __all__ = ["GMAT_BUILTINS", "KNOWN_PLUGIN_TYPES"]
 
 # Resource types from optional GMAT plugins, absent from the default-load catalogue
-# (#19 / D15 deferred corpus-completeness to the linter). All appear in the R2026a stock corpus.
+# (D15 deferred corpus-completeness to the linter). All appear in the R2026a stock corpus.
 KNOWN_PLUGIN_TYPES: frozenset[str] = frozenset(
     {
         # OpenFrames visualisation plugin

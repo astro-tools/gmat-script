@@ -1,4 +1,4 @@
-"""The v0.3 lint rule set — nine structural checks over the typed AST and the field catalogue.
+"""The lint rule set — eight structural checks over the typed AST and the field catalogue.
 
 Each rule is a small generator of :class:`~gmat_script.lint.diagnostics.Diagnostic`; the
 :class:`Rule` wrappers in :data:`RULES` make them individually toggleable. The checks are purely
