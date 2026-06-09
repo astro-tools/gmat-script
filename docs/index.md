@@ -12,9 +12,9 @@ tree.has_errors      # False
 tree.to_source()     # round-trips byte-for-byte to the input
 ```
 
-gmat-script ships the parser, a typed AST with a mutation API, and a canonical formatter, with a
-`gmat-script` command-line tool over the same engine. The linter and editor tooling build on top of
-the same tree as they land.
+gmat-script ships the parser, a typed AST with a mutation API, a canonical formatter, and a static
+linter, with a `gmat-script` command-line tool over the same engine — plus a language server and a
+VS Code extension that bring it all to your editor.
 
 ## What it is
 
@@ -22,8 +22,7 @@ the same tree as they land.
   full R2026a sample corpus and re-emits it byte-for-byte.
 - A Python library that loads that grammar from a **vendored, precompiled** binding — so
   `pip install gmat-script` needs no C or Node toolchain, and never GMAT.
-- A `gmat-script` command-line tool that parses and formats scripts from the shell or CI (with
-  linting to follow as it lands).
+- A `gmat-script` command-line tool that parses, formats, and lints scripts from the shell or CI.
 
 ## What it is not
 
@@ -41,7 +40,11 @@ the same tree as they land.
 - **[Typed AST](typed-ast.md)** — typed resources and dict-like field access over the tree.
 - **[Editing](editing.md)** — set fields, rename resources, and splice commands.
 - **[Formatter](formatting.md)** — canonical, idempotent re-emission.
-- **[CLI](cli.md)** — the `parse` syntax gate and the `format` command.
+- **[Linter](lint.md)** — structural checks against the bundled field catalogue.
+- **[Field catalogue](catalogue.md)** — the version-pinned knowledge base behind the linter and editor.
+- **[CLI](cli.md)** — the `parse` syntax gate and the `format` and `lint` commands.
+- **[Language server](lsp.md)** — diagnostics, hover, and completion in any LSP editor.
+- **[VS Code extension](vscode.md)** — highlighting, diagnostics, and format-on-save in VS Code.
 - **[Error reporting](errors.md)** — how malformed input is surfaced.
 - **[API reference](api.md)** — the public Python surface.
 - **[Design decisions](design/decisions.md)** — the grammar scope, CST node taxonomy, and the
