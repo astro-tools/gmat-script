@@ -8,10 +8,10 @@ format-on-save for `.script` and `.gmf` files.
 
 Install **GMAT Script** from either marketplace:
 
-- [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=astro-tools.gmat-script)
+- [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=astro-tools.gmat-mission-script)
   — search *GMAT Script* in the Extensions view, or run
-  `code --install-extension astro-tools.gmat-script`.
-- [Open VSX](https://open-vsx.org/extension/astro-tools/gmat-script) — for VSCodium, Cursor, Gitpod,
+  `code --install-extension astro-tools.gmat-mission-script`.
+- [Open VSX](https://open-vsx.org/extension/astro-tools/gmat-mission-script) — for VSCodium, Cursor, Gitpod,
   and other Open VSX–based editors.
 
 The extension bundles **syntax highlighting** as a TextMate grammar, so colouring works the moment

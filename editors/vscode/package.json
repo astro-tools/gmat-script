@@ -1,5 +1,5 @@
 {
-  "name": "gmat-script",
+  "name": "gmat-mission-script",
   "displayName": "GMAT Script",
   "description": "Highlighting, hover docs, diagnostics, go-to-definition, completion, and format-on-save for GMAT mission scripts (.script / .gmf).",
   "version": "0.3.0",
