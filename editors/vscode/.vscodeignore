@@ -13,3 +13,4 @@ tsconfig.json
 **/*.ts
 .gitignore
 .eslintrc*
+images/README.md
