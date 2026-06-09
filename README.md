@@ -80,7 +80,7 @@ add the repo to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/astro-tools/gmat-script
-    rev: v0.2.0
+    rev: v0.3.0
     hooks:
       - id: gmat-script-format        # auto-format on commit
       # - id: gmat-script-format-check  # or: check only, never write (CI)
