@@ -40,8 +40,11 @@ nav:
   - Editing: editing.md
   - Formatter: formatting.md
   - Linter: lint.md
+  - Field catalogue: catalogue.md
   - CLI: cli.md
-  - Language server: lsp.md
+  - Editor tooling:
+      - Language server: lsp.md
+      - VS Code extension: vscode.md
   - Error reporting: errors.md
   - API reference: api.md
   - Design:

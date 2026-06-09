@@ -86,6 +86,24 @@ repos:
       # - id: gmat-script-format-check  # or: check only, never write (CI)
 ```
 
+## Editor tooling
+
+[![VS Marketplace](https://img.shields.io/visual-studio-marketplace/v/astro-tools.gmat-script?label=VS%20Marketplace&color=311B92)](https://marketplace.visualstudio.com/items?itemName=astro-tools.gmat-script)
+[![Open VSX](https://img.shields.io/open-vsx/v/astro-tools/gmat-script?label=Open%20VSX&color=311B92)](https://open-vsx.org/extension/astro-tools/gmat-script)
+
+The same engine drives an editor experience — highlighting, hover docs, live diagnostics, completion,
+go-to-definition, an outline, and format-on-save.
+
+- **VS Code** — the **GMAT Script** extension, on the
+  [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=astro-tools.gmat-script)
+  and [Open VSX](https://open-vsx.org/extension/astro-tools/gmat-script). Highlighting works on
+  install; the richer features come from the language server (`pip install "gmat-script[lsp]"`).
+- **Neovim, Emacs, Helix, and the rest** — a Language Server Protocol server (`gmat-script-lsp`,
+  from the `lsp` extra) backs any LSP-capable editor.
+
+See the [VS Code extension guide](https://astro-tools.github.io/gmat-script/vscode/) and the
+[language server guide](https://astro-tools.github.io/gmat-script/lsp/).
+
 ## The grammar surface
 
 The tree-sitter grammar parses GMAT scripts (`.script`) and GmatFunctions (`.gmf`) — the same
@@ -112,6 +130,11 @@ parsing is effectively version-independent — scripts from other releases parse
 *do* vary by release (valid field names, enums, defaults) belong to the linter and are scoped
 to R2026a.
 
+Those semantics live in a **field catalogue** reflected from R2026a (102 resource types, 2614
+fields) and shipped as data inside the wheel, so the linter and editor tooling need no GMAT install.
+It is version-pinned and provenance-stamped, selectable per release, and adding another GMAT version
+is a data file — not a code change. See [the field catalogue](https://astro-tools.github.io/gmat-script/catalogue/).
+
 ## What gmat-script is not
 
 - **Not a propagator or astrodynamics engine.** It reads and transforms script *text*; it computes
@@ -123,7 +146,8 @@ to R2026a.
 ## Documentation
 
 Full documentation — getting started, the grammar surface, the typed AST and editing guides, the
-formatter, the linter, the command-line tool, the error-reporting model, and the API reference — is at
+formatter, the linter and the field catalogue, the command-line tool, the language server and VS Code
+extension, the error-reporting model, and the API reference — is at
 **[astro-tools.github.io/gmat-script](https://astro-tools.github.io/gmat-script/)**.
 
 ## License

@@ -69,12 +69,9 @@ vim.api.nvim_create_autocmd("FileType", {
 
 ### VS Code
 
-Install the [**GMAT Script**](https://marketplace.visualstudio.com/items?itemName=astro-tools.gmat-script)
-extension (also on [Open VSX](https://open-vsx.org/extension/astro-tools/gmat-script)). It bundles a
-client that launches this server for you, and adds standalone syntax highlighting that works even
-before the server is installed. Add the server with `pip install "gmat-script[lsp]"` — the extension
-picks up `gmat-script-lsp` from your `PATH`, or point `gmatScript.server.pythonPath` at the Python
-environment that has it. Format-on-save is enabled for GMAT files by default.
+The [**GMAT Script**](vscode.md) extension bundles a client that launches this server for you, plus
+standalone syntax highlighting that works before the server is installed. See the [VS Code extension
+guide](vscode.md) for install (Marketplace / Open VSX), features, format-on-save, and settings.
 
 ## How it fits together
 
