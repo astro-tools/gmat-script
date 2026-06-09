@@ -88,15 +88,15 @@ repos:
 
 ## Editor tooling
 
-[![VS Marketplace](https://img.shields.io/visual-studio-marketplace/v/astro-tools.gmat-script?label=VS%20Marketplace&color=311B92)](https://marketplace.visualstudio.com/items?itemName=astro-tools.gmat-script)
-[![Open VSX](https://img.shields.io/open-vsx/v/astro-tools/gmat-script?label=Open%20VSX&color=311B92)](https://open-vsx.org/extension/astro-tools/gmat-script)
+[![VS Marketplace](https://img.shields.io/visual-studio-marketplace/v/djankov.gmat-script?label=VS%20Marketplace&color=311B92)](https://marketplace.visualstudio.com/items?itemName=djankov.gmat-script)
+[![Open VSX](https://img.shields.io/open-vsx/v/djankov/gmat-script?label=Open%20VSX&color=311B92)](https://open-vsx.org/extension/djankov/gmat-script)
 
 The same engine drives an editor experience — highlighting, hover docs, live diagnostics, completion,
 go-to-definition, an outline, and format-on-save.
 
 - **VS Code** — the **GMAT Script** extension, on the
-  [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=astro-tools.gmat-script)
-  and [Open VSX](https://open-vsx.org/extension/astro-tools/gmat-script). Highlighting works on
+  [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=djankov.gmat-script)
+  and [Open VSX](https://open-vsx.org/extension/djankov/gmat-script). Highlighting works on
   install; the richer features come from the language server (`pip install "gmat-script[lsp]"`).
 - **Neovim, Emacs, Helix, and the rest** — a Language Server Protocol server (`gmat-script-lsp`,
   from the `lsp` extra) backs any LSP-capable editor.
