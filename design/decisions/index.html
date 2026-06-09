@@ -1,0 +1,2269 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Parse, format, lint, and edit GMAT mission scripts from Python.">
+      
+      
+      
+        <link rel="canonical" href="https://astro-tools.github.io/gmat-script/design/decisions/">
+      
+      
+        <link rel="prev" href="../../api/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Decisions - gmat-script</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#design-decisions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="gmat-script" class="md-header__button md-logo" aria-label="gmat-script" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            gmat-script
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Decisions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/astro-tools/gmat-script" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    astro-tools/gmat-script
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="gmat-script" class="md-nav__button md-logo" aria-label="gmat-script" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    gmat-script
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/astro-tools/gmat-script" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    astro-tools/gmat-script
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../grammar-surface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Grammar surface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../typed-ast/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Typed AST
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../editing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Editing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../formatting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formatter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../lint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../catalogue/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Field catalogue
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Editor tooling
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Editor tooling
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../lsp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code extension
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-language-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The language model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d1-repository-directory-structure-and-the-grammars-place-in-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D1 — repository directory structure (and the grammar's place in it)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d2-dependencies-version-pins-and-the-vendoring-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D2 — dependencies, version pins, and the vendoring strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d3-the-cst-node-taxonomy-the-contract-4-5-6-implement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D3 — the CST node taxonomy (the contract #4 / #5 / #6 implement)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D3 — the CST node taxonomy (the contract #4 / #5 / #6 implement)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#node-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-deliberately-one-node-vs-many" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is deliberately one node vs. many
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d4-surface-coverage-freeze" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4 — surface-coverage freeze
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d5-v01-returns-the-cst-only-the-typed-ast-is-v02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D5 — v0.1 returns the CST only; the typed AST is v0.2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d6-the-identity-invariant-byte-for-byte-re-emission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D6 — the identity invariant: byte-for-byte re-emission
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d7-error-recovery-nodes-never-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D7 — error recovery: nodes, never exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d8-the-parse-cli-output-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D8 — the parse CLI output format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d9-the-gmat-free-guarantee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D9 — the GMAT-free guarantee
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d10-gmatfunction-gmf-shares-the-grammar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D10 — GmatFunction (.gmf) shares the grammar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d11-gmat-version-handling-one-version-agnostic-grammar-version-pinned-catalogues-additive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D11 — GMAT version handling: one version-agnostic grammar, version-pinned catalogues, additive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d12-the-grammar-wheel-build-mechanic-resolving-the-d1-d2-deferral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D12 — the grammar → wheel build mechanic (resolving the D1 / D2 deferral)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d13-unquoted-rest-of-line-values-the-unquoted_value-node-and-the-external-scanner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D13 — unquoted, rest-of-line values: the unquoted_value node and the external scanner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d14-the-canonical-formatters-form-layout-only-order-preserving" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D14 — the canonical formatter's form: layout-only, order-preserving
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d15-the-field-catalogue-reflection-generator-shipped-data-and-the-version-bump-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D15 — the field catalogue: reflection generator, shipped data, and the version-bump process
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forward-notes-not-v01-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forward notes (not v0.1 decisions)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#charter-issue-deltas-recorded-here" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Charter / issue deltas recorded here
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-corpus-survey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix — corpus survey
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-language-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The language model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d1-repository-directory-structure-and-the-grammars-place-in-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D1 — repository directory structure (and the grammar's place in it)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d2-dependencies-version-pins-and-the-vendoring-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D2 — dependencies, version pins, and the vendoring strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d3-the-cst-node-taxonomy-the-contract-4-5-6-implement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D3 — the CST node taxonomy (the contract #4 / #5 / #6 implement)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D3 — the CST node taxonomy (the contract #4 / #5 / #6 implement)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#node-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-deliberately-one-node-vs-many" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is deliberately one node vs. many
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d4-surface-coverage-freeze" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4 — surface-coverage freeze
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d5-v01-returns-the-cst-only-the-typed-ast-is-v02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D5 — v0.1 returns the CST only; the typed AST is v0.2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d6-the-identity-invariant-byte-for-byte-re-emission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D6 — the identity invariant: byte-for-byte re-emission
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d7-error-recovery-nodes-never-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D7 — error recovery: nodes, never exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d8-the-parse-cli-output-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D8 — the parse CLI output format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d9-the-gmat-free-guarantee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D9 — the GMAT-free guarantee
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d10-gmatfunction-gmf-shares-the-grammar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D10 — GmatFunction (.gmf) shares the grammar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d11-gmat-version-handling-one-version-agnostic-grammar-version-pinned-catalogues-additive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D11 — GMAT version handling: one version-agnostic grammar, version-pinned catalogues, additive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d12-the-grammar-wheel-build-mechanic-resolving-the-d1-d2-deferral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D12 — the grammar → wheel build mechanic (resolving the D1 / D2 deferral)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d13-unquoted-rest-of-line-values-the-unquoted_value-node-and-the-external-scanner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D13 — unquoted, rest-of-line values: the unquoted_value node and the external scanner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d14-the-canonical-formatters-form-layout-only-order-preserving" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D14 — the canonical formatter's form: layout-only, order-preserving
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d15-the-field-catalogue-reflection-generator-shipped-data-and-the-version-bump-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D15 — the field catalogue: reflection generator, shipped data, and the version-bump process
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forward-notes-not-v01-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forward notes (not v0.1 decisions)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#charter-issue-deltas-recorded-here" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Charter / issue deltas recorded here
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-corpus-survey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix — corpus survey
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="design-decisions">Design decisions<a class="headerlink" href="#design-decisions" title="Permanent link">&para;</a></h1>
+<p>The running decision log for gmat-script — the choices that fix the grammar scope, the concrete
+syntax tree (CST) node taxonomy, and the v0.1 public surface, recorded with their rationale so the
+implementation has one contract to build against. New decisions append to this file.</p>
+<p>These decisions resolve the open questions the charter deferred to kickoff and <strong>freeze the grammar
+scope + CST node taxonomy on paper</strong> before any grammar code lands. They are grounded in a survey of
+the GMAT R2026a stock corpus — the <strong>162 <code>.script</code> files + 1 <code>.gmf</code></strong> shipped in the <code>samples/</code>
+directory of a GMAT R2026a install — cross-checked against the GMAT User's Guide; the empirical
+figures cited throughout come from that survey (reproduced in the appendix). The corpus is the
+acceptance oracle: the grammar is "done" for v0.1 when every one of those files parses with zero
+<code>ERROR</code> nodes and re-emits byte-for-byte.</p>
+<hr />
+<h2 id="the-language-model">The language model<a class="headerlink" href="#the-language-model" title="Permanent link">&para;</a></h2>
+<p>A GMAT script has two sections in strict order:</p>
+<ol>
+<li><strong>Configuration</strong> — <code>Create</code> resource declarations and literal <code>resource.field = value</code>
+   assignments. Populates the Resources tree. No command execution.</li>
+<li><strong>Mission sequence</strong> — everything after the <code>BeginMissionSequence</code> marker: an ordered list of
+   commands and control-flow / solver blocks.</li>
+</ol>
+<p>The split is positional, not lexical: the <em>same</em> assignment syntax appears in both sections, and
+which section a statement is in is determined by its position relative to <code>BeginMissionSequence</code>, not
+by a different node type. GMAT enforces extra rules per section (configuration assignments are
+literal-only; <code>Create</code> is illegal after <code>BeginMissionSequence</code>) — <strong>those are semantic rules the
+linter owns (v0.3), not the grammar.</strong> The grammar is deliberately permissive: it accepts the
+superset and lets later layers reject what GMAT would.</p>
+<p>GmatFunction (<code>.gmf</code>) files share the entire resource / command surface; they add only a <code>function</code>
+header and <code>Global</code> declarations and are parsed by the same grammar (see D10).</p>
+<hr />
+<h2 id="d1-repository-directory-structure-and-the-grammars-place-in-it">D1 — repository directory structure (and the grammar's place in it)<a class="headerlink" href="#d1-repository-directory-structure-and-the-grammars-place-in-it" title="Permanent link">&para;</a></h2>
+<p>The whole repository layout is fixed here so the grammar's location is a decision <em>within a known
+whole</em>, not in isolation. The scaffold (#3) creates this tree; later milestones fill in the
+directories marked for them. The single load-bearing choice is that <strong>the tree-sitter grammar lives
+in-repo</strong> under <code>tree-sitter-gmat/</code> (a self-contained, npm-publishable package), not in a separate
+<code>astro-tools/tree-sitter-gmat</code> repo.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gmat-script/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── tree-sitter-gmat/            # the grammar package — self-contained, npm-publishable      (v0.1, #3/#4/#5)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── grammar.js               #   the hand-written grammar
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   ├── package.json             #   npm metadata; tree-sitter-cli as a devDependency
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── src/                     #   `tree-sitter generate` output (committed)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   │   ├── parser.c             #     the generated parser
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   │   ├── grammar.json
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   │   └── node-types.json
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── bindings/python/         #   generated: exposes the compiled grammar&#39;s language() capsule
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   │   ├── tree_sitter_gmat/__init__.py
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   │   └── binding.c
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── queries/                 #   highlights.scm, locals.scm, tags.scm   (dir v0.1; content v0.3, #21)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   └── test/corpus/             #   tree-sitter corpus tests — committed expected S-expressions
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├── src/                         # src-layout Python package (per #3)
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   └── gmat_script/             #   py.typed, fully annotated
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│       ├── __init__.py          #     re-exports parse() at v0.1; format/lint added at their milestone
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│       ├── py.typed
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│       ├── parser.py            #     parse(text) -&gt; Tree; loads the vendored grammar             (v0.1, #6)
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│       ├── cli.py               #     the `gmat-script` console script                            (v0.1: parse; +format/lint later)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│       ├── _grammar/            #     the VENDORED compiled grammar shipped in the wheel          (v0.1 build output; form per D2/#3)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│       ├── ast/                 #     typed nodes + dict access + mutation API                    (v0.2, #12/#13)
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│       ├── format.py            #     canonical, idempotent formatter                             (v0.2, #14)
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│       ├── lint/                #     rule engine + rules + scope/reference resolution            (v0.3, #20)
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│       ├── catalog.py           #     catalogue loader (NO gmatpy import)                         (v0.3, #19)
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│       ├── data/fields-R2026a.json  # shipped reflection catalogue                                (v0.3, #19)
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│       ├── lsp/                 #     pygls language server                                       (v0.3, #22)
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│       └── tools/gen_catalog.py #     build-time only; the ONLY gmatpy-touching code              (v0.3, #19)
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>├── tests/                       # pytest suites
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│   └── data/                    #   golden corpus fixtures (-text in .gitattributes)
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>├── docs/                        # MkDocs-Material site
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│   ├── index.md
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>│   └── design/decisions.md      #   this file
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── editors/vscode/              # VS Code extension — LSP client + TextMate grammar              (v0.3, #23)
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── .github/
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>│   ├── workflows/               #   ci.yml, docs.yml, release.yml
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>│   ├── ISSUE_TEMPLATE/          #   bug / feature / &quot;does not parse&quot; / chore
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>│   ├── PULL_REQUEST_TEMPLATE.md
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>│   └── CODEOWNERS
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>├── pyproject.toml               # PEP 621 + Hatchling; declares the `tree-sitter` dep + the grammar build hook
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>├── mkdocs.yml
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>├── .gitattributes               # tests/data/** -text, *.script -text, *.gmf -text (D6)
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>├── .gitignore
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>├── .python-version
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>├── CHANGELOG.md                 # aggregated at release-cut
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>├── CONTRIBUTING.md              # notes lint CI includes `ruff format --check`
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>├── CITATION.cff
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>├── LICENSE                      # MIT
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>└── README.md
+</code></pre></div>
+<p><strong>The grammar → wheel bridge.</strong> <code>tree-sitter-gmat/</code> holds the <em>source</em> grammar and the generated
+<code>parser.c</code>; the Python wheel ships a <em>compiled</em> form of it. The modern <code>tree-sitter</code> runtime loads a
+grammar via <code>Language(&lt;module&gt;.language())</code> — a PyCapsule from a compiled extension, not a <code>.so</code> path
+— and grammars normally ship as their own binary wheels (<code>tree-sitter-python</code>, etc.). gmat-script
+<strong>does not</strong> publish a separate <code>tree-sitter-gmat</code> PyPI wheel and depend on it; instead the Hatchling
+build compiles the grammar (<code>tree-sitter-gmat/src/parser.c</code> + the Python binding) and <strong>vendors it
+into the single <code>gmat_script</code> wheel</strong> (shown as <code>_grammar/</code>), so <code>parser.py</code> loads it with no
+node/C toolchain and no second install (D9: never GMAT either). The exact vendored form — one bundled
+extension module vs. an embedded <code>tree_sitter_gmat</code> module — is the build mechanic deferred to D2/#3;
+this decision fixes only that it is one wheel, vendored, toolchain-free.</p>
+<p><strong>Rationale (in-repo, and why the whole shape).</strong> For v0.x the grammar and the Python library evolve
+in lockstep — every grammar change needs a matching corpus / binding / build change — so one repo
+keeps them atomic in a single PR and a single CI run, with no cross-repo version dance and no second
+release to coordinate. The <code>src/</code>-layout Python package (per #3) keeps import-time hygiene (tests run
+against the installed wheel, not the working tree) and gives the vendored grammar a clean home under
+<code>gmat_script/</code>. The grammar subdir is still a <em>complete</em> tree-sitter package with its own
+<code>package.json</code>, so it publishes to <strong>npm</strong> independently (per tree-sitter convention) for editor
+consumers that want highlighting without the Python library. <code>queries/</code> is shared by both the editor
+highlighting and the <code>tags</code> go-to-definition feature, so it lives with the grammar, not the editor.</p>
+<p><strong>Does the in-repo choice still hold given the full layout? Yes — more so.</strong> The two realistic
+alternatives both get worse once the structure is explicit: (a) a split grammar repo published as a
+separate <code>tree-sitter-gmat</code> <em>PyPI</em> wheel would make it a runtime dependency of <code>gmat_script</code> with its
+own release cadence — exactly the cross-repo version dance the single wheel avoids; (b) a split repo
+pulled in as a git submodule would break the "one PR, one CI run" lockstep the grammar+corpus+binding
+need during active development. So the grammar stays in-repo for v0.x. A split to a dedicated grammar
+repo is <strong>revisited at v1.0</strong>, once the grammar is frozen and the npm package has external consumers
+whose cadence diverges from the Python library's.</p>
+<p><strong>Versioning — lockstep (amended at the v0.1.1 release).</strong> Although the grammar publishes to npm on
+its own, its version number is kept in <strong>lockstep</strong> with the Python <code>gmat-script</code> distribution: a
+release tag bumps and ships both at the same version, even when only one of them changed. This trades
+the independent cadence noted above for a single version to reason about across the two artifacts.
+The split-to-a-dedicated-repo option still stands for v1.0 if the cadences later diverge enough to
+warrant it.</p>
+<h2 id="d2-dependencies-version-pins-and-the-vendoring-strategy">D2 — dependencies, version pins, and the vendoring strategy<a class="headerlink" href="#d2-dependencies-version-pins-and-the-vendoring-strategy" title="Permanent link">&para;</a></h2>
+<p><strong>The Python binding is the PyPI package <code>tree-sitter</code>.</strong> The bindings live in the
+<code>tree-sitter/py-tree-sitter</code> GitHub repo but ship to PyPI under the distribution name <strong><code>tree-sitter</code></strong>
+— there is no separate <code>py-tree-sitter</code> distribution. The runtime dependency is therefore a single
+package, <code>tree-sitter</code>, <em>not</em> the two packages ("<code>tree-sitter</code> + <code>py-tree-sitter</code>") the early issue
+drafts imply. (Forward note for the scaffold, #3: <code>pyproject.toml</code> declares one runtime dep,
+<code>tree-sitter</code>.)</p>
+<p><strong>Pins.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Pin</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tree-sitter</code> (PyPI, the Python runtime + bindings)</td>
+<td><code>&gt;=0.25,&lt;0.26</code> (0.25.2 current; <code>requires-python &gt;=3.10</code>)</td>
+<td>load the vendored grammar, walk trees at runtime</td>
+</tr>
+<tr>
+<td><code>tree-sitter-cli</code> (npm, dev-only)</td>
+<td>the <code>0.25.x</code> line, tracking the runtime</td>
+<td>generate <code>parser.c</code> and run the grammar corpus tests</td>
+</tr>
+</tbody>
+</table>
+<p>The exact versions are locked in <code>uv.lock</code> once the scaffold (#3) lands. The binding's
+<code>requires-python &gt;=3.10</code> lines up exactly with the org's 3.10 / 3.11 / 3.12 support matrix.</p>
+<p><strong>ABI alignment is the load-bearing constraint.</strong> The CLI generates a parser at a tree-sitter ABI
+version; the runtime can only load parsers at or below the ABI it supports. So the <strong>CLI line tracks
+the runtime line</strong> (both <code>0.25.x</code>) rather than chasing the newest CLI (0.26.x), which could emit an
+ABI the pinned runtime cannot load. The grammar-build CI job (wired in #3) is the drift detector: it
+regenerates the parser with the pinned CLI and runs the corpus tests, so an ABI mismatch fails CI
+rather than a user's <code>import</code>.</p>
+<p><strong>Vendoring — the GMAT-free, toolchain-free guarantee.</strong> The wheel <strong>vendors the compiled grammar</strong>
+so <code>pip install gmat-script</code> needs neither a C toolchain nor Node nor a tree-sitter CLI, and never
+GMAT (see D9). The exact build mechanic (ship the prebuilt parser vs. compile the bundled <code>parser.c</code>
+at wheel-build time via the Hatchling hook) is <strong>#3's call</strong> — this decision fixes only the
+<em>guarantee</em>: a clean <code>pip install</code> on any of the three OSes / three Pythons imports <code>gmat_script</code> and
+parses, with no toolchain present.</p>
+<h2 id="d3-the-cst-node-taxonomy-the-contract-4-5-6-implement">D3 — the CST node taxonomy (the contract #4 / #5 / #6 implement)<a class="headerlink" href="#d3-the-cst-node-taxonomy-the-contract-4-5-6-implement" title="Permanent link">&para;</a></h2>
+<p>This is the contract every downstream layer reads. The names below are frozen for v0.1; the grammar
+(#4 lexical + configuration, #5 mission sequence) implements them, the bindings (#6) expose them, and
+the typed-AST overlay (v0.2, #12) wraps them.</p>
+<p><strong>Generic over enumerated, everywhere.</strong> Resource types and command keywords are <em>not</em> enumerated in
+the grammar. The corpus has <strong>67 distinct <code>Create</code> types</strong> and ~<strong>37 distinct command keywords</strong>, and
+GMAT plugins add more; baking the set into the grammar would force a grammar change for every new
+resource or command. So:</p>
+<ul>
+<li><code>Create &lt;Type&gt; &lt;name&gt;…</code> parses with <code>&lt;Type&gt;</code> as <strong>any identifier</strong> — one generic <code>create_command</code>,
+  not one rule per resource family. Type validity is the linter's job (v0.3), against the
+  reflection catalogue (#19).</li>
+<li>An unrecognised command keyword parses as a <strong>generic <code>command</code> node</strong>, not an error. Only the
+  constructs that the grammar <em>structurally</em> needs to understand — assignments, function-call
+  commands, and the begin/end blocks that must be matched — get their own node type.</li>
+</ul>
+<h3 id="node-types">Node types<a class="headerlink" href="#node-types" title="Permanent link">&para;</a></h3>
+<p><strong>Top level / structural</strong></p>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Surface</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_file</code></td>
+<td>the whole file</td>
+<td>root</td>
+</tr>
+<tr>
+<td><code>comment</code></td>
+<td><code>% …</code> to end of line</td>
+<td>an <code>extra</code> — attaches anywhere, including mid-construct; no block comments; <code>%</code> is not a comment inside a string</td>
+</tr>
+<tr>
+<td><code>include</code></td>
+<td><code>#Include 'path'</code></td>
+<td>preprocessor directive; top-level only; trailing <code>;</code> optional (both forms occur in the corpus)</td>
+</tr>
+<tr>
+<td><code>create_command</code></td>
+<td><code>Create &lt;type&gt; &lt;name&gt; [&lt;name&gt; …]</code></td>
+<td><code>type</code> = identifier; one or more <code>name</code>s (e.g. <code>Create Variable x y z</code>); <code>Array</code> decl carries the <code>[r,c]</code> size: <code>Create Array A[3,3]</code></td>
+</tr>
+<tr>
+<td><code>begin_mission_sequence</code></td>
+<td><code>BeginMissionSequence</code></td>
+<td>the configuration ↔ sequence boundary (a marker command)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statements / commands</strong></p>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Surface</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>assignment_command</code></td>
+<td><code>[GMAT] [label] &lt;lhs&gt; = &lt;rhs&gt;</code></td>
+<td>optional leading <code>GMAT</code> keyword token; optional <code>'label'</code>; <code>&lt;lhs&gt;</code> is a reference or array-indexed target; <code>&lt;rhs&gt;</code> is the full expression grammar (below). Same node in both sections — D5</td>
+</tr>
+<tr>
+<td><code>function_call_command</code></td>
+<td><code>[&lt;out&gt;, …] = &lt;name&gt;(&lt;args&gt;)</code></td>
+<td>bracket-list LHS distinguishes it from an assignment; <code>&lt;name&gt;</code> may be dotted (<code>Python.IODFunctions.ThreePositionIOD</code>); covers the GmatFunction / <code>CallPythonFunction</code> call form (see D4 on <code>CallGmat/MatlabFunction</code>)</td>
+</tr>
+<tr>
+<td><code>command</code></td>
+<td><code>&lt;keyword&gt; [label] &lt;args…&gt;</code></td>
+<td>the generic command: <code>Propagate</code>, <code>Maneuver</code>, <code>Report</code>, <code>Toggle</code>, <code>Save</code>, <code>Write</code>, <code>Set</code>, <code>Stop</code>, <code>Achieve</code>, <code>Vary</code>, <code>Minimize</code>, <code>NonlinearConstraint</code>, <code>PenUp</code>/<code>PenDown</code>, <code>MarkPoint</code>, <code>ClearPlot</code>, <code>CommandEcho</code>, <code>RunSimulator</code>/<code>RunEstimator</code>/<code>RunSmoother</code>, <code>Global</code>, <code>BeginFiniteBurn</code>/<code>EndFiniteBurn</code>, <code>BeginFileThrust</code>/<code>EndFileThrust</code>, and any unrecognised keyword. Args use the value grammar plus the <code>Prop(Sat) {…}</code> / <code>DC(…)</code> argument forms</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Blocks</strong> (lexical begin/end that must be matched, with a nested command body)</p>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Surface</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>if_statement</code></td>
+<td><code>If &lt;cond&gt; … [Else …] EndIf</code></td>
+<td><code>Else</code> observed; <code>ElseIf</code> is <strong>not</strong> in the corpus — deferred / best-effort (D4)</td>
+</tr>
+<tr>
+<td><code>for_statement</code></td>
+<td><code>For &lt;var&gt; = &lt;range&gt; … EndFor</code></td>
+<td><code>start:step:stop</code> or <code>start:stop</code> range</td>
+</tr>
+<tr>
+<td><code>while_statement</code></td>
+<td><code>While &lt;cond&gt; … EndWhile</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>target_statement</code></td>
+<td><code>Target &lt;solver&gt; [{opts}] … EndTarget</code></td>
+<td>nests <code>Vary</code>/<code>Achieve</code>/etc. as ordinary <code>command</code>s</td>
+</tr>
+<tr>
+<td><code>optimize_statement</code></td>
+<td><code>Optimize &lt;solver&gt; [{opts}] … EndOptimize</code></td>
+<td>nests <code>Vary</code>/<code>Minimize</code>/<code>NonlinearConstraint</code></td>
+</tr>
+<tr>
+<td><code>script_block</code></td>
+<td><code>BeginScript … EndScript</code></td>
+<td><strong>opaque</strong>: the body is a single raw-text token, not re-parsed (D4)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong><code>BeginFiniteBurn</code>/<code>EndFiniteBurn</code> and <code>BeginFileThrust</code>/<code>EndFileThrust</code> are <em>not</em> blocks.</strong> In
+GMAT the commands they bracket are flat siblings, not a nested body, so they parse as two ordinary
+<code>command</code> nodes. Pairing them (if ever needed) is an AST-layer concern, not a grammar one. This is
+the one place the charter's "control-flow / solver blocks" framing is looser than the real grammar.</p>
+</blockquote>
+<p><strong>Values / expressions</strong> (the RHS grammar — richer than the charter's "value grammar")</p>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Surface</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>identifier</code></td>
+<td><code>Sat</code>, <code>true</code>, <code>On</code></td>
+<td>case-sensitive on names; <code>true</code>/<code>false</code>/<code>On</code>/<code>Off</code> are lexically identifiers (booleanness is a catalogue/linter fact, not a node type)</td>
+</tr>
+<tr>
+<td><code>member_expression</code></td>
+<td><code>Sat.Earth.RMAG</code>, <code>FM.GravityField.Earth.PotentialFile</code></td>
+<td>dotted reference path of any depth (4-deep paths occur in the corpus)</td>
+</tr>
+<tr>
+<td><code>call_expression</code></td>
+<td><code>A(1,1)</code>, <code>sqrt(x)</code>, <code>cross(r1,v1)</code></td>
+<td>a postfix <code>(&lt;args&gt;)</code>. <strong>Array indexing and function invocation are syntactically identical</strong> — one node; which it is, is semantic (linter/AST), not syntactic</td>
+</tr>
+<tr>
+<td><code>number</code></td>
+<td><code>7000</code>, <code>1.25e-1</code>, <code>1e+70</code>, <code>1e+070</code></td>
+<td>integer / real / scientific; tolerates the corpus's <code>e+070</code> zero-padded exponent</td>
+</tr>
+<tr>
+<td><code>string</code></td>
+<td><code>'01 Jan 2025 12:00:00.000'</code></td>
+<td>single-quoted; no escapes; cannot contain <code>'</code>, newline, or <code>%</code></td>
+</tr>
+<tr>
+<td><code>array_literal</code></td>
+<td><code>[1 2 3]</code>, <code>[ true false]</code>, <code>[1 0 0; 0 1 0; 0 0 1]</code></td>
+<td>square brackets; elements separated by whitespace <strong>or</strong> commas; <code>;</code> separates <strong>rows</strong> (2-D matrices — e.g. the 6×6 <code>OrbitErrorCovariance</code>)</td>
+</tr>
+<tr>
+<td><code>list</code></td>
+<td><code>{Earth}</code>, <code>{Sun, Luna}</code>, <code>{}</code>, nested</td>
+<td>brace-list; comma-separated; may be empty; nestable; holds strings / refs</td>
+</tr>
+<tr>
+<td><code>binary_expression</code></td>
+<td><code>a + b</code>, <code>x^2</code>, <code>Sat.TA &gt; 90</code>, <code>a &amp; b</code></td>
+<td>arithmetic <code>+ - * / ^</code>; relational <code>&lt; &lt;= &gt; &gt;= == ~=</code>; logical <code>&amp; \|</code>. Relational/logical appear in <code>If</code>/<code>While</code> conditions; GMAT forbids parens there, but the grammar stays permissive and lets the linter enforce</td>
+</tr>
+<tr>
+<td><code>unary_expression</code></td>
+<td><code>-Element1</code>, <code>+x</code></td>
+<td>leading sign</td>
+</tr>
+<tr>
+<td><code>parenthesized_expression</code></td>
+<td><code>(a + b)</code></td>
+<td>grouping</td>
+</tr>
+<tr>
+<td><code>command_label</code></td>
+<td><code>'Raise apogee'</code></td>
+<td>a single-quoted label that is the statement's first element after the optional <code>GMAT</code> keyword — it precedes the command keyword <strong>or</strong> an assignment LHS (e.g. <code>'Save RAAN' RAAN = MoonSat.RAAN</code>, no <code>GMAT</code>). Pervasive (576 occurrences)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lexical details that the layout / re-emission depends on</strong></p>
+<ul>
+<li><strong>Whitespace, newlines, and the <code>...</code> line continuation</strong> are preserved as the parser's
+  between-token text (tree-sitter "extras" / interstitial text), so re-emission is lossless (D6).
+  <code>...</code> before a newline continues a statement; it is layout, not a node.</li>
+<li><strong>Statement terminator <code>;</code> is optional</strong> and preserved verbatim where present. Multiple statements
+  on one line are not legal GMAT and are not specially modelled.</li>
+</ul>
+<h3 id="what-is-deliberately-one-node-vs-many">What is deliberately one node vs. many<a class="headerlink" href="#what-is-deliberately-one-node-vs-many" title="Permanent link">&para;</a></h3>
+<p>The grammar specializes a node type <strong>only</strong> when it must, to parse correctly:</p>
+<ul>
+<li><strong>must</strong> distinguish: <code>create_command</code> (the <code>Create</code> keyword + name list), <code>assignment_command</code>
+  (<code>=</code> with a single LHS), <code>function_call_command</code> (<code>=</code> with a <code>[…]</code> LHS), the begin/end <strong>blocks</strong>
+  (matched terminators + nested body), <code>begin_mission_sequence</code> (the section boundary), <code>include</code>,
+  <code>comment</code>.</li>
+<li><strong>need not</strong> distinguish: the individual mission commands (one generic <code>command</code> keyed by its
+  leading keyword), the individual resource types (one generic <code>create_command</code>), array-index vs
+  function-call (one <code>call_expression</code>), boolean vs plain identifier (one <code>identifier</code>). These
+  distinctions are recovered by later layers from the catalogue, not from the parse tree.</li>
+</ul>
+<p>A <strong>bare no-output call</strong> — an identifier statement with no <code>[…] =</code> LHS, e.g. <code>TargeterInsideFunction;</code>
+or <code>MyFunc(args);</code> (a GmatFunction invoked for side effects, or the <code>CallGmatFunction</code> /
+<code>CallMatlabFunction</code> engine command) — is just a generic <code>command</code>. Only the bracket-LHS form
+<code>[out, …] = name(args)</code> that <em>binds outputs</em> is a first-class <code>function_call_command</code> (D4).</p>
+<h2 id="d4-surface-coverage-freeze">D4 — surface-coverage freeze<a class="headerlink" href="#d4-surface-coverage-freeze" title="Permanent link">&para;</a></h2>
+<p><strong>Covered (must parse, zero <code>ERROR</code> nodes, across the whole corpus):</strong></p>
+<ul>
+<li>All <code>Create</code> resource declarations — every family, generically (the 67 corpus types span
+  Spacecraft / ForceModel / Propagator / burns / solvers / estimation / coordinate systems /
+  subscribers / hardware / parameters / <code>Variable</code> / <code>Array</code> / <code>String</code> / <code>GmatFunction</code> …).</li>
+<li>The configuration section: dotted <code>resource.field = value</code> assignments, the optional <code>GMAT</code>
+  keyword, <code>Array</code> declaration <code>A[r,c]</code> and <code>A(i,j)</code> access, brace-lists <code>{…}</code>, square-bracket array
+  and 2-D matrix literals <code>[…]</code>, comments, blank lines, the <code>...</code> continuation.</li>
+<li><code>#Include 'path'</code> (top-level directive — present in the corpus; <strong>not</strong> in the charter's original
+  in-scope list, added here).</li>
+<li><code>BeginMissionSequence</code> and the mission sequence: the generic command set above; the full RHS
+  expression grammar (arithmetic, relational/logical, function calls) — needed because mission-
+  sequence assignments and <code>.gmf</code> bodies compute, e.g. <code>Cost = sqrt(TOI.Element1^2 + …)</code>.</li>
+<li>The <code>Propagate</code> argument grammar including <code>Prop(Sat) {Sat.ElapsedSecs = 8640}</code> brace option
+  blocks, multi-spacecraft <code>Prop(Sat1, Sat2)</code>, chained propagators, and the <code>BackProp</code> /
+  <code>Synchronized</code> modifiers.</li>
+<li>Control-flow and solver blocks: <code>If</code>/<code>Else</code>/<code>EndIf</code>, <code>For</code>/<code>EndFor</code>, <code>While</code>/<code>EndWhile</code>,
+  <code>Target</code>/<code>EndTarget</code>, <code>Optimize</code>/<code>EndOptimize</code>, with solver-mode brace options and nested commands.</li>
+<li><code>BeginScript</code>/<code>EndScript</code> (opaque body) and <code>BeginFiniteBurn</code>/<code>EndFiniteBurn</code> (flat command pair).</li>
+<li>Command labels <code>'…'</code> on any command (and on a bare assignment with no <code>GMAT</code> keyword).</li>
+<li>The function-call command <code>[out, …] = name(args)</code> (binds outputs), including dotted names; and the
+  <strong>bare no-output call</strong> <code>Name;</code> / <code>Name(args);</code> (a void GmatFunction invocation — a generic <code>command</code>).</li>
+<li>The two corpus files <strong>without</strong> <code>BeginMissionSequence</code> (<code>Ex_CompareEphemeris.script</code>,
+  <code>Ex_IncludeFile.script</code>): a configuration-only file is valid — the boundary marker is optional in
+  the grammar even though it is mandatory for a runnable mission (a runnability question for
+  gmat-run / the linter, not the parser).</li>
+</ul>
+<p><strong>The <code>CallGmatFunction</code> / <code>CallMatlabFunction</code> correction.</strong> The charter and the #5 draft name
+<code>CallGmatFunction</code> / <code>CallMatlabFunction</code> as command keywords. Those keywords appear <strong>0×</strong> in the
+stock corpus. What the corpus actually uses is the <strong>bracket-assignment call form</strong>
+(<code>[out, …] = func(args)</code>, <code>[crossProd] = cross(vec1, vec2)</code>) and dotted external calls
+(<code>[V2,Log] = Python.IODFunctions.ThreePositionIOD(…)</code>). So the grammar's function-call surface is the
+<code>function_call_command</code> of D3, not a <code>Call*Function</code> keyword. The <code>Call*Function</code> keywords, if they
+appear in any input, still parse as generic <code>command</code> nodes (the generic fallback), so nothing is
+lost — but the modelled, first-class form is the bracket-assignment one. (The GMAT help documents
+<code>CallGmatFunction</code> as the engine's official call command; the sample scripts nonetheless use the
+bracket form and the bare no-output call, so those are what is first-classed.)</p>
+<p><strong>Deferred / best-effort (parses via the generic fallback, but not first-classed or corpus-tested):</strong></p>
+<ul>
+<li>Older-release (pre-R2026a) syntax. R2026a is the target; the grammar is best-effort on older files
+  (the full version strategy is D11).</li>
+<li><code>ElseIf</code> — not present in the corpus; if encountered it should still recover, but it is not a
+  first-class <code>if_statement</code> branch in v0.1.</li>
+<li><code>BeginScript</code>/<code>EndScript</code> bodies — opaque by design; the raw text round-trips but is not parsed
+  into structure.</li>
+<li>MATLAB / Python callback <em>internals</em> beyond the call form — the call command parses; what the
+  external function does is out of scope.</li>
+</ul>
+<h2 id="d5-v01-returns-the-cst-only-the-typed-ast-is-v02">D5 — v0.1 returns the CST only; the typed AST is v0.2<a class="headerlink" href="#d5-v01-returns-the-cst-only-the-typed-ast-is-v02" title="Permanent link">&para;</a></h2>
+<p><code>parse(text)</code> returns a thin <code>Tree</code> wrapper over the tree-sitter concrete syntax tree (CST) — <strong>not</strong>
+typed resource/command objects and <strong>not</strong> dict access. The typed-AST overlay
+(<code>ast.spacecraft["Sat"]["SMA"]</code>), the mutation API, and the formatter are v0.2 (#12 / #13 / #14),
+built <em>on top of</em> this tree. The v0.1 <code>Tree</code> wrapper API is kept minimal and forward-compatible so
+the v0.2 overlay wraps it without a breaking change.</p>
+<p>The configuration/sequence split (above) is positional, recovered from the tree, not encoded as
+distinct node types — so the same <code>assignment_command</code> node serves a literal config assignment and a
+computed mission-sequence assignment; telling them apart (and applying GMAT's literal-only-in-config
+rule) is the linter's job.</p>
+<h2 id="d6-the-identity-invariant-byte-for-byte-re-emission">D6 — the identity invariant: byte-for-byte re-emission<a class="headerlink" href="#d6-the-identity-invariant-byte-for-byte-re-emission" title="Permanent link">&para;</a></h2>
+<p>"Re-emit byte-for-byte" is defined precisely as: <strong>concatenating every leaf token together with all
+interstitial text (whitespace, newlines, comments, the <code>...</code> continuation, and the optional <code>;</code>) in
+source order reproduces the input file exactly, byte for byte.</strong> Comments and layout are preserved
+because they live in the tree's between-token text, not discarded. Exposed as <code>tree.text</code> /
+<code>to_source(tree)</code> (#6).</p>
+<ul>
+<li><strong>No EOL normalisation in the library.</strong> The library reads and writes UTF-8 and preserves the
+  source's original line endings exactly; it never converts CRLF↔LF.</li>
+<li><strong>The corpus normalisation rule is <code>-text</code> in <code>.gitattributes</code></strong>, not in code. The golden corpus
+  ships with <code>tests/data/** -text</code> (plus <code>*.script -text</code> / <code>*.gmf -text</code>) so Windows CI does not
+  rewrite line endings under the byte-exact assertion. (This is why the EOL handling is a VCS
+  attribute, not a library feature.)</li>
+</ul>
+<h2 id="d7-error-recovery-nodes-never-exceptions">D7 — error recovery: nodes, never exceptions<a class="headerlink" href="#d7-error-recovery-nodes-never-exceptions" title="Permanent link">&para;</a></h2>
+<p>A malformed or incomplete script <strong>never raises</strong> from <code>parse()</code>. tree-sitter's error recovery
+yields a usable partial tree with <code>ERROR</code> and <code>MISSING</code> nodes localised to the broken construct — the
+property that makes editor-grade feedback on a half-typed buffer possible (and that the LSP, v0.3,
+depends on). The library surfaces them:</p>
+<ul>
+<li><code>tree.errors</code> — a list of <code>ERROR</code>/<code>MISSING</code> nodes with their line/column ranges and a short
+  message.</li>
+<li><code>tree.has_errors</code> — a boolean.</li>
+</ul>
+<p>The <code>parse</code> CLI turns this into an exit code and a diagnostic (D8). "Does it parse" is structural;
+"does it run / converge" is a different question gmat-run answers.</p>
+<h2 id="d8-the-parse-cli-output-format">D8 — the <code>parse</code> CLI output format<a class="headerlink" href="#d8-the-parse-cli-output-format" title="Permanent link">&para;</a></h2>
+<p><code>gmat-script parse FILE</code>:</p>
+<ul>
+<li><strong>Default</strong> — prints the tree as an S-expression (tree-sitter's <code>s-expression</code> form) to stdout.
+  Exit <strong>0</strong> if the tree has no <code>ERROR</code>/<code>MISSING</code> node, <strong>1</strong> if it does (for CI use).</li>
+<li><strong><code>--json</code></strong> — prints a machine-readable report instead of the S-expression:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flyby.script&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ERROR&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;column&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nt">&quot;end&quot;</span><span class="p">:</span><span class="w">   </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;column&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unexpected token&quot;</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">}</span>
+</code></pre></div>
+<p><code>ok</code> mirrors the exit code (<code>true</code> ⇔ exit 0). Positions in the <strong>CLI / JSON are 1-indexed</strong> for
+  line and column (compiler convention, human-facing). The internal tree-sitter positions are
+  0-indexed; the wrapper converts. (The LSP layer, v0.3, emits LSP's native 0-indexed positions
+  separately — the CLI's choice does not bind it.)</p>
+<p>A clean script prints its S-expression and exits 0; a malformed one prints the error report (or, by
+default, the partial S-expression) and exits 1, with line/column on every error.</p>
+<h2 id="d9-the-gmat-free-guarantee">D9 — the GMAT-free guarantee<a class="headerlink" href="#d9-the-gmat-free-guarantee" title="Permanent link">&para;</a></h2>
+<p><code>gmatpy</code> and GMAT are <strong>build-time only</strong>, used by exactly one piece of code: the field-catalogue
+generator <code>tools/gen_catalog.py</code> (v0.3, #19), run in the setup-gmat CI job. The catalogue ships as
+JSON package data.</p>
+<ul>
+<li><strong>v0.1 and v0.2 import neither GMAT nor <code>gmatpy</code></strong> — not at runtime, not in tests, not in the build.
+  The only runtime dependency is <code>tree-sitter</code> (D2).</li>
+<li><code>pip install gmat-script</code> never pulls in, requires, or looks for a GMAT install.</li>
+<li>The v0.3 catalogue <em>loader</em> (<code>catalog.py</code>) reads the shipped JSON with <strong>no <code>gmatpy</code> import</strong>; only
+  the <em>generator</em> touches <code>gmatpy</code>, and only in CI.</li>
+</ul>
+<p>This is the project's defining boundary: running a script needs GMAT (gmat-run's job); reading,
+checking, formatting, and transforming its text does not.</p>
+<h2 id="d10-gmatfunction-gmf-shares-the-grammar">D10 — GmatFunction (<code>.gmf</code>) shares the grammar<a class="headerlink" href="#d10-gmatfunction-gmf-shares-the-grammar" title="Permanent link">&para;</a></h2>
+<p><code>.gmf</code> files parse with the <strong>same grammar</strong>. They are a superset of the script surface, adding only a
+<code>function</code> header and <code>Global</code> declarations. The header — modelled as a <code>function_definition</code> node —
+is <strong>wider than one form</strong>; confirmed against all <strong>nine</strong> <code>.gmf</code> in an R2026a install (one in
+<code>samples/</code>, eight in <code>userfunctions/gmat/</code>) plus real-world <code>.gmf</code> on GitHub:</p>
+<ul>
+<li><strong>Output list is optional, and always bracketed when present</strong> — absent (<code>function Name(...)</code>),
+  empty (<code>function [] = Name(...)</code>), single (<code>function [q] = Name(...)</code>), or multiple
+  (<code>function [dr, dv] = Name(...)</code>). There is <strong>no</strong> bare MATLAB single-output form (<code>out = name(...)</code>)
+  — even one output is <code>[out]</code>.</li>
+<li><strong>Parameter list is optional</strong> — absent entirely (<code>function [a,b] = Name</code>), empty
+  (<code>function Name()</code>), or <code>(p1, p2, …)</code>.</li>
+<li><strong>Optional trailing <code>;</code></strong> on the header (<code>function [delta] = SatSep(Sat1, Sat2);</code>), and whitespace
+  may sit before <code>(</code> (<code>function [q] = ComposeQuaternions (qA, qB)</code>).</li>
+</ul>
+<p>So <code>function_definition</code> carries an <em>optional</em> output list, the name, and an <em>optional</em> parameter
+list. (The no-parameter-list and empty-<code>[]</code> forms come from older / documentation examples and are
+best-effort — D11; every R2026a install <code>.gmf</code> uses an explicit <code>(...)</code>.)</p>
+<ul>
+<li><code>Global &lt;name&gt;…</code> declarations (a generic <code>command</code>) share resources with the caller.</li>
+<li>Otherwise the identical <code>Create</code> / <code>BeginMissionSequence</code> / command / expression surface. The eight
+  <code>userfunctions/gmat/</code> functions exercise far more than the single <code>samples/</code> file — <code>Target</code> /
+  <code>EndTarget</code> and <code>Optimize</code> solver blocks, <code>If</code> / <code>EndIf</code>, <code>For</code>, <code>Vary</code> / <code>Achieve</code> / <code>Maneuver</code>,
+  and <code>Global</code> — all already covered by D3.</li>
+</ul>
+<p>A <strong>void function</strong> (no output list) is <em>called</em> as a bare no-output <code>command</code> statement
+(<code>TargeterInsideFunction;</code>), tying D10 to D4's bare-call form. The grammar applies to both <code>.script</code>
+and <code>.gmf</code>; the file extension selects nothing in the parser. The function-header oracle is the
+<strong>nine</strong> install <code>.gmf</code> (not the single <code>samples/</code> one), so the corpus harness (#8) should include the
+<code>userfunctions/gmat/</code> set.</p>
+<h2 id="d11-gmat-version-handling-one-version-agnostic-grammar-version-pinned-catalogues-additive">D11 — GMAT version handling: one version-agnostic grammar, version-pinned catalogues, additive<a class="headerlink" href="#d11-gmat-version-handling-one-version-agnostic-grammar-version-pinned-catalogues-additive" title="Permanent link">&para;</a></h2>
+<p>The version question splits cleanly along the grammar / catalogue boundary (D3 / D9), and the two
+halves are handled oppositely.</p>
+<ul>
+<li><strong>The grammar is version-agnostic by construction, and there is exactly one.</strong> The generic
+  <code>create_command</code> (any <code>&lt;Type&gt;</code>) and generic <code>command</code> (any keyword) of D3 mean a resource type or
+  command keyword added or removed in <em>any</em> GMAT release parses without a grammar change — the grammar
+  never enumerates the vocabulary, so it does not date. GMAT's <em>syntax</em> (<code>Create</code>, assignments,
+  <code>BeginMissionSequence</code>, control flow, the value / expression grammar) has been stable across
+  releases; the grammar targets R2026a but parses older and newer scripts because it is a permissive
+  superset. If a genuine <em>syntactic</em> divergence between versions ever appears (rare), it is added to
+  the single grammar as an accepted alternative — <strong>never forked into a per-version grammar.</strong> One
+  grammar covers all versions.</li>
+<li><strong>Semantics — the field catalogue — are version-pinned, and that is the <em>only</em> version-coupled
+  artifact.</strong> Valid field names, types, enums, defaults, and reference targets change every release,
+  so the catalogue (D9, #19) is generated per GMAT install and stamped with its GMAT version +
+  generation date in the JSON header. v0.3 ships exactly <code>fields-R2026a.json</code>.</li>
+</ul>
+<p><strong>How the library indicates "R2026a" today.</strong> The version it speaks for is not in the grammar (which
+carries none) but in the <strong>catalogue's provenance header</strong> — the machine-readable declaration — and
+restated in the README. The linter / hover / completion are therefore "R2026a semantics," validated
+against the shipped R2026a catalogue. A script from another release still <em>parses</em> (the grammar is
+agnostic) but may draw false unknown-field / enum diagnostics from the linter — so static <strong>parsing</strong>
+is effectively version-independent while static <strong>linting</strong> is explicitly R2026a-scoped.</p>
+<p><strong>Adding versions later is additive data, not a fork — same project, same repo.</strong> Because the only
+version-coupled artifact is catalogue data, supporting another release means: (1) generate
+<code>fields-&lt;ver&gt;.json</code> from that install with the existing <code>gen_catalog.py</code> (the setup-gmat CI matrix
+already spans multiple releases — and note only R2022a / R2025a / R2026a are real in that window;
+GMAT shipped no R2023a / R2024a); (2) give the catalogue loader and linter / LSP a <strong><code>target_version</code>
+selector</strong>, defaulting to the newest shipped catalogue. To keep that future cheap, the v0.3 catalogue
+API and the linter are designed with the selector <strong>from the start</strong>, even while only one catalogue
+ships — so the later change is a data file plus a default, not a refactor. A separate per-version repo
+is explicitly rejected: it would duplicate the grammar, linter, and LSP only to vary a JSON file. The
+grammar's acceptance corpus may later gain per-version sample suites as best-effort parse oracles, but
+the formal v0.1 bar stays the R2026a stock corpus.</p>
+<p><strong>Scope now (unchanged from the charter).</strong> v0.x targets R2026a; older releases are best-effort for
+parsing and unsupported for linting. This decision adds version support to no v0.x milestone; it fixes
+the <em>shape</em> of support so the v0.3 catalogue / linter design does not foreclose it.</p>
+<h2 id="d12-the-grammar-wheel-build-mechanic-resolving-the-d1-d2-deferral">D12 — the grammar → wheel build mechanic (resolving the D1 / D2 deferral)<a class="headerlink" href="#d12-the-grammar-wheel-build-mechanic-resolving-the-d1-d2-deferral" title="Permanent link">&para;</a></h2>
+<p>D1 fixed <em>that</em> the compiled grammar is vendored into one wheel; D2 fixed the <em>guarantee</em>
+(toolchain-free install) and deferred the exact mechanic to the scaffold (#3). This records the
+resolution — the contract the parser binding (#6) loads against.</p>
+<ul>
+<li><strong>The generated parser is committed.</strong> <code>tree-sitter-gmat/src/parser.c</code> (with <code>grammar.json</code>,
+  <code>node-types.json</code>, and <code>tree_sitter/*.h</code>) is checked in. Regenerating it needs Node + the
+  tree-sitter CLI; <em>compiling</em> it needs only a C compiler. So routine wheel builds — and the sdist
+  fallback — never touch Node.</li>
+<li><strong>One vendored extension, compiled at wheel-build time.</strong> A Hatchling build hook
+  (<code>hatch_build.py</code>) compiles <code>parser.c</code> + the Python binding (<code>bindings/python/binding.c</code>) into a
+  single extension module vendored at <code>gmat_script/_grammar/_binding</code>. This resolves D1's
+  "one bundled extension vs. embedded <code>tree_sitter_gmat</code> module" question as the <strong>single bundled
+  extension</strong> form: the library loads it via <code>gmat_script._grammar.language()</code>, which the
+  <code>tree-sitter</code> runtime wraps with <code>Language(...)</code>. <code>parser.py</code> is wired to this load path at #6;
+  the scaffold proves it end to end.</li>
+<li><strong>Stable ABI (<code>abi3</code>, floor cp310).</strong> The extension builds against the CPython limited API, so
+  one wheel per platform runs on every supported Python (3.10 / 3.11 / 3.12). Wheels carry the
+  <code>cp310-abi3-&lt;platform&gt;</code> tag.</li>
+<li><strong><code>cibuildwheel</code> produces the per-platform wheels + an sdist.</strong> Release builds run cibuildwheel
+  (one cp310 build per platform → manylinux / macOS / Windows abi3 wheels) plus the sdist, which
+  carries <code>parser.c</code> so an sdist build needs a C compiler but <strong>no Node</strong>. PyPI ships the prebuilt
+  wheels — the D9 toolchain-free install — and the sdist is the compile-locally fallback for
+  platforms without a prebuilt wheel.</li>
+</ul>
+<p>The drift risk this introduces — a hand-edited <code>grammar.js</code> whose committed <code>parser.c</code> goes stale,
+or a generated ABI the pinned runtime cannot load — is caught by the grammar-build CI job (D2),
+which regenerates with the pinned CLI and runs the corpus tests, so it fails CI rather than a user's
+<code>import</code>.</p>
+<h2 id="d13-unquoted-rest-of-line-values-the-unquoted_value-node-and-the-external-scanner">D13 — unquoted, rest-of-line values: the <code>unquoted_value</code> node and the external scanner<a class="headerlink" href="#d13-unquoted-rest-of-line-values-the-unquoted_value-node-and-the-external-scanner" title="Permanent link">&para;</a></h2>
+<p>Building the configuration-section grammar (#4) against the full stock corpus surfaced value forms
+the D3 value taxonomy could not represent. The kickoff survey (appendix) under-counted the value
+surface: it catalogued the structured forms (numbers, strings, references, brace-lists, square-
+bracket literals, expressions) but missed that GMAT's initialization values are fundamentally
+<strong>line-oriented</strong> — a value is <em>"the rest of the logical line,"</em> interpreted afterward by the
+field's type. The authoritative reference (GMAT User Guide, <em>Script Language</em> —
+<code>docs/help/html/ScriptLanguage.html</code>) and the running stock samples confirm four such forms:</p>
+<ul>
+<li><strong>Multi-word unquoted enums</strong> — <code>VectorType = Relative Position</code>, <code>StarSettings = Virtual Reality</code>
+  (the spec asserts enum values are quote-optional <em>"as none contain spaces"</em> — but these do, in 6
+  shipped scripts that run).</li>
+<li><strong>Unquoted file paths</strong> — <code>FileName = ../data/misc/GuessWithUnityControl.och</code> (spec-blessed:
+  <em>"Quotes are mandatory if the path contains spaces, but are optional otherwise."</em>).</li>
+<li><strong>Unquoted dates</strong> — <code>Sat.Epoch = 19 Aug 2015 00:00:00.000</code> (whitespace-bearing, unquoted; the
+  spec recommends quoting, GMAT accepts it).</li>
+<li><strong>The doubled-quote artifact</strong> — <code>InitialEpoch = ''01 Jan 2000 11:59:28.000''</code> (not spec-legal —
+  there are no string escapes — but shipped and run in 4 scripts).</li>
+</ul>
+<p><strong>Decision.</strong> The value grammar gains an <code>unquoted_value</code> node: the raw rest of the logical line,
+used when the right-hand side is not one of the structured forms. This is added to the frozen D3
+taxonomy (the one node the freeze did not anticipate). The assignment RHS is therefore
+<code>choice(&lt;structured value&gt;, unquoted_value)</code>.</p>
+<p><strong>Mechanism — an external scanner.</strong> Because the grammar keeps newlines as layout, not statement
+terminators (D3 / D6), the context-free lexer cannot tell a value that <em>is</em> a clean structured form
+from one that merely <em>starts</em> like one (<code>Relative</code> vs <code>Relative Position</code>); token precedence and
+longest-match cannot express "structured iff it spans the whole value." So <code>unquoted_value</code> is lexed
+by a tree-sitter <strong>external scanner</strong> (<code>tree-sitter-gmat/src/scanner.c</code>, declared via <code>externals</code>).
+At a value position it scans to the end of the logical line and emits <code>unquoted_value</code> <strong>only</strong> when
+the content carries a signature no structured form has — a <code>/</code>, <code>\</code>, or <code>:</code>; a leading <code>''</code>; or two
+barewords separated by only whitespace — and otherwise defers, letting the grammar parse the
+structured value. The scanner is stateless. <code>parser.c</code> <strong>and</strong> <code>scanner.c</code> are committed; the
+Hatchling build hook compiles both (plus the binding) into the single vendored abi3 extension, so
+D12's toolchain-free / GMAT-free install guarantees are unchanged — one more committed C file, no
+new install-time dependency.</p>
+<p><strong>Folded-in relaxations.</strong> The same corpus pass fixed three smaller gaps, all within the existing
+node set: comma-separated <code>Create</code> names (<code>Create String s1, s2</code> — spec-documented, originally
+implemented whitespace-only), empty list elements (<code>{a, , b}</code>), stray trailing semicolons (<code>30;;</code>),
+and field names beginning with a digit (<code>Earth.3DModelFile</code> — a property may lead with a digit even
+though a resource name may not, so the property is its own token aliased to <code>identifier</code>).</p>
+<p><strong>Spec vs. reality.</strong> Where the User Guide's prose is stricter than GMAT's running behaviour, the
+grammar follows the behaviour, because the stock corpus (which all loads and runs in GMAT) is the
+acceptance oracle (D-language-model). The same principle already governs two earlier choices: a <code>%</code>
+inside a string is data, not a comment (the spec forbids <code>%</code> in strings, yet <code>sprintf('%.15f …')</code>
+ships and runs), and 2-D <code>[…;…]</code> matrix literals are accepted (the spec says array literals are
+1-D, yet the 6×6 <code>OrbitErrorCovariance</code> ships). The linter (v0.3), not the grammar, is where GMAT's
+stricter rules are enforced.</p>
+<p><strong>Scope boundary confirmed.</strong> With D13, every configuration-section <em>construct</em> — <code>Create</code>,
+<code>resource.field = value</code> (structured or unquoted), <code>#Include</code>, lists, array / matrix literals,
+comments, blank lines, the <code>...</code> continuation — parses with zero <code>ERROR</code> across all 162 stock
+scripts. The only pre-<code>BeginMissionSequence</code> lines that do not parse are bare member-call <strong>command</strong>
+statements (<code>Obj.SetModelParameter(…)</code>, 9 OptimalControl / EMTG scripts) — a generic <code>command</code> (the
+bare no-output call, D3 / D4), which the mission-sequence grammar implements, not #4.</p>
+<h2 id="d14-the-canonical-formatters-form-layout-only-order-preserving">D14 — the canonical formatter's form: layout-only, order-preserving<a class="headerlink" href="#d14-the-canonical-formatters-form-layout-only-order-preserving" title="Permanent link">&para;</a></h2>
+<p>The v0.2 formatter (<code>format.py</code>) is a deterministic pretty-printer meant to run on every save and as
+a pre-commit hook. This fixes its canonical form — the contract its idempotence and
+semantic-preservation guarantees are stated against — resolving the "formatter ordering" forward
+note below.</p>
+<p><strong>It re-lays-out; it never reorders.</strong> Resources, fields, and commands are emitted in source order:
+the formatter touches <em>layout</em>, not <em>sequence</em>. This is the deliberate, conservative reading of the
+charter's "resources grouped by type" — a resource is one grouped block (its <code>Create</code> glued to its
+own assignments), and the blocks keep their authored order — rather than globally regrouping
+declarations by type. The payoff is a strong, verifiable invariant: <code>parse(format(x))</code> is
+<strong>structurally equal</strong> to <code>parse(x)</code> for every corpus file (no resource, field, or command added,
+dropped, reordered, or altered), so the formatter is safe to run unattended and produces minimal
+diffs. (A reorder-by-type formatter — the looser reading the forward note left open — was rejected:
+it forces large diffs on every save, complicates comment reattachment, and trades the literal
+structural-equality invariant for a weaker meaning-preserving one. The faithful, byte-exact tree of
+D6 is re-laid-out, not reorganised.)</p>
+<p><strong>Field order is source order</strong> (the choice D14 was asked to make explicit): the last-write-wins
+GMAT semantics are preserved exactly, and no field is moved.</p>
+<p><strong>The canonical layout.</strong></p>
+<ul>
+<li>One statement per line — <code>...</code> continuations are folded away. A single space around <code>=</code> and
+  binary operators; <code>.</code> and unary signs are tight; <code>{a, b}</code> brace-lists, <code>[1, 1]</code> index/call
+  argument lists, and <code>[r1; r2]</code> matrices follow the same structural conventions as <code>emit_value</code>
+  (#13), so the formatter and the mutation layer emit identically. Colon ranges are tight
+  (<code>1:2:10</code>).</li>
+<li><strong>Per-resource grouping, structural blank lines.</strong> In the configuration section each <code>Create</code> is
+  glued to its assignments with no blank line between them, and exactly one blank line precedes each
+  new <code>Create</code> / <code>#Include</code> group and the <code>BeginMissionSequence</code> marker. In the mission sequence the
+  author's blank lines are preserved (collapsed to at most one), keeping their grouping intent.</li>
+<li><strong>Indentation</strong> is four spaces per nesting level inside <code>If</code> / <code>For</code> / <code>While</code> / <code>Target</code> /
+  <code>Optimize</code> blocks (and <code>Else</code> branches). A <code>BeginScript … EndScript</code> body is <strong>opaque</strong> (D4): it is
+  preserved verbatim — only the <code>BeginScript</code> line is re-indented and only the file's newline style is
+  applied; trailing-whitespace removal does not reach inside it.</li>
+<li><strong>The only auto-fixes</strong> are dropping the redundant leading <code>GMAT</code> keyword on assignments, dropping
+  the optional trailing <code>;</code>, and removing trailing whitespace. Literal spellings — numbers, strings,
+  identifiers — are preserved <strong>verbatim</strong>: formatting is pure layout and never rewrites a value
+  (<code>1.0e-11</code> is not normalised to <code>1e-11</code>), which keeps "no semantic change" trivially true and the
+  behaviour unsurprising.</li>
+</ul>
+<p><strong>Comment reattachment heuristic.</strong> An own-line comment attaches to the <em>following</em> statement and is
+glued directly above it; a same-line comment stays trailing. Blank gaps <em>within</em> a run of own-line
+comments are preserved (collapsed to at most one), so a file header stays visually separated from a
+section banner while the banner hugs its <code>Create</code>. Two edge cases are recorded:</p>
+<ul>
+<li>A trailing comment is re-emitted <strong>with a <code>;</code></strong> terminating the statement (<code>EndTarget; % …</code>). This
+  is required, not cosmetic: a comment between a statement's last token and the newline is dropped on
+  re-parse unless an explicit <code>;</code> terminates the statement first (the newline-as-terminator otherwise
+  swallows it), so without the <code>;</code> the comment would be lost on the next format pass. (Conversely, a
+  trailing comment that the <em>input</em> lacks a <code>;</code> for never reaches the tree at all — there is nothing
+  for the formatter to preserve.)</li>
+<li>A comment buried inside a value (e.g. a brace-list spanning lines) cannot be folded onto one line
+  without eating it, so the statement that holds it is re-emitted <strong>verbatim</strong> rather than folded.</li>
+</ul>
+<p><strong>The <code>format(source, style="canonical")</code> surface.</strong> <code>source</code> is the script text, a parsed <code>Tree</code>,
+or a <code>Script</code>; a script with syntax errors raises <code>ValueError</code> rather than risk corrupting it.
+<code>style="canonical"</code> is the only v0.2 style; the parameter exists so future styles do not change the
+signature.</p>
+<p><strong>Style choices left to v0.3+.</strong> Whether to offer a width-aware wrapping style, or a GMAT-GUI-mirror
+style that column-aligns <code>=</code>, is deferred — the <code>style</code> parameter is the seam for them.</p>
+<h2 id="d15-the-field-catalogue-reflection-generator-shipped-data-and-the-version-bump-process">D15 — the field catalogue: reflection generator, shipped data, and the version-bump process<a class="headerlink" href="#d15-the-field-catalogue-reflection-generator-shipped-data-and-the-version-bump-process" title="Permanent link">&para;</a></h2>
+<p>The v0.3 linter / hover / completion need a machine-readable description of every resource type's
+fields. This fixes how that catalogue is produced, what it contains, and how it is consumed — the
+contract <code>gmat_script/tools/gen_catalog.py</code> (the generator) and <code>gmat_script/catalog.py</code> (the loader)
+implement (#19). It is grounded in a reflection survey of the R2026a <code>gmatpy</code> API.</p>
+<p><strong>The boundary holds: one GMAT-touching module, GMAT-free everywhere else (D9).</strong> <code>gen_catalog.py</code>
+is the <em>only</em> code that imports <code>gmatpy</code>, and it runs at build / CI time, never at install or runtime.
+It writes <code>gmat_script/data/fields-&lt;version&gt;.json</code>; the loader reads that JSON through
+<code>importlib.resources</code> and never imports <code>gmatpy</code>. v0.3 ships exactly <code>fields-R2026a.json</code>.</p>
+<p><strong>Enumeration is by object-type category, not the flat factory list.</strong> GMAT's <code>Construct</code> succeeds
+for commands and math nodes too, so "does it construct" cannot separate resources from non-resources.
+The generator instead iterates a fixed set of <code>Gmat::ObjectType</code> codes (Spacecraft, Burn, PropSetup,
+ODEModel, the physical-model / coordinate / subscriber / solver / hardware / parameter / function /
+... families) and reflects <code>Moderator.GetListOfFactoryItems(code)</code> for each — which excludes commands
+by construction. <code>PARAMETER</code> is restricted to the three script-declarable forms (<code>Variable</code>,
+<code>String</code>, <code>Array</code>); the other 300+ are calculated quantities, not <code>Create</code>d resources.</p>
+<p><strong>Two <code>gmatpy</code> segfault guards, learned empirically (both will crash the process, not raise):</strong></p>
+<ul>
+<li><em>Never <code>gmat.Clear()</code> while iterating.</em> Clearing the configuration mid-enumeration segfaults the
+  next <code>Construct</code>. The generator gives each probe object a unique name and lets GMAT own them.</li>
+<li><em>Read a <code>default</code> only from non-read-only fields.</em> <code>GetField</code> on a read-only computed field (e.g.
+  <code>NuclearPowerSystem.TotalPowerAvailable</code>) triggers computation on an uninitialised object and
+  crashes. Defaults come only from settable fields.</li>
+</ul>
+<p><strong>Type normalisation is integer-code-first.</strong> <code>GetParameterType</code> (the integer code) is authoritative;
+<code>GetParameterTypeString</code> is sometimes a per-class custom label (<code>Radius</code>, <code>Mu</code>, <code>EstimateMethod</code>)
+whose underlying code is still one of the standard ones. The catalogue stores a normalised <code>type</code>
+(<code>real</code> / <code>integer</code> / <code>string</code> / <code>bool</code> / <code>enum</code> / <code>object</code> / <code>object_array</code> / <code>string_array</code> /
+<code>real_array</code> / <code>matrix</code> / <code>filename</code> / <code>on_off</code> / <code>color</code> / <code>gmat_time</code>) plus the raw <code>gmat_type</code>
+label. A small label fallback covers the handful of codes not enumerated (e.g. <code>TIME_TYPE</code>).</p>
+<p><strong>Script-name aliases.</strong> A few script type names differ from the factory class name: <code>Create
+Propagator</code> builds a <code>PropSetup</code>, and <code>ForceModel</code> / <code>ODEModel</code> are one class. The catalogue stores
+the factory name and records an <code>aliases</code> map (<code>Propagator -&gt; PropSetup</code>, <code>ODEModel -&gt; ForceModel</code>);
+the loader resolves either spelling, so the linter accepts what scripts actually write.</p>
+<p><strong>Spacecraft's orbital-element fields are dynamic and handled specially.</strong> A Spacecraft exposes six
+element fields whose labels depend on <code>DisplayStateType</code> — reflecting a single (default, Cartesian)
+instance would yield only <code>X/Y/Z/VX/VY/VZ</code> and miss <code>SMA/ECC/INC/...</code>, the most common fields in any
+GMAT script. The generator cycles the display type through every documented R2026a state
+representation (the list is filled from the User's Guide because GMAT does not expose it via enum
+reflection) and merges the element labels. Their <em>defaults</em> are dropped: they are conversions of an
+uninitialised placeholder state, never meaningful.</p>
+<p><strong>Default capture is portable and deterministic.</strong> Defaults are kept only for scalar-ish types;
+filename and array/matrix defaults are skipped (paths are non-portable and machine-dependent), any
+value carrying the install path is scrubbed, and the strings GMAT returns <em>in lieu of raising</em> on a
+failed conversion (<code>API exception ...</code>) and the <code>-999.999</code> uninitialised-state placeholder are
+rejected. Enum allowed-values and object-reference targets are captured where reflection provides
+them. Where GMAT reflection is silent (Spacecraft's own enum strings come back empty; most units are
+blank), the catalogue records the gap; the linter degrades gracefully and the gaps are filled from
+the User's Guide as needed (per the #19 assumptions).</p>
+<p><strong>Plugin types are a known, documented gap.</strong> The headless API loads GMAT's default plugin set, which
+does <em>not</em> include OpenFramesInterface — so the high-frequency corpus types <code>OpenFramesView</code> /
+<code>OpenFramesInterface</code> are absent from the default-load catalogue. #19's bar is catalogue correctness,
+not corpus completeness; resolving plugin coverage so the linter sees zero false positives on the
+stock corpus is <strong>#20's</strong> concern, not this one.</p>
+<p><strong>Provenance and the drift check.</strong> The JSON header carries <code>schema_version</code>, <code>gmat_version</code>, a
+<code>generated</code> ISO date, the generator name, and the type / field counts. Regeneration is deterministic
+(sorted keys, ASCII, trailing newline) <em>except</em> the date, so the <code>--check</code> drift comparison ignores
+<code>generated</code> and fails only on a real content change. The <code>catalogue</code> CI workflow installs GMAT via
+<strong>setup-gmat</strong> and runs <code>gen_catalog --check</code> on a schedule — the single GMAT-dependent CI job.</p>
+<p><strong>The version-bump process (the D11 selector, made concrete).</strong> Supporting another GMAT release is
+additive data, not a code change: (1) run <code>gen_catalog</code> against that install to emit
+<code>fields-&lt;ver&gt;.json</code>; (2) commit it. The loader's <code>target_version</code> selector already defaults to the
+newest shipped catalogue and serves any requested one, so no loader change is needed. The catalogue
+is pinned to R2026a today; the design does not foreclose a multi-version future (D11).</p>
+<hr />
+<h2 id="forward-notes-not-v01-decisions">Forward notes (not v0.1 decisions)<a class="headerlink" href="#forward-notes-not-v01-decisions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Catalogue &amp; version bump (v0.3, #19).</strong> Decided in <strong>D15</strong>: the field catalogue is pinned to
+  R2026a with a documented regeneration + version-bump process (the multi-version strategy is D11);
+  the gmatpy-reflection generator is the only GMAT-touching code, run via setup-gmat in CI. The corpus
+  survey (67 resource types) is a useful cross-check on catalogue coverage but is not the source.</li>
+<li><strong>Formatter ordering (v0.2, #14).</strong> Decided in <strong>D14</strong>: the formatter re-lays-out in source order
+  (per-resource grouping, field order = source order) rather than regrouping by type, so
+  <code>parse(format(x))</code> stays structurally equal to <code>parse(x)</code>. The v0.1 byte-exact round-trip (D6) is
+  what gives it a faithful tree to re-lay-out.</li>
+<li><strong>typed-AST shape (v0.2, #12).</strong> The typed overlay's exact class surface is a v0.2 decision; D3 only
+  guarantees the CST it wraps and that the <code>Tree</code> wrapper is forward-compatible.</li>
+</ul>
+<h2 id="charter-issue-deltas-recorded-here">Charter / issue deltas recorded here<a class="headerlink" href="#charter-issue-deltas-recorded-here" title="Permanent link">&para;</a></h2>
+<p>The corpus survey turned up constructs the charter's prose and the v0.1 issue drafts under-specify.
+Recorded so #4 / #5 implement the real surface:</p>
+<ul>
+<li><strong><code>#Include</code></strong> is a real top-level directive (2 corpus files) — added to scope (D3 <code>include</code>, D4).</li>
+<li>The <strong>RHS is a full expression grammar</strong> (arithmetic, function calls, relational/logical), not just
+  "numbers, strings, refs, brace-lists" — mission-sequence assignments and <code>.gmf</code> bodies compute
+  (D3, D4).</li>
+<li><strong><code>[…]</code> square-bracket array <em>and</em> 2-D matrix literals</strong> (with <code>;</code> row separators) exist alongside
+  brace-lists <code>{…}</code> — the charter named only <code>{…}</code> (D3 <code>array_literal</code>).</li>
+<li><strong>Command labels <code>'…'</code></strong> are pervasive on every command, not just the <code>GMAT</code>-prefixed assignment
+  (D3 <code>command_label</code>).</li>
+<li><strong>Line continuation <code>...</code></strong> (72 occurrences, 21 files) must be handled lexically (D3, D6).</li>
+<li>The <strong>function-call command is the bracket form <code>[a,b]=f(x)</code></strong>, not the <code>Call*Function</code> keywords,
+  which never appear in the corpus (D4).</li>
+<li>The Python binding dependency is the single PyPI package <strong><code>tree-sitter</code></strong>, not
+  "<code>tree-sitter</code> + <code>py-tree-sitter</code>" (D2; forward note for #3's <code>pyproject.toml</code>).</li>
+<li>The <strong><code>function</code> header is wider than <code>[outs] = Name(ins)</code></strong> — the output list and the parameter
+  list are each optional (void functions, empty <code>[]</code>, no-parens), with an optional trailing <code>;</code>
+  (D10). The function-header oracle is <strong>nine</strong> <code>.gmf</code> in the install, not one.</li>
+</ul>
+<hr />
+<h2 id="appendix-corpus-survey">Appendix — corpus survey<a class="headerlink" href="#appendix-corpus-survey" title="Permanent link">&para;</a></h2>
+<p>Surveyed against an <strong>R2026a install</strong> (the stock <code>samples/</code> directory plus the install's
+<code>userfunctions/gmat/</code>); the <code>samples/</code> set is byte/line-identical across the Linux and Windows
+installs (0 content diffs; 71 / 162 files differ only by CRLF — the install carries mixed line
+endings, which is why D6 forbids EOL normalisation and ships <code>-text</code>). Counts below were re-derived
+on the corpus by folding <code>...</code> continuations and stripping leading <code>GMAT</code> keywords and command labels
+before tokenising — this <strong>supersedes</strong> an earlier word-boundary <code>grep</code> that over-counted <code>Set</code> /
+<code>Write</code> / <code>Global</code> and miscategorised the <code>BackProp</code> modifier.</p>
+<p>Stock corpus: <strong>162 <code>.script</code> + 1 <code>.gmf</code></strong> in <code>samples/</code>; the install has <strong>9 <code>.gmf</code></strong> total
+(+8 in <code>userfunctions/gmat/</code>).</p>
+<ul>
+<li><strong><code>Create</code> types:</strong> <strong>67 distinct.</strong> Most frequent: Spacecraft (293), OpenFramesView (267),
+  Propagator (195), ForceModel (188), OpenFramesInterface (158), CoordinateSystem (157), Variable
+  (154), ImpulsiveBurn (116), GroundStation (67), XYPlot (66), ReportFile (62) … down to single-use
+  types (Smoother, ExtendedKalmanFilter, EclipseLocator, …). The long tail is exactly why <code>Create</code> is
+  generic.</li>
+<li><strong><code>BeginMissionSequence</code>:</strong> present in 160 / 162 files; absent in <code>Ex_CompareEphemeris.script</code> and
+  <code>Ex_IncludeFile.script</code> (configuration-only / include-driven).</li>
+<li><strong>Command keywords (leading-token occurrences, authoritative):</strong> Propagate 401, Vary 270, Report
+  242, NonlinearConstraint 128, Maneuver 97, Achieve 81, If/EndIf 69, Target/EndTarget 52, Toggle 44,
+  BeginScript/EndScript 28 each (19 files), PenUp/PenDown 28 each, RunSimulator 23, RunEstimator 22,
+  For/EndFor 20, BeginFiniteBurn 19 / EndFiniteBurn 18, Optimize/EndOptimize 19, Else 17, Write 17,
+  Minimize 16, While/EndWhile 9, BeginFileThrust/EndFileThrust 5, UpdateDynamicData 3, Global 3,
+  CommandEcho 2, Set 1, RunSmoother 1, Stop 1. <strong>Modifier (not a command):</strong> <code>BackProp</code> 51
+  occurrences inside <code>Propagate</code>. <strong>Absent (0):</strong> <code>CallGmatFunction</code> / <code>CallMatlabFunction</code> /
+  <code>CallPythonFunction</code> / <code>ElseIf</code> / <code>SkipMissionSequence</code>.</li>
+<li><strong>Function calls:</strong> 24 bracket-LHS calls <code>[out, …] = name(args)</code> (incl. dotted <code>Python.…</code>);
+  2 bare no-output calls (<code>TargeterInsideFunction;</code>).</li>
+<li><strong><code>#Include</code>:</strong> 2 files (<code>#Include '…';</code> and <code>#Include '…'</code> — trailing <code>;</code> optional).</li>
+<li><strong>Line continuation <code>...</code>:</strong> 72 occurrences across 21 files.</li>
+<li><strong>Command labels <code>'…'</code>:</strong> 576 occurrences — on Propagate / Target / Optimize / If / While / Vary /
+  Achieve, the <code>GMAT 'label' x = …</code> assignment, and label-first assignments (<code>'Save RAAN' RAAN = …</code>).</li>
+<li><strong><code>[…]</code> literals:</strong> 1-D (<code>[ 0.1 0.05 ]</code>, <code>[ true false]</code>) and 43 two-dimensional matrices with <code>;</code>
+  row separators (the 6×6 <code>OrbitErrorCovariance</code>); exponents include the zero-padded <code>1e+070</code> form.</li>
+<li><strong>Braces / indexing:</strong> 124 empty <code>{}</code>, 112 nested braces, 70 LHS array-index targets <code>A(i,j) = …</code>;
+  dotted member paths up to 4 deep (<code>FM.GravityField.Earth.PotentialFile</code>, 250 occurrences).</li>
+<li><strong><code>.gmf</code> headers (9 files):</strong> <code>[dr, dv] = Ex_RICdelta(rv1, rv2)</code>, <code>[crossProd] = cross(...)</code>,
+  <code>[q] = ComposeQuaternions (qA, qB)</code> (space before <code>(</code>), <code>TargeterInsideFunction()</code> and
+  <code>TargetLEOStationKeeping(a, b)</code> (no output list); plus, from real-world GitHub <code>.gmf</code>,
+  <code>[outs] = GetCDStates</code> (no parameter list), <code>[] = RaiseApogee(burnSize)</code> (empty output list), and
+  <code>… = SatSep(Sat1, Sat2);</code> (trailing <code>;</code>).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/astro-tools/gmat-script" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "navigation.indexes", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
