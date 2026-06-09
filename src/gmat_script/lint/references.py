@@ -5,7 +5,7 @@
 * :func:`object_reference_uses` — *high-confidence*: only the values of catalogue-typed
   object-reference fields, backing ``undeclared-reference`` and ``ref-target-mismatch``. Keeping the
   scope to fields the catalogue marks as object references is what holds those rules to zero false
-  positives on real scripts (the design decision for #20 — see the plan).
+  positives on real scripts.
 """
 
 from __future__ import annotations
@@ -65,7 +65,7 @@ def collect_value_references(ctx: LintContext) -> dict[str, list[Node]]:
         if kind == "assignment_command" and in_config:
             # A configuration assignment's left side is the resource configuring itself — not a use.
             right = node.child_by_field_name("right")
-            if right is not None:
+            if right is not None:  # pragma: no branch - a clean-parse assignment carries a right
                 walk(right, in_config)
             return
         if kind == "member_expression":
@@ -75,9 +75,9 @@ def collect_value_references(ctx: LintContext) -> dict[str, list[Node]]:
         if kind == "call_expression":
             function = node.child_by_field_name("function")
             arguments = node.child_by_field_name("arguments")
-            if function is not None:
+            if function is not None:  # pragma: no branch - a clean-parse call has a function
                 walk(function, in_config)
-            if arguments is not None:
+            if arguments is not None:  # pragma: no branch - a clean-parse call has arguments
                 for argument in arguments.named_children:
                     walk(argument, in_config)
             return

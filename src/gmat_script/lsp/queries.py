@@ -1,6 +1,6 @@
 """Running the grammar's tree-sitter queries for the language server's navigation features.
 
-Two of the vendored ``.scm`` queries (decisions D1 / #21) run over a parsed tree: ``locals.scm``
+Two of the vendored ``.scm`` queries (decision D1) run over a parsed tree: ``locals.scm``
 captures resource / function / loop-variable *definitions* and every identifier *reference* (go-to-
 definition and find-references), and ``tags.scm`` captures the declared-symbol *tags* the document
 outline is built from. The queries are vendored into the package at build time (``hatch_build.py``)

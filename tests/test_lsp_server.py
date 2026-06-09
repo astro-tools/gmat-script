@@ -203,6 +203,30 @@ def test_handler_survives_analysis_error(monkeypatch: pytest.MonkeyPatch) -> Non
     assert server_module._hover(server, params) is None
 
 
+def test_refresh_diagnostics_survives_analysis_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The diagnostics publish path (didOpen / didChange) is wrapped like the request handlers, so a
+    # failing analysis publishes an empty list instead of crashing the connection.
+    def boom(*_: object, **__: object) -> None:
+        raise RuntimeError("diagnostics blew up")
+
+    monkeypatch.setattr(analysis_module, "diagnostics_for", boom)
+    server = _server_with()
+    published = _capture_publishes(server, monkeypatch)
+    server.refresh_diagnostics(URI)
+    assert len(published) == 1 and published[0].diagnostics == []
+
+
+def test_did_open_survives_pathologically_deep_document(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A buffer nested deep enough to exhaust the recursion limit parses cleanly but recurses the
+    # linter; didOpen must still publish (an empty list) rather than raise out of the handler.
+    deep = "x = " + "(" * 1500 + "1" + ")" * 1500 + "\n"
+    server = _server_with(deep)
+    published = _capture_publishes(server, monkeypatch)
+    item = lsp.TextDocumentItem(uri=URI, language_id="gmat", version=1, text=deep)
+    server_module._did_open(server, lsp.DidOpenTextDocumentParams(text_document=item))
+    assert len(published) == 1 and published[0].diagnostics == []
+
+
 # ----------------------------------------------------------------------------
 # console entry: graceful degradation without the extra
 

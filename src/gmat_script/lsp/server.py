@@ -10,6 +10,10 @@ Handlers are module-level functions taking ``(ls, params)`` — pygls injects th
 first parameter is named ``ls`` — and per-URI debounce state lives on the :class:`LanguageServer`
 subclass, so both are reachable in-process for unit tests; only the stdio run loop in :func:`main`
 needs a real connection.
+
+Every handler — the request handlers *and* the diagnostics publish path — runs its analysis through
+:func:`_safe`, so neither a broken parse (the linter degrades to syntax errors) nor a pathological
+buffer (one nested deep enough to exhaust the recursion limit) can crash the connection (D7).
 """
 
 from __future__ import annotations
@@ -57,13 +61,20 @@ class GmatScriptLanguageServer(LanguageServer):
         self.generations: dict[str, int] = {}
 
     def refresh_diagnostics(self, uri: str) -> None:
-        """Recompute and publish diagnostics for the document at *uri*."""
+        """Recompute and publish diagnostics for the document at *uri*.
+
+        The analysis runs through :func:`_safe`: a pathological buffer (e.g. an expression nested
+        deep enough to exhaust the recursion limit) publishes no diagnostics rather than raising out
+        of the ``didOpen`` / ``didChange`` handler and crashing the connection.
+        """
         document = self.workspace.get_text_document(uri)
+        empty: list[types.Diagnostic] = []
+        diagnostics = _safe(lambda: analysis.diagnostics_for(document.source), empty)
         self.text_document_publish_diagnostics(
             types.PublishDiagnosticsParams(
                 uri=uri,
                 version=document.version,
-                diagnostics=analysis.diagnostics_for(document.source),
+                diagnostics=diagnostics,
             )
         )
 
