@@ -7,6 +7,50 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-06-08
+
+gmat-script grows from a parser and formatter into a full editor toolchain: a GMAT field catalogue
+reflected from R2026a, a linter that checks scripts against it, a Language Server Protocol server,
+and a VS Code extension on the Marketplace and Open VSX. Everything still runs with no GMAT install —
+the catalogue ships as data inside the wheel — and the grammar is unchanged, so every byte-for-byte
+round-trip from earlier releases still holds.
+
+### Added
+
+- **Field catalogue (`gmat_script.catalog`)** — the semantics GMAT defines but the permissive grammar
+  deliberately ignores: every resource type, its fields, and each field's type, default, allowed
+  values, units, and reference target. Reflected from GMAT R2026a through `gmatpy` by a
+  `tools/gen_catalog.py` generator and shipped as a version-pinned, provenance-stamped data file
+  (`data/fields-R2026a.json`, 102 resource types and 2614 fields) inside the wheel, loaded by
+  `load_catalog()`. Adding another GMAT release is a new data file, not a code change, and nothing
+  downstream needs a GMAT install (#19).
+- **Linter (`gmat-script lint`)** — a structural checker that reads the field catalogue: it flags
+  unknown resource fields, enum and type violations, references to undeclared resources, duplicate
+  names, and more, with inline suppression comments and `ruff`-style severities and exit codes. Each
+  diagnostic carries a rule id, a location, and a message, and the engine is shared verbatim with the
+  language server (#20).
+- **Tree-sitter queries** — `highlights`, `locals`, and `tags` queries packaged with the
+  `tree-sitter-gmat` grammar, giving editors resource / command / field highlighting, scope-aware
+  local resolution, and a symbol index with no extra setup (#21).
+- **Language server (`gmat-script[lsp]`)** — a `pygls` server, launched as `gmat-script-lsp` or
+  `python -m gmat_script.lsp`, that brings the catalogue and linter to any LSP-capable editor: hover
+  docs for a field's type, default, allowed values, and units; live diagnostics as you type;
+  completion of resource names, the fields valid for the resource under the cursor, and enum values;
+  go-to-definition and find-all-references; a document outline; and format-on-save via the canonical
+  formatter (#22).
+- **VS Code extension** — **GMAT Script**, published to the Visual Studio Marketplace and Open VSX.
+  Bundled TextMate highlighting works the moment it installs; the richer language features come from
+  the language server (`pip install "gmat-script[lsp]"`). `.script` and `.gmf` files get a file icon,
+  comment / bracket configuration, and format-on-save on by default (#23).
+- **Documentation** — new guide pages for the field catalogue, the linter, the language server, and
+  the VS Code extension, plus README sections on editor tooling and the GMAT-free catalogue (#25).
+
+### Changed
+
+- `gmat-script` (PyPI) and `tree-sitter-gmat` (npm) continue to release in version lockstep, now at
+  0.3.0. The grammar and generated parser are unchanged since 0.2.0; the npm package is republished
+  to carry the new editor queries — an expanded `highlights.scm` and a new `locals.scm` (#21).
+
 ## [0.2.0] — 2026-06-08
 
 A typed AST overlay over the v0.1 parse tree, a lossless mutation API, a canonical formatter, and a
