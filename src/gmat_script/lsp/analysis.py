@@ -373,12 +373,13 @@ def _type_matches(analysis: _Analysis, resource_type: str, target: str, wanted: 
 def format_edits(source: str) -> list[lsp.TextEdit]:
     """A whole-document edit re-emitting *source* canonically, or none if it is already canonical.
 
-    The formatter is whole-document and refuses a script with syntax errors (D14); a broken or
-    already-canonical buffer yields no edit, so this is also the range-formatting result.
+    The formatter is whole-document and refuses a script with syntax errors (D14); a buffer it
+    cannot format — a syntax error, or an expression nested deep enough to exhaust the recursion
+    limit — or one already canonical yields no edit, so this is also the range-formatting result.
     """
     try:
         formatted = format_source(source)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, RecursionError):
         return []
     if formatted == source:
         return []

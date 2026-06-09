@@ -285,6 +285,13 @@ def test_format_edits_syntax_error_is_empty() -> None:
     assert analysis.format_edits("Create = = =\n") == []
 
 
+def test_format_edits_deeply_nested_is_empty() -> None:
+    # A pathologically deep expression parses cleanly but recurses the formatter past the recursion
+    # limit; format_edits must absorb the RecursionError and yield no edit, not propagate it.
+    source = "x = " + "(" * 1000 + "1" + ")" * 1000 + "\n"
+    assert analysis.format_edits(source) == []
+
+
 # ----------------------------------------------------------------------------
 # robustness: malformed input never raises
 
