@@ -1,9 +1,9 @@
 {
-  "name": "gmat-script",
+  "name": "gmat-mission-script",
   "displayName": "GMAT Script",
   "description": "Highlighting, hover docs, diagnostics, go-to-definition, completion, and format-on-save for GMAT mission scripts (.script / .gmf).",
   "version": "0.3.0",
-  "publisher": "djankov",
+  "publisher": "astro-tools",
   "license": "MIT",
   "icon": "icons/gmat-script.png",
   "homepage": "https://astro-tools.github.io/gmat-script/",
