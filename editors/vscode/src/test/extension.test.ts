@@ -8,7 +8,7 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 
-const EXTENSION_ID = "djankov.gmat-script";
+const EXTENSION_ID = "astro-tools.gmat-script";
 
 function writeTempFile(name: string, content: string): vscode.Uri {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "gmat-smoke-"));
